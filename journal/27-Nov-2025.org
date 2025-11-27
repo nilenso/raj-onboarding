@@ -1,0 +1,25 @@
+#+title: 27 Nov 2025
+
+
+* Misc
+ - dev env ready
+   - doom emacs-plus@30 (native comp) for knowledge base, GTD with captures, journalling, LLM interface and generic interop
+   - Tmux, vi for quick edits
+   - intellij for java 
+ - github repository for onboarding live 
+* Java
+ - starting out with Effective Java
+   - objective is to pick up the mindset the language encourages and have a pedagogical CRUD built by the end of the following week
+ - supplementing with basic blogs to get up to speed on the syntax : admittedly (shamefully), haven't done java before
+ - post that : getting into Java: concurrency in practice
+ - started writing some basic programs in emacs (will be using intellij for actual work when the learning phase is over cause neena(and a lot of people on the internet) says(say) that emacs is not it when it comes to java)
+* flowing thoughts on first project
+ - thought of creating a CLI slack client that would allow you to interact with messages, threads and channels in bulk with a DSL
+   - the underlying data format would be json so seemed like an opportunity for some quick filters, maps and accumulates that could be employed
+   - what about a summary of a thread for someone
+   - what about context engineering for a particular slack thread surrounding some queries
+   - could build a vector index for the thread
+   - too big for an initial project as of now
+ - feedback received that should consider iterating quickly instead
+ - need to ideate more
+ - what about a slack bot that writes in italics as to what the person is upto with a certain flavour that can be tuned
