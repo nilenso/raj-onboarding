@@ -1,0 +1,5 @@
+#+title: 28 Nov 2025
+
+ - effective java speedrun over the weekend
+ - parallely exploring frameworks like Spring Boot, JUnit, JBehave. 
+ - realizing parallels from golang : should be quicker than expected
