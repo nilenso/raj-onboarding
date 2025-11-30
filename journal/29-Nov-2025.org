@@ -1,0 +1,29 @@
+#+title: 29 Nov 2025
+
+* Project 0
+ - have been thinking about this lately :
+   - need a database and a web component to get used to the usuals
+ - Neo4j and DeepLearning4j seem enticing to get into
+ - have already been looking into ontologies for a while : might as well consider building something minimal and neurosymbolic : what about a KG augmented chatbot trained on some basic nilenso's corpus 
+ - starting out from parsing corpus to building the graph to finally enabling RAG upon it
+ - again trying not to think to far into the future but I'm just going to iterate this time : might not be a product by the end of it : but atleast have an iterative vision for this
+ - a CLI interface at the minimal sounds feasible in a short duration
+ - might as well get into jvm internals while I'm at it
+ - I guess, moving into clojure later on would help me build DSLs efficiently as well ( in an industry context )
+ - posting links
+   - https://neo4j.com/docs/graph-data-science/current/machine-learning/machine-learning/
+   - https://neo4j.com/books/developers-guide-how-to-build-knowledge-graph/
+   - https://deeplearning4j.konduit.ai/
+   - https://arxiv.org/abs/2507.15917v2
+ - anyway, not going to think too big right away and going to get started with smaller iterations and potential integrations
+** iteration 0
+ - the first aspect of such a pipeline would be able to consume a corpus and generate a knowledge graph from it
+ - so far liking this train of thought so am going to explore
+* Java
+ - effective java as usual
+ - accelerated consumption compared to the past few days as expected
+ - emacs seems to be fine : lsp, dape, and the inbuilt quick testing triggers for TDD help out with quick iterations compared to compiling and checking output
+ - ecosystem wise : getting into JUnit, JBehave and Spring boot
+* Misc
+ - finally efficient with my dev setup : feels like home again
+ - some rough edges exist (the occassional touching the touch pad) but feeling better than expected
