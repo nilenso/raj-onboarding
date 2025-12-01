@@ -1,0 +1,36 @@
+#+title: 30 Nov 2025
+
+* Java
+ - JUnit, gradle (not doing maven as of now) with DSL as groovy
+ - on my way to getting into spring
+ - gradle CLI + emacs scaffolds rather than intellij
+ - TDD with the inbuilt test class, etc ...
+ - can write basic programs myself with old ways I know 
+ - now can begin understanding the Java way : effective Java is a good bed time read btw
+* Misc
+ - first thought I should name my first project : project 1
+ - then recalled we're SWEs (& I hate lua (nvim < emacs)) and should be project 0
+ - then recalled I like lisp and should be project nil 
+ - repo init (java application + library) : the gradle-init.sh documents the configs used for init
+* Project NIL
+ - read misc first
+
+ - want this to help me get to know the tooling rather than actually solve a problem
+
+ - proceeding with a sentinel problem :
+   - a basic calculator with a core (operand & operator orchestrator)parser/router/aggregator, and a microservice for each of addition , multiplication, subtraction and division
+
+   - scope creep init:
+     - basic parser
+     - the ops
+     - custom exceptions
+     - caching
+     - structured logging
+     - scheduler down the line with potential for concurrency experiments
+     - ...
+       
+   - will also introduce probabilistic delays in the manner of pre and post hooks in places so that I could test out the benchmarking and profiling ecosystem for the language
+
+   - sounds good as of now : I will be able to refactor iteratively with the concepts that I learn 
+
+   - good opportunity to build the most over-engineered calculator out there
