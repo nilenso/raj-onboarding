@@ -34,3 +34,7 @@
    - sounds good as of now : I will be able to refactor iteratively with the concepts that I learn 
 
    - good opportunity to build the most over-engineered calculator out there
+
+   - will start documenting the tech stack explored in a different subtree henceforth : as of today : getting into spring boot and plan on building that basic scaffold for P-'() with containerized setup for integration and e2e tests
+
+     
