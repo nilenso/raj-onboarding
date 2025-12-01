@@ -7,6 +7,34 @@
  - shared calculator microservice cluster
  - CRUD on calculation jobs (logged in DB)
  - opportunity to introduce probabilistic delays and test out benchmarking and profiling ecosystem as well
+ 
+## Scope & Phases (documentation in progress)
+
+### Arch
+
+```mermaid
+graph TD
+    A[User] --> B[Orchestrator Service]
+
+    B --> C[Operations Services]
+    C --> C1[Addition]
+    C --> C2[Subtraction]
+    C --> C3[Multiplication]
+    C --> C4[Division]
+
+    B --> D[Persistence Service]
+    D --> E[PostgreSQL Database]
+
+    subgraph Application
+        B
+        C
+        D
+        C1
+        C2
+        C3
+        C4
+    end
+```
 
 # Appendix
 
@@ -22,8 +50,6 @@ gradle init \
   --no-incubating  \
   --java-version 25
 ```
-
-## Phases (notes)
 
 ## TechStack
 
