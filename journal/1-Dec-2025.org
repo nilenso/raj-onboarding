@@ -1,0 +1,15 @@
+#+title: 1 Dec 2025
+
+ - further refined p-nil scope and problem statement with neena
+ - refactoring in stages : starting with a calc : finally a shared operation executor
+ - Java : effective Java and dev.java
+ - some project management to be done : read up srihari's recent blogs
+   - https://blog.nilenso.com/blog/2025/11/18/how-to-work-with-product-at-the-tea-table/
+   - https://blog.nilenso.com/blog/2025/11/21/how-to-work-with-product-towards-what-port-do-you-sail/
+   - https://blog.nilenso.com/blog/2025/11/26/how-to-work-with-product-taste-and-adjust/
+
+
+   
+   
+   
+   

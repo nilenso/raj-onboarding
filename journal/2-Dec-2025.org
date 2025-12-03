@@ -1,0 +1,13 @@
+#+title: 2 Dec 2025
+
+ - initial chat with Udit and Govind today : will pair up with them soon
+   - initially for design reviews, soon for code reviews
+
+ - work wise: three things as of now:
+   - learning java & ecosystem (dev.java, gradle, spring)   
+   - learning how to write java (effective java)
+   - project-nil (design, early documentation, scaffolds and refining scope)
+     
+
+
+
