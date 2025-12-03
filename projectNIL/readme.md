@@ -10,6 +10,8 @@
  
 ## Scope & Phases (documentation in progress)
 
+ - project management being done [here](progress.org)
+
 ### Arch
 
 ```mermaid

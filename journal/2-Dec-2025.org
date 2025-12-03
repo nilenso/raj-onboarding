@@ -7,6 +7,9 @@
    - learning java & ecosystem (dev.java, gradle, spring)   
    - learning how to write java (effective java)
    - project-nil (design, early documentation, scaffolds and refining scope)
+
+ - before I proceed with coding for p-nil, setting up CI & D on github (digital ocean for deployment)
+    - https://github.com/nilenso/infra
      
 
 
