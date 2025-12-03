@@ -1,2 +1,17 @@
 #+title: Progress
 
+* Documentation
+** TODO [1/3] chart out initial scope and iteration chunks
+ - [ ] User Stories (Testable / Descriptive) maintenance strat?
+ - [ ] code doc generation
+ - [X] project management (via this org file)
+* Implementation
+** TODO [ ] The Greedy Pass
+ - [ ] DataBase init (schema)
+ - [ ] all ops in one (separate out later on)
+** TODO [ ] Testing Strat
+ - check scope (especially for e2e and integration)
+* Infra
+** TODO [0/2] CI/CD Setup
+ - [ ] CI setup for builds & tests of a gradle project
+ - [ ] CD into digital ocean droplets
