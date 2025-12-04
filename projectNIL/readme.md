@@ -15,7 +15,7 @@
  - CRUD on calculation jobs (logged in DB)
  - opportunity to introduce probabilistic delays and test out benchmarking and profiling ecosystem as well
  
-```mermaid
+``` mermaid
 graph TD
     A[User] --> B[Orchestrator Service]
 
