@@ -1,7 +1,7 @@
 #+title: 3 Dec 2025
 
 * PNil
- - pivoting into building onto function as a service (FaaS)
+ - pivoting into building a function as a service (FaaS)
  - had some time to chart out the abstractions I'm going to deal with in the flight : couldn't use my laptop cause I was seated next to the emergency exit (wasn't aware this was a thing): so had to pull out the pocket notebook
  - Jobs, Users, Operator, Environment
  - So thinking simply : fine grained tokens allow protected CRUDS over these entities/ aggregations there of ...
