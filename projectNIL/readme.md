@@ -7,7 +7,7 @@
 
 ### Function as a Service
 
- - Function as a Service : see journals : [3rd-Dec-2025](../journals/3-Dec-2025.org)
+ - Function as a Service : see journals : [3rd-Dec-2025](../journal/3-Dec-2025.org)
 
 ###  Over-engineered Calculator
 
