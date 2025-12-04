@@ -1,19 +1,20 @@
+
 # Project NIL
 
  - towards a pedagogical CRUD to pick up on tooling and best practices
 
-## Ideation Seed
+## Ideation (reverse chronological log)
 
- - shared calculator microservice cluster
+### Function as a Service
+
+ - Function as a Service : see journals : [3rd-Dec-2025](journals/3rd-Dec-2025.org)
+
+###  Over-engineered Calculator
+
+ - shared calculator microservice cluster 
  - CRUD on calculation jobs (logged in DB)
  - opportunity to introduce probabilistic delays and test out benchmarking and profiling ecosystem as well
  
-## Scope & Phases (documentation in progress)
-
- - project management being done [here](progress.org)
-
-### Arch
-
 ```mermaid
 graph TD
     A[User] --> B[Orchestrator Service]
@@ -37,6 +38,13 @@ graph TD
         C4
     end
 ```
+ 
+## Scope & Phases (documentation in progress)
+
+ - project management being done [here](progress.org)
+
+### Arch
+
 
 # Appendix
 

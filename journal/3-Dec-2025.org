@@ -1,0 +1,17 @@
+#+title: 3 Dec 2025
+
+* PNil
+ - pivoting into building onto function as a service (FaaS)
+ - had some time to chart out the abstractions I'm going to deal with in the flight : couldn't use my laptop cause I was seated next to the emergency exit (wasn't aware this was a thing): so had to pull out the pocket notebook
+ - Jobs, Users, Operator, Environment
+ - So thinking simply : fine grained tokens allow protected CRUDS over these entities/ aggregations there of ...
+ - DB Schema design and class modelling init
+ - System Design simple initially : MVP first then figure out bottlenecks ..
+* Java
+ - effective java and dev.java as usual for a while 
+* Deadlines
+ - all these three(D.J, EJ and PNIL) should end by the end of next week
+   
+   
+   
+

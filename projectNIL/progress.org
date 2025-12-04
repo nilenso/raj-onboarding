@@ -6,11 +6,30 @@
  - [ ] code doc generation
  - [X] project management (via this org file)
 * Implementation
-** TODO [ ] The Greedy Pass
- - [ ] DataBase init (schema)
- - [ ] all ops in one (separate out later on)
-** TODO [ ] Testing Strat
- - check scope (especially for e2e and integration)
+** TODO [ ] V0
+*** [ ] DB
+**** [ ] Schema design
+ - operator:
+   - operatorID (int)
+   - Desc (String)
+   - signature (input, ouput types) 
+     - input type  (String)
+     - output type (String)
+   - actual body : protobufs?
+   - figure out how to store procedures in postgres?
+ - Input
+   - desc : (String)
+   - actual content : encoded data 
+ - Output
+   - 
+*** [ ] Abstractions
+**** [ ] Interfaces and Classes
+ - operators/functions
+ - jobs 
+*** V1+
+ - encryption
+ - authentication, authorization
+ - execution environments
 * Infra
 ** TODO [0/2] CI/CD Setup
  - [ ] CI setup for builds & tests of a gradle project
