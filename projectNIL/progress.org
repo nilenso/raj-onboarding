@@ -5,6 +5,9 @@
  - [ ] User Stories (Testable / Descriptive) maintenance strat?
  - [ ] code doc generation
  - [X] project management (via this org file)
+** DONE Agentic Operations
+ - [X] Created AGENTS.md with build/lint/test commands, code style guidelines, and Conventional Commits standards
+ - [X] Created effective-java.md as living reference for Effective Java practices
 * Implementation
 ** TODO [ ] V0
 *** [ ] DB
