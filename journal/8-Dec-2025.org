@@ -1,0 +1,45 @@
+#+title: 8 Dec 2025
+
+* Branching Strategy & Workflow Documentation
+  - defined and documented three-branch model: main, dev, journal
+    - main: production branch with full CI/CD (GitHub Actions + GitHub Pages)
+    - dev: development branch with CI only (build, check, test)
+    - journal: personal logs with no CI (all commits require [skip ci] tag)
+  - updated README.md and AGENTS.md with branching guidelines
+  - ensured [skip ci] requirement is clear for journal commits to prevent unnecessary CI triggers
+  - merged journal documentation into main via main
+
+* GitHub Actions CI/CD Setup
+  - created ci-dev.yml: CI pipeline for dev branch
+    - runs: build → check (checkstyle, spotbugs) → test
+    - uploads test results and generates JUnit reports
+    - 30-day artifact retention
+  - created ci-cd-main.yml: full CI/CD pipeline for main branch
+    - runs: build → check → test → generate coverage (JaCoCo) & javadoc
+    - deploys docs and coverage reports to GitHub Pages (separate gh-pages branch)
+    - creates index.html for navigation between docs and coverage
+    - DigitalOcean deployment placeholder with loud TODO warning (ready for future config)
+    - fails deployment if tests fail or javadoc generation errors
+  - configured JaCoCo for code coverage reporting in build.gradle
+    - generates HTML and XML coverage reports
+    - test task finalized by coverage report generation
+  - set javadoc.failOnError = true to fail build on javadoc errors
+  - added CI/CD status badges to readme.md (dev and main workflows)
+
+* GitHub CLI Setup
+  - installed gh via Homebrew
+  - authenticated with OAuth via browser (logged in as rajp152k)
+  - created PR #1 from dev to main via command line
+  - merged PR #1 to main (243 additions, 8 deletions)
+
+* Updated Documentation
+  - updated progress.org with completed CI/CD setup checklist
+  - marked CI setup as DONE [1/2] with detailed sub-items
+  - added Workflow & Branching Strategy section as DONE
+  - DigitalOcean CD still pending with placeholder in workflow
+
+* Next Steps
+  - configure GitHub Pages in repository settings (Settings → Pages)
+  - configure branch protection rules for main (require CI status checks)
+  - test workflows by pushing to dev and main
+  - set up DigitalOcean deployment when ready (placeholder ready in workflow)
