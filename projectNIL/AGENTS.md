@@ -16,3 +16,15 @@
 - Types: Prefer immutable (e.g., List.of()), var where obvious.
 - Error handling: Try-with-resources, specific exceptions, no printStackTrace.
 - Patterns: Follow Gradle Java app conventions; minimal comments.
+
+## Commit Message Guidelines
+- Follow [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) style.
+- Format: `type(scope): subject` with optional body and footer.
+- Types: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`.
+- Subject: Imperative, lowercase, no period. Max 50 characters.
+- Body: Wrap at 72 characters; explain what and why, not how.
+- Examples:
+  - `feat(parser): add support for nested expressions`
+  - `fix(build): resolve checkstyle configuration issue`
+  - `docs(readme): update installation instructions`
+  - `refactor(core): simplify error handling logic`
