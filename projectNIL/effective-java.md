@@ -51,8 +51,15 @@ Update this document as you read through the book to maintain a project-specific
 - Prevents subclassing as a side effect (subclass constructor must call `super()` which will throw)
 - Ideal for classes like `Math`, `Arrays`, `Collections`, `Objects` that group related static methods
 
-### 5. Item Title
-- 
+### 5. Prefer dependency injection to hardwiring resources
+- Don't hardwire dependencies (e.g., `private static final SpellChecker checker = new SpellChecker()`)
+- Pass required resources/dependencies as constructor or method parameters instead
+- Enables flexibility: swap implementations, mock for testing, support multiple configurations
+- Constructor injection is preferred over setter injection (makes immutable objects, clarifies required dependencies)
+- Works well with interfaces/abstractions; depend on abstractions, not concrete implementations
+- Static factory methods and builders can facilitate dependency injection patterns
+- Consider a dependency injection framework (Spring, Guice) for large applications with many dependencies
+- Factory pattern can be passed as dependency for deferred or conditional resource creation
 
 ### 6. Item Title
 - 
