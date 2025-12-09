@@ -81,8 +81,16 @@ Update this document as you read through the book to maintain a project-specific
 - Use try-finally or try-with-resources to ensure cleanup of resources (files, connections, streams)
 - Memory profilers and heap dumps help identify unintentional object retention
 
-### 8. Item Title
-- 
+### 8. Avoid finalizers and cleaners
+- Finalizers (`finalize()`) are unpredictable; execution timing depends on GC algorithm (deprecated since Java 9)
+- Cleaners are the modern replacement for finalizers but still problematic; use only as safety net
+- Never rely on finalizers/cleaners for timely resource cleanup; they may never run or run very late
+- Finalizers can cause performance degradation; objects with finalizers are treated specially by GC
+- If a finalizer throws an exception, it's ignored and the object may be left in corrupted state
+- Use try-with-resources (implements `AutoCloseable`) for guaranteed, timely resource cleanup instead
+- If you must use Cleaner (rare): register it as a safety net, but implement `AutoCloseable` for normal cleanup
+- For resource management, prefer explicit `close()` methods called from try-finally or try-with-resources
+- Objects that hold native resources should implement `AutoCloseable` interface for proper cleanup
 
 ### 9. Item Title
 - 
