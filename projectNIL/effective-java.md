@@ -212,8 +212,17 @@ Update this document as you read through the book to maintain a project-specific
 - Design for inheritance or prohibit it: provide detailed documentation of internal method dependencies
 - Prefer interfaces to abstract classes for defining contracts; interfaces allow composition + implementation reuse
 
-### 19. Item Title
-- 
+### 19. Design and document for inheritance, or else prohibit it
+- Classes open for extension must document their self-use: which methods call which other methods internally
+- Use `@implSpec` javadoc tag to document implementation contracts (how, not just what)
+- Protected methods and fields must be intentional; make class final if not designed for extension
+- Provide reasonable protected hooks for extension: protected constructors, protected utility methods
+- Never call overridable methods from constructors (subclass initialization may not be complete)
+- Similarly, avoid calling overridable methods during deserialization or clone()
+- Write test subclasses during development to verify extensibility works correctly
+- Document performance characteristics relevant to subclasses (time/space complexity)
+- Either design for inheritance explicitly or make class final to prevent accidental misuse
+- Inheritance is costly: once a class is extended, you're committed to its internal implementation
 
 ### 20. Item Title
 - 
