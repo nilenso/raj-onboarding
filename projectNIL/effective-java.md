@@ -70,8 +70,16 @@ Update this document as you read through the book to maintain a project-specific
 - Lazy initialization can defer expensive object creation, but adds complexity; use only when initialization is truly expensive
 - Profile before optimizing; don't prematurely optimize based on assumptions about object creation
 
-### 7. Item Title
-- 
+### 7. Eliminate obsolete object references
+- Clear references to objects no longer needed to allow garbage collection (set to `null` or let scope end)
+- Common problem: objects removed from collections but their references still held elsewhere in the class
+- Stack implementations are particularly vulnerable: popped elements remain in the internal array
+- Classes that manage their own memory (e.g., custom Stack, List) must null out obsolete references
+- Collections, caches, and listeners are common sources of memory leaks if references aren't cleared
+- Register event listeners/callbacks and forget to unregister them → memory leak over time
+- Weak references and soft references can help with caches and pools where objects can be reclaimed
+- Use try-finally or try-with-resources to ensure cleanup of resources (files, connections, streams)
+- Memory profilers and heap dumps help identify unintentional object retention
 
 ### 8. Item Title
 - 
