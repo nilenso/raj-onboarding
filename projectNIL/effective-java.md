@@ -24,8 +24,14 @@ Update this document as you read through the book to maintain a project-specific
 - Reduces verbosity compared to requiring public constructors
 - Consider naming conventions: `from`, `of`, `valueOf`, `instance`, `getInstance`, `create`, `newInstance`
 
-### 2. Item Title
-- 
+### 2. Consider a builder when faced with many constructor parameters
+- Use when a class has many optional or required parameters (typically 3+)
+- Avoids "telescoping constructor" antipattern (multiple overloaded constructors with increasing parameter counts)
+- Improves readability: `new User.Builder().name("John").age(30).email("john@example.com").build()`
+- Enables flexible object construction without requiring all parameters upfront
+- Builder can enforce invariants and validate state before calling `build()`
+- Consider making the builder an inner class or a separate class depending on usage patterns
+- Builder pattern works well with immutable objects (combined with private constructor)
 
 ### 3. Item Title
 - 
