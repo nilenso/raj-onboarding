@@ -151,8 +151,18 @@ Update this document as you read through the book to maintain a project-specific
 - Example: `public Point(Point p) { this.x = p.x; this.y = p.y; }` instead of overriding clone()
 - Immutable classes don't need clone() since copies would be indistinguishable from originals
 
-### 14. Item Title
-- 
+### 14. Consider implementing Comparable
+- `Comparable<T>` interface defines natural ordering for objects; implement when natural order exists
+- Single method: `int compareTo(T o)` returns negative/zero/positive if this < o / == o / > o
+- Enables sorting, binary search, and use in sorted collections (TreeMap, TreeSet)
+- compareTo() must be consistent with equals(): if `a.equals(b)` then `a.compareTo(b) == 0` (recommended but not enforced)
+- Contract: compareTo must be transitive, consistent, and reflexive (same as equals contract)
+- Compare fields in order of importance; stop at first difference for efficiency
+- Use field.compareTo() for objects, Comparator.compare() for primitives, or Integer.compare() for primitive wrappers
+- For multiple fields: return immediately upon first non-zero comparison, don't sum results
+- Use Comparator.comparing() for complex/chained comparisons with better readability
+- Don't subtract primitive values: `a.age - b.age` can overflow; use Integer.compare(a.age, b.age) instead
+- Implement Comparable only for classes with a clear, natural ordering; use Comparator for alternative orderings
 
 ### 15. Item Title
 - 
