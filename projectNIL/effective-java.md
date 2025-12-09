@@ -164,8 +164,18 @@ Update this document as you read through the book to maintain a project-specific
 - Don't subtract primitive values: `a.age - b.age` can overflow; use Integer.compare(a.age, b.age) instead
 - Implement Comparable only for classes with a clear, natural ordering; use Comparator for alternative orderings
 
-### 15. Item Title
-- 
+### 15. Minimize the accessibility of classes and members
+- Use the principle of least privilege: make classes and members as private as possible
+- Access modifiers in Java: private < package-private < protected < public
+- Private: accessible only within the class; most restrictive, preferred default
+- Package-private: accessible within same package; used for internal implementation details
+- Protected: accessible within package + subclasses; only use when inheritance is intended
+- Public: part of public API; once public, must be maintained for backwards compatibility
+- Make fields private and expose through public methods if access is needed
+- Mutable public fields are dangerous; prefer immutable public fields or accessor methods
+- Top-level classes should rarely be public; most should be package-private
+- Minimize the public API; it represents a contract you must maintain forever
+- Classes used internally should be package-private to allow internal refactoring without affecting clients
 
 ### 16. Item Title
 - 
