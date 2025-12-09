@@ -16,8 +16,13 @@ Update this document as you read through the book to maintain a project-specific
 
 ## Items
 
-### 1. Item Title
-- 
+### 1. Consider static factory methods instead of constructors
+- Provides descriptive names (e.g., `BigInteger.probablePrime()` vs `new BigInteger(...)`)
+- Can return subclasses or existing cached instances, reducing object creation
+- Not required to create a new object each time they're invoked
+- Returned objects don't need to exist at the time the class is written
+- Reduces verbosity compared to requiring public constructors
+- Consider naming conventions: `from`, `of`, `valueOf`, `instance`, `getInstance`, `create`, `newInstance`
 
 ### 2. Item Title
 - 
