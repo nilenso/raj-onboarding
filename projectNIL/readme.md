@@ -1,9 +1,12 @@
-
 # Project NIL
 
  - towards a pedagogical CRUD to pick up on tooling and best practices
 
 ## Ideation (reverse chronological log)
+
+### Domain Modelling
+
+ - modeling in [domain.org](./domain.org)
 
 ### Function as a Service
 

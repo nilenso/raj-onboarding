@@ -3,9 +3,20 @@
 [![CI - dev](https://github.com/nilenso/raj-onboarding/actions/workflows/ci-dev.yml/badge.svg?branch=dev)](https://github.com/nilenso/raj-onboarding/actions/workflows/ci-dev.yml)
 [![CI/CD - main](https://github.com/nilenso/raj-onboarding/actions/workflows/ci-cd-main.yml/badge.svg?branch=main)](https://github.com/nilenso/raj-onboarding/actions/workflows/ci-cd-main.yml)
 
+### Agentic Tooling Disclaimer
+
+ - LLMs were explicitly employed (write access) for some portions of the project: 
+   - Documentation
+     - diagramming DSLs (mermaid/plantuml)
+     - minor documentation commentary over code when necessary 
+     - commit messages (conventional commits style) : tag lines and descriptions
+   - CI/CD setup
+   
+ - Apart from the above, they were granted read-only access to the repository to help me discuss the domain-oriented aspects (SWE Wisdom, writing effective Java, Design, Architecture) I wish to improve my grasp of: the source code (other than deterministically auto-generated (`gradle init` for instance) files) is hand-crafted and have marked any exceptions (if any) in [LLM generated]  fences. 
+
 ## Overview 
 
-### Journal
+### [Journal](journal)
  - commentary upon dailies
 
 ### [projectNIL](projectNIL/readme.md) : 
@@ -15,11 +26,11 @@
 
 ### Three-Branch Model
 
-| Branch | Purpose | CI | CD | Guidelines |
-|--------|---------|----|----|------------|
-| `main` | Production branch | ✅ Yes | ✅ Yes | Merged from `dev` only. Full CI/CD pipeline runs. |
-| `dev` | Development/integration branch | ✅ Yes | ❌ No | Main development branch. CI runs on all commits. |
-| `journal` | Personal documentation & logs | ❌ No | ❌ No | Branch for onboarding logs and commentary. **All commits MUST include `[skip ci]` in the message.** |
+| Branch    | Purpose                        | CI     | CD     | Guidelines                                                                                          |
+|-----------|--------------------------------|--------|--------|-----------------------------------------------------------------------------------------------------|
+| `main`    | Production branch              | ✅ Yes | ✅ Yes | Merged from `dev` only. Full CI/CD pipeline runs.                                                   |
+| `dev`     | Development/integration branch | ✅ Yes | ❌ No  | Main development branch. CI runs on all commits.                                                    |
+| `journal` | Personal documentation & logs  | ❌ No  | ❌ No  | Branch for onboarding logs and commentary. **All commits MUST include `[skip ci]` in the message.** |
 
 ### Important Guidelines
 
