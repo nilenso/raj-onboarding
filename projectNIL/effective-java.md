@@ -42,8 +42,14 @@ Update this document as you read through the book to maintain a project-specific
 - Enum approach provides serialization "for free" and guarantees singleton property even under reflection/deserialization
 - Avoid singletons when possible; dependency injection is often a better alternative for testability
 
-### 4. Item Title
-- 
+### 4. Enforce non-instantiability with a private constructor
+- Use for utility classes that contain only static methods and fields (e.g., `java.util.Collections`, `java.lang.Math`)
+- Make the constructor private to prevent instantiation; Java will provide a default public no-arg constructor if you don't
+- Add a throw statement in the constructor to prevent instantiation even via reflection: `throw new AssertionError("Cannot instantiate utility class")`
+- Document the non-instantiability in a comment explaining the class is a namespace for static utilities
+- This pattern clarifies intent and prevents accidental instantiation by users of the class
+- Prevents subclassing as a side effect (subclass constructor must call `super()` which will throw)
+- Ideal for classes like `Math`, `Arrays`, `Collections`, `Objects` that group related static methods
 
 ### 5. Item Title
 - 
