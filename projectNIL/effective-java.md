@@ -115,8 +115,17 @@ Update this document as you read through the book to maintain a project-specific
 - Don't try to make equals "smarter" than necessary; stick to value comparison for the type
 - Override equals only when necessary; if value semantics aren't meaningful for your class, don't override it
 
-### 11. Item Title
-- 
+### 11. Always override hashCode when you override equals
+- If two objects are equal according to `equals()`, they MUST have the same hash code
+- Violating this breaks hash-based collections: HashMap, HashSet, Hashtable
+- Hash code doesn't need to be unique; many objects can have the same hash code
+- Use same fields in hashCode() that you use in equals() for consistency
+- Simple formula: multiply field hash codes by a prime (e.g., 31): `result = 31 * result + field.hashCode()`
+- For primitive fields: use wrapper class hashCode (e.g., Integer.hashCode(int), Long.hashCode(long))
+- For object fields: use Objects.hashCode(field) to handle null safely
+- For arrays: use Arrays.hashCode() or Objects.hash() for multiple fields
+- Objects.hash(field1, field2, ...) provides convenient varargs approach but slower (due to autoboxing)
+- Cache hashCode if expensive to compute and object is immutable; mark field transient if serializing
 
 ### 12. Item Title
 - 
