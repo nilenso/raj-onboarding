@@ -20,7 +20,7 @@
  - finalized Function as a Service 
  - soon going to start pairing with folks
 
-* Effective Java
+* Effective Java [PRIORITY 0]
   - reading with Haiku 4.5 as a learning partner
   - covered items 1-20 with detailed discussions
   - indexing book items in [effective-java.md](../projectNIL/effective-java.md) for future reference
