@@ -92,8 +92,16 @@ Update this document as you read through the book to maintain a project-specific
 - For resource management, prefer explicit `close()` methods called from try-finally or try-with-resources
 - Objects that hold native resources should implement `AutoCloseable` interface for proper cleanup
 
-### 9. Item Title
-- 
+### 9. Prefer try-with-resources to try-finally
+- try-with-resources (Java 7+) automatically closes resources implementing `AutoCloseable`
+- Cleaner and more readable than try-finally; eliminates need for explicit `close()` calls
+- Suppressed exceptions: if resource.close() throws while handling another exception, it's automatically suppressed (accessible via `getSuppressed()`)
+- try-finally can mask exceptions: if both try block and finally throw, finally's exception replaces try's (context is lost)
+- Multiple resources can be managed in single try-with-resources declaration (semicolon separated)
+- Resource initialization happens in try statement; resource goes out of scope and closes automatically
+- Even if exception occurs, resources are guaranteed to close (including cleanup exceptions)
+- Backwards compatible pattern: any resource implementing `AutoCloseable` works with try-with-resources
+- Rarely need try-finally for resource cleanup anymore; use only for non-resource cleanup logic
 
 ### 10. Item Title
 - 
