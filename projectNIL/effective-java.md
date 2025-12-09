@@ -201,8 +201,16 @@ Update this document as you read through the book to maintain a project-specific
 - Disadvantage of immutability: need new object for each state change (create builder for multi-step construction)
 - Performance: immutable objects can be pooled/cached; garbage collection is simpler for short-lived objects
 
-### 18. Item Title
-- 
+### 18. Favor composition over inheritance
+- Inheritance violates encapsulation; subclass depends on superclass implementation details
+- "Fragile base class problem": changes to superclass can break subclasses unexpectedly
+- Inheritance is appropriate only when subclass is truly a subtype of superclass (is-a relationship)
+- Use composition (has-a) for most cases: wrap inner object, delegate to it, provide new API
+- Composition more flexible: can change wrapped object at runtime; inheritance is static
+- Forwarding: delegate method calls to wrapped object; decorator/wrapper pattern
+- Document the self-use of inherited methods; if subclass overrides a method that calls itself, subclass may break
+- Design for inheritance or prohibit it: provide detailed documentation of internal method dependencies
+- Prefer interfaces to abstract classes for defining contracts; interfaces allow composition + implementation reuse
 
 ### 19. Item Title
 - 
