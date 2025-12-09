@@ -139,8 +139,17 @@ Update this document as you read through the book to maintain a project-specific
 - Use IDE or Lombok to generate `toString()` to avoid missing fields
 - Override `toString()` makes logging, debugging, and error messages much more informative
 
-### 13. Item Title
-- 
+### 13. Override clone judiciously
+- `Cloneable` interface is problematic; it doesn't declare `clone()` method but signals intent via marker
+- Implementing `Cloneable` and calling `super.clone()` returns a shallow copy of the object
+- Shallow copy means: primitive fields are copied, object field references are NOT copied (both point to same object)
+- Override `clone()` only if you truly need object copying; prefer copy constructor or copy factory instead
+- If overriding clone, call `super.clone()` first, then make defensive copies of mutable fields
+- For arrays: use `array.clone()` to create independent copy of the array
+- `clone()` throws `CloneNotSupportedException` (checked exception) even though it's typically unchecked in practice
+- Copy constructor or factory method is simpler, safer, and doesn't require implementing `Cloneable`
+- Example: `public Point(Point p) { this.x = p.x; this.y = p.y; }` instead of overriding clone()
+- Immutable classes don't need clone() since copies would be indistinguishable from originals
 
 ### 14. Item Title
 - 
