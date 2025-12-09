@@ -139,29 +139,102 @@ Update this document as you read through the book to maintain a project-specific
 - Use IDE or Lombok to generate `toString()` to avoid missing fields
 - Override `toString()` makes logging, debugging, and error messages much more informative
 
-### 13. Item Title
-- 
+### 13. Override clone judiciously
+- `Cloneable` interface is problematic; it doesn't declare `clone()` method but signals intent via marker
+- Implementing `Cloneable` and calling `super.clone()` returns a shallow copy of the object
+- Shallow copy means: primitive fields are copied, object field references are NOT copied (both point to same object)
+- Override `clone()` only if you truly need object copying; prefer copy constructor or copy factory instead
+- If overriding clone, call `super.clone()` first, then make defensive copies of mutable fields
+- For arrays: use `array.clone()` to create independent copy of the array
+- `clone()` throws `CloneNotSupportedException` (checked exception) even though it's typically unchecked in practice
+- Copy constructor or factory method is simpler, safer, and doesn't require implementing `Cloneable`
+- Example: `public Point(Point p) { this.x = p.x; this.y = p.y; }` instead of overriding clone()
+- Immutable classes don't need clone() since copies would be indistinguishable from originals
 
-### 14. Item Title
-- 
+### 14. Consider implementing Comparable
+- `Comparable<T>` interface defines natural ordering for objects; implement when natural order exists
+- Single method: `int compareTo(T o)` returns negative/zero/positive if this < o / == o / > o
+- Enables sorting, binary search, and use in sorted collections (TreeMap, TreeSet)
+- compareTo() must be consistent with equals(): if `a.equals(b)` then `a.compareTo(b) == 0` (recommended but not enforced)
+- Contract: compareTo must be transitive, consistent, and reflexive (same as equals contract)
+- Compare fields in order of importance; stop at first difference for efficiency
+- Use field.compareTo() for objects, Comparator.compare() for primitives, or Integer.compare() for primitive wrappers
+- For multiple fields: return immediately upon first non-zero comparison, don't sum results
+- Use Comparator.comparing() for complex/chained comparisons with better readability
+- Don't subtract primitive values: `a.age - b.age` can overflow; use Integer.compare(a.age, b.age) instead
+- Implement Comparable only for classes with a clear, natural ordering; use Comparator for alternative orderings
 
-### 15. Item Title
-- 
+### 15. Minimize the accessibility of classes and members
+- Use the principle of least privilege: make classes and members as private as possible
+- Access modifiers in Java: private < package-private < protected < public
+- Private: accessible only within the class; most restrictive, preferred default
+- Package-private: accessible within same package; used for internal implementation details
+- Protected: accessible within package + subclasses; only use when inheritance is intended
+- Public: part of public API; once public, must be maintained for backwards compatibility
+- Make fields private and expose through public methods if access is needed
+- Mutable public fields are dangerous; prefer immutable public fields or accessor methods
+- Top-level classes should rarely be public; most should be package-private
+- Minimize the public API; it represents a contract you must maintain forever
+- Classes used internally should be package-private to allow internal refactoring without affecting clients
 
-### 16. Item Title
-- 
+### 16. In public classes, use accessor methods, not public fields
+- Public fields provide no encapsulation; clients depend on internal representation
+- If you expose a field, you can never change its implementation without breaking clients
+- Accessor methods (getters/setters) allow validation, lazy initialization, and side effects
+- Immutable public fields are acceptable (field is `public static final` and value is truly immutable)
+- Mutable public fields are dangerous; even `public final` fields can be modified if they reference mutable objects
+- Private fields with public accessor methods enable refactoring without API changes
+- For package-private or private classes, public fields are acceptable (less important to hide implementation)
+- Consider whether you need both getter and setter; read-only fields need only getter
+- When adding validation to a setter, existing code still works but now enforced
+- Use `final` fields when appropriate to signal immutability; combine with private + accessor for public API
 
-### 17. Item Title
-- 
+### 17. Minimize mutability
+- Immutable objects are simpler, safer, and can be shared freely without defensive copying
+- Make classes immutable by default; provide mutable alternatives only when necessary
+- To create an immutable class: make fields final and private; don't provide mutators; ensure subclasses can't override
+- Make class final or use private constructor with factory to prevent subclassing
+- All fields should be final; if computed fields needed, cache them (always return same value)
+- Immutable objects are inherently thread-safe; no synchronization needed
+- Share immutable objects freely; no defensive copies required (String, Integer, etc. are reused)
+- BigDecimal mistake: provides mutable methods; avoid mutating in multi-threaded contexts
+- Disadvantage of immutability: need new object for each state change (create builder for multi-step construction)
+- Performance: immutable objects can be pooled/cached; garbage collection is simpler for short-lived objects
 
-### 18. Item Title
-- 
+### 18. Favor composition over inheritance
+- Inheritance violates encapsulation; subclass depends on superclass implementation details
+- "Fragile base class problem": changes to superclass can break subclasses unexpectedly
+- Inheritance is appropriate only when subclass is truly a subtype of superclass (is-a relationship)
+- Use composition (has-a) for most cases: wrap inner object, delegate to it, provide new API
+- Composition more flexible: can change wrapped object at runtime; inheritance is static
+- Forwarding: delegate method calls to wrapped object; decorator/wrapper pattern
+- Document the self-use of inherited methods; if subclass overrides a method that calls itself, subclass may break
+- Design for inheritance or prohibit it: provide detailed documentation of internal method dependencies
+- Prefer interfaces to abstract classes for defining contracts; interfaces allow composition + implementation reuse
 
-### 19. Item Title
-- 
+### 19. Design and document for inheritance, or else prohibit it
+- Classes open for extension must document their self-use: which methods call which other methods internally
+- Use `@implSpec` javadoc tag to document implementation contracts (how, not just what)
+- Protected methods and fields must be intentional; make class final if not designed for extension
+- Provide reasonable protected hooks for extension: protected constructors, protected utility methods
+- Never call overridable methods from constructors (subclass initialization may not be complete)
+- Similarly, avoid calling overridable methods during deserialization or clone()
+- Write test subclasses during development to verify extensibility works correctly
+- Document performance characteristics relevant to subclasses (time/space complexity)
+- Either design for inheritance explicitly or make class final to prevent accidental misuse
+- Inheritance is costly: once a class is extended, you're committed to its internal implementation
 
-### 20. Item Title
-- 
+### 20. Prefer interfaces to abstract classes
+- Interfaces support multiple inheritance (implement multiple interfaces); classes allow only single inheritance
+- Interfaces define types; a class can implement any interface without being a subclass
+- Existing classes can be retrofitted to implement new interfaces (don't need to extend superclass)
+- Interfaces are perfect for defining mixins: optional functionality added to existing classes
+- Interfaces can serve as service provider frameworks: define service interface, implementation, and registry
+- Java 8+: interfaces can have default methods (provide implementation); classes not limited to abstract patterns
+- Skeletal implementation classes: provide abstract class with default implementations, paired with interface
+- Example: Collection interface + AbstractCollection skeletal class for convenience
+- Abstract classes better only for: defining state variables (interfaces can't have instance fields)
+- Combining both: interface for contract + abstract class as convenience (minimal boilerplate for implementers)
 
 ### 21. Item Title
 - 
