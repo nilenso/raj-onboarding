@@ -189,8 +189,17 @@ Update this document as you read through the book to maintain a project-specific
 - When adding validation to a setter, existing code still works but now enforced
 - Use `final` fields when appropriate to signal immutability; combine with private + accessor for public API
 
-### 17. Item Title
-- 
+### 17. Minimize mutability
+- Immutable objects are simpler, safer, and can be shared freely without defensive copying
+- Make classes immutable by default; provide mutable alternatives only when necessary
+- To create an immutable class: make fields final and private; don't provide mutators; ensure subclasses can't override
+- Make class final or use private constructor with factory to prevent subclassing
+- All fields should be final; if computed fields needed, cache them (always return same value)
+- Immutable objects are inherently thread-safe; no synchronization needed
+- Share immutable objects freely; no defensive copies required (String, Integer, etc. are reused)
+- BigDecimal mistake: provides mutable methods; avoid mutating in multi-threaded contexts
+- Disadvantage of immutability: need new object for each state change (create builder for multi-step construction)
+- Performance: immutable objects can be pooled/cached; garbage collection is simpler for short-lived objects
 
 ### 18. Item Title
 - 
