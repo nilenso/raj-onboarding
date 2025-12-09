@@ -224,8 +224,17 @@ Update this document as you read through the book to maintain a project-specific
 - Either design for inheritance explicitly or make class final to prevent accidental misuse
 - Inheritance is costly: once a class is extended, you're committed to its internal implementation
 
-### 20. Item Title
-- 
+### 20. Prefer interfaces to abstract classes
+- Interfaces support multiple inheritance (implement multiple interfaces); classes allow only single inheritance
+- Interfaces define types; a class can implement any interface without being a subclass
+- Existing classes can be retrofitted to implement new interfaces (don't need to extend superclass)
+- Interfaces are perfect for defining mixins: optional functionality added to existing classes
+- Interfaces can serve as service provider frameworks: define service interface, implementation, and registry
+- Java 8+: interfaces can have default methods (provide implementation); classes not limited to abstract patterns
+- Skeletal implementation classes: provide abstract class with default implementations, paired with interface
+- Example: Collection interface + AbstractCollection skeletal class for convenience
+- Abstract classes better only for: defining state variables (interfaces can't have instance fields)
+- Combining both: interface for contract + abstract class as convenience (minimal boilerplate for implementers)
 
 ### 21. Item Title
 - 
