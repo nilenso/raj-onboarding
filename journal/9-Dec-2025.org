@@ -19,3 +19,7 @@
  - documenting domain modeling in [domain.org](../projectNIL/domain.org)
  - finalized Function as a Service 
  - soon going to start pairing with folks
+
+* Effective Java
+ - reading with Haiku 4.5 as a learning partner
+ - indexing items for future reference into [effective-java.md](../projectNIL/effective-java.md)
