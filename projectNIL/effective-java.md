@@ -103,8 +103,17 @@ Update this document as you read through the book to maintain a project-specific
 - Backwards compatible pattern: any resource implementing `AutoCloseable` works with try-with-resources
 - Rarely need try-finally for resource cleanup anymore; use only for non-resource cleanup logic
 
-### 10. Item Title
-- 
+### 10. Obey the general contract when overriding equals
+- Reflexive: `x.equals(x)` must be true
+- Symmetric: if `x.equals(y)` then `y.equals(x)` must be true
+- Transitive: if `x.equals(y)` and `y.equals(z)` then `x.equals(z)` must be true
+- Consistent: repeated calls to `equals()` return the same result (if object hasn't changed)
+- For null: `x.equals(null)` must return false (not throw NullPointerException)
+- Use `instanceof` check first to verify object type and handle null simultaneously
+- Compare primitive fields with `==`; compare object fields recursively with `equals()`; compare float/double with `Float.compare()` or `Double.compare()` to handle NaN
+- Override `hashCode()` whenever you override `equals()` (equal objects must have equal hash codes)
+- Don't try to make equals "smarter" than necessary; stick to value comparison for the type
+- Override equals only when necessary; if value semantics aren't meaningful for your class, don't override it
 
 ### 11. Item Title
 - 
