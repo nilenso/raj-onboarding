@@ -6,7 +6,7 @@
   - indexing book items in [effective-java.md](../projectNIL/effective-java.md) for future reference
 
 * Agentic Tooling Disclaimer
- - from the main [readme]()
+ - from the main readme
 #+begin_src markdown
 ### Agentic Tooling Disclaimer
 
