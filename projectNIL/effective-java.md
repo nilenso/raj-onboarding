@@ -33,8 +33,14 @@ Update this document as you read through the book to maintain a project-specific
 - Consider making the builder an inner class or a separate class depending on usage patterns
 - Builder pattern works well with immutable objects (combined with private constructor)
 
-### 3. Item Title
-- 
+### 3. Enforce the singleton property with a private constructor or an enum type
+- A singleton is a class that is instantiated exactly once; use sparingly as it complicates testing
+- Make the constructor private to prevent instantiation from outside the class
+- Public static final field approach: `public static final Elvis INSTANCE = new Elvis()` (simple, but vulnerable to reflection)
+- Static factory method approach: `private static final Elvis INSTANCE = new Elvis(); public static Elvis getInstance()` (more flexible, allows lazy initialization)
+- Enum-based singleton: `public enum Elvis { INSTANCE; ... }` (preferred in modern Java; handles serialization and reflection automatically)
+- Enum approach provides serialization "for free" and guarantees singleton property even under reflection/deserialization
+- Avoid singletons when possible; dependency injection is often a better alternative for testability
 
 ### 4. Item Title
 - 
