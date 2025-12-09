@@ -61,8 +61,14 @@ Update this document as you read through the book to maintain a project-specific
 - Consider a dependency injection framework (Spring, Guice) for large applications with many dependencies
 - Factory pattern can be passed as dependency for deferred or conditional resource creation
 
-### 6. Item Title
-- 
+### 6. Avoid creating unnecessary objects
+- Reuse immutable objects when possible (e.g., `"hello"` string literals are interned, not recreated)
+- Use static initializers for expensive-to-create objects that are used repeatedly: `private static final Pattern PATTERN = Pattern.compile("regex")`
+- Prefer primitives to autoboxed types when performance matters; boxing creates new objects
+- Use object pools cautiously (modern JVMs optimize well; pools often add complexity without benefit)
+- Be aware of hidden object creation in common operations (e.g., `String.substring()` used to create copies; use carefully)
+- Lazy initialization can defer expensive object creation, but adds complexity; use only when initialization is truly expensive
+- Profile before optimizing; don't prematurely optimize based on assumptions about object creation
 
 ### 7. Item Title
 - 
