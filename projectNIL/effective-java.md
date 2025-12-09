@@ -177,8 +177,17 @@ Update this document as you read through the book to maintain a project-specific
 - Minimize the public API; it represents a contract you must maintain forever
 - Classes used internally should be package-private to allow internal refactoring without affecting clients
 
-### 16. Item Title
-- 
+### 16. In public classes, use accessor methods, not public fields
+- Public fields provide no encapsulation; clients depend on internal representation
+- If you expose a field, you can never change its implementation without breaking clients
+- Accessor methods (getters/setters) allow validation, lazy initialization, and side effects
+- Immutable public fields are acceptable (field is `public static final` and value is truly immutable)
+- Mutable public fields are dangerous; even `public final` fields can be modified if they reference mutable objects
+- Private fields with public accessor methods enable refactoring without API changes
+- For package-private or private classes, public fields are acceptable (less important to hide implementation)
+- Consider whether you need both getter and setter; read-only fields need only getter
+- When adding validation to a setter, existing code still works but now enforced
+- Use `final` fields when appropriate to signal immutability; combine with private + accessor for public API
 
 ### 17. Item Title
 - 
