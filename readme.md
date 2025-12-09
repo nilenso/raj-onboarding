@@ -19,8 +19,11 @@
 ### [Journal](journal)
  - commentary upon dailies
 
-### [projectNIL](projectNIL/readme.md) : 
+### [projectNIL](projectNIL/readme.md) 
  - onboarding project towards picking up the tech stack
+
+### [Effective Java](projectNIL/effective-java.md)
+ - documenting an index into the items from the book for quick reference during implementation of project NIL
 
 ## Workflow & Branching Strategy
 
