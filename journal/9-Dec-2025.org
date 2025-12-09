@@ -1,5 +1,10 @@
 #+title: 9 Dec 2025
 
+* Effective Java [PRIORITY 0]
+  - reading with Haiku 4.5 as a learning partner
+  - covered items 1-20 with detailed discussions
+  - indexing book items in [effective-java.md](../projectNIL/effective-java.md) for future reference
+
 * Agentic Tooling Disclaimer
  - from the main [readme]()
 #+begin_src markdown
@@ -16,10 +21,6 @@
 #+end_src
 
 * Project Nil
- - documenting domain modeling in [domain.org](../projectNIL/domain.org)
- - finalized Function as a Service 
- - soon going to start pairing with folks
-
-* Effective Java
- - reading with Haiku 4.5 as a learning partner
- - indexing items for future reference into [effective-java.md](../projectNIL/effective-java.md)
+  - documenting domain modeling in [domain.org](../projectNIL/domain.org)
+  - finalized Function as a Service 
+  - soon going to start pairing with folks
