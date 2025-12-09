@@ -127,8 +127,17 @@ Update this document as you read through the book to maintain a project-specific
 - Objects.hash(field1, field2, ...) provides convenient varargs approach but slower (due to autoboxing)
 - Cache hashCode if expensive to compute and object is immutable; mark field transient if serializing
 
-### 12. Item Title
-- 
+### 12. Always override toString
+- Default `Object.toString()` is nearly useless; returns class name + hash code (e.g., `Point@5f2a8da1`)
+- Provide a meaningful string representation that makes debugging easier
+- Include all significant fields in the representation so developers can understand the object state
+- Document the format of `toString()` in javadoc if it has a specific structure (helps parsing/backwards compatibility)
+- Decide whether to use a spec-like format or informal format; be consistent with decision
+- Example good formats: `Point{x=1, y=2}` or `User(name=John, age=30, email=john@example.com)`
+- Never include sensitive information (passwords, API keys, SSNs) in toString output
+- `toString()` should never throw exceptions; handle nulls and edge cases gracefully
+- Use IDE or Lombok to generate `toString()` to avoid missing fields
+- Override `toString()` makes logging, debugging, and error messages much more informative
 
 ### 13. Item Title
 - 
