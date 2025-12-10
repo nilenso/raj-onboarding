@@ -236,8 +236,18 @@ Update this document as you read through the book to maintain a project-specific
 - Abstract classes better only for: defining state variables (interfaces can't have instance fields)
 - Combining both: interface for contract + abstract class as convenience (minimal boilerplate for implementers)
 
-### 21. Item Title
-- 
+### 21. Design interfaces for posterity
+- Interfaces are part of your public contract; breaking changes affect all implementations across codebase and clients
+- Java 8+ default methods allow adding methods to interfaces without breaking existing implementations
+- Default methods require careful design: they must have sensible default behavior that doesn't break contracts
+- Document default methods thoroughly; implementers may not override them and depend on defaults
+- Never add default methods that conflict with Object methods (equals, hashCode, toString)
+- Interface evolution: use @Deprecated annotations with replacement guidance when adding or changing behavior
+- Consider "sealed" interfaces (Java 15+): restrict which classes can implement, enabling safer evolution
+- Avoid concrete return types in interface methods; use supertypes to allow implementation flexibility
+- Design for common use cases; rare edge cases handled by concrete implementations or utilities
+- Keep interfaces focused and cohesive; don't create "god interfaces" that do too many things
+- Prefer smaller, composable interfaces over large monolithic ones (Single Responsibility Principle)
 
 ### 22. Item Title
 - 
