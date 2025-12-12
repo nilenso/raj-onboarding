@@ -10,6 +10,7 @@ Towards a pedagogical CRUD to pick up on tooling and best practices.
 | [project-management.md](./project-management.md) | Issue types, Kanban workflow, GitHub CLI usage |
 | [effective-java.md](./effective-java.md) | Effective Java best practices reference |
 | [docs/domain.md](./docs/domain.md) | Domain model, entities, ERD, user stories |
+| [docs/toThink.md](./docs/toThink.md) | Open questions and future considerations |
 
 ### External Resources
 
