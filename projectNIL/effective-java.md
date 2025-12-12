@@ -822,65 +822,226 @@ Update this document as you read through the book to maintain a project-specific
 - **Exceptions are for errors**: precondition violation, resource exhaustion, constraints broken — use appropriately
 - **Reserved for exceptional**: not high-frequency events; use boolean return for common success/failure cases
 
-### 70. Item Title
-- 
+### 70. Use Checked Exceptions for Recoverable Conditions and Runtime Exceptions for Programming Errors
+- **Checked exceptions**: caller must handle or declare; signals recoverable condition (e.g., `FileNotFoundException`)
+- **Runtime exceptions**: indicate programming error (null dereference, bad argument); caller usually can't recover
+- **IOException vs NullPointerException**: IOException checked (file might not exist, try again); NPE unchecked (bug in code)
+- **Throw checked if recoverable**: caller can retry, use fallback, or gracefully degrade
+- **Throw unchecked if not recoverable**: precondition violated, impossible state; caller shouldn't catch
+- **Avoid meaningless catch blocks**: don't catch checked exceptions just to rethrow or log; let propagate if unrecoverable
+- **Throwable hierarchy**: `Exception` (checked) and `RuntimeException` (unchecked) are direct children of `Throwable`
+- **If unsure, prefer unchecked**: easier to change unchecked → checked later; harder to remove checked requirement
 
-### 71. Item Title
-- 
+### 71. Avoid Unnecessary Use of Checked Exceptions
+- **Checked exception burden**: forces caller to handle with try-catch or declare throws; clutters API
+- **Anti-pattern**: wrapping all exceptions in checked exceptions "just in case"; makes API harder to use
+- **Cost/benefit analysis**: checked exception only worth cost if caller can meaningfully react
+- **Overuse example**: `readFile()` throws `FileNotFoundException`; most callers can't recover, just propagates
+- **Better approach**: return empty result, use Optional, or throw unchecked exception instead
+- **Single method throwing many checked**: sign that API is poorly designed; consider refactoring
+- **Streams avoid checked exceptions**: using checked exceptions with streams (`map()`, `filter()`) is cumbersome
+- **Pragmatism**: unchecked exceptions for unlikely errors; checked only when recovery is realistic
 
-### 72. Item Title
-- 
+### 72. Favor the Use of Standard Exceptions
+- **Reuse standard exceptions**: `IllegalArgumentException`, `IllegalStateException`, `NullPointerException`, `IndexOutOfBoundsException`, etc.
+- **Benefits of standard exceptions**: familiar to all Java programmers; reduces code duplication; consistent behavior
+- **IllegalArgumentException**: parameter value improper but legal type (e.g., negative size when positive required)
+- **IllegalStateException**: method called at wrong time (e.g., close already called on stream)
+- **NullPointerException**: null argument where null forbidden; consider checking preconditions and throwing explicitly
+- **UnsupportedOperationException**: operation not supported (e.g., unmodifiable collection attempting modification)
+- **ConcurrentModificationException**: concurrent modification detected during iteration
+- **Don't create custom exceptions unless**: you want to catch and handle separately; provide useful context
+- **Benefit of standards**: less chance of accidental misuse; well-documented, expected behavior
 
-### 73. Item Title
-- 
+### 73. Throw Exceptions Appropriate to the Abstraction
+- **Exception translation**: catch low-level exceptions and throw high-level exceptions matching API abstraction
+- **Example**: `List.get()` throws `IndexOutOfBoundsException`, not `ArrayIndexOutOfBoundsException` (hides array implementation)
+- **Caller perspective**: exception should relate to method contract, not internal details
+- **Bad example**: method throws `SQLException` when it's a database operation detail; throw domain exception instead
+- **Exception chaining**: pass cause to constructor — `new HighLevelException("context", lowLevelException)` preserves stack trace
+- **getCause()**: use to get underlying exception; useful for debugging without breaking abstraction
+- **Don't suppress**: never catch and ignore exceptions silently; if you catch, handle meaningfully or rethrow
+- **Abstraction layers**: each layer translates exceptions to its own level; caller shouldn't know about lower layers
 
-### 74. Item Title
-- 
+### 74. Document All Exceptions Thrown by Each Method
+- **Use @throws Javadoc tag**: document every checked and unchecked exception thrown
+- **Unchecked exceptions too**: document `NullPointerException`, `IllegalArgumentException`, etc. in Javadoc
+- **Preconditions in docs**: state what must be true for method to succeed; what exceptions if violated
+- **Avoid catch-all descriptions**: don't say "may throw Exception"; be specific about each exception type
+- **Explain recovery**: mention what caller can do if exception thrown (retry, fallback, etc.)
+- **Example format**: `@throws IndexOutOfBoundsException if index is out of range [0, size())`
+- **Completeness**: if method overridden, document inherited exceptions plus any new ones
+- **Don't document impossible exceptions**: don't document exceptions that can't actually be thrown
+- **Tool support**: IDE and javadoc tools use @throws documentation; callers rely on it
 
-### 75. Item Title
-- 
+### 75. Include Failure-Capture Information in Detail Messages
+- **Exception message should aid diagnosis**: include values that contributed to failure; not just "Invalid argument"
+- **Bad message**: `throw new IllegalArgumentException("Invalid age");` — doesn't help debug
+- **Good message**: `throw new IllegalArgumentException("age must be > 0, was: " + age);` — shows actual value
+- **Include bounds**: for range violations, include min, max, and actual value — `"size (" + size + ") must be positive"`
+- **Object state matters**: if state affects exception, include relevant state in message
+- **Don't expose secrets**: avoid including passwords, API keys, or sensitive data in exception messages
+- **Make messages parseable**: avoid vague terms; be specific and measurable
+- **Chaining context**: when rethrowing as different exception type, add context to constructor message
 
-### 76. Item Title
-- 
+### 76. Strive for Failure Atomicity
+- **Atomicity on failure**: method should leave object in same state if exception thrown; as if call never happened
+- **Validate preconditions first**: check arguments before modifying object state; fail early before changes
+- **Example**: `List.add()` should validate bounds before modifying; exception means list unchanged
+- **Ordering matters**: perform reads, validation first; mutations and side effects last
+- **Copy-modify-swap pattern**: work on copy, swap in if successful; revert to original if error
+- **Immutable objects help**: creating immutable object means either fully initialized or not created
+- **Thread safety aspect**: atomicity on failure easier to reason about in concurrent scenarios
+- **Caveat**: not always achievable; network errors, out-of-memory; document what's guaranteed
 
-### 77. Item Title
-- 
+### 77. Don't Ignore Exceptions
+- **Empty catch blocks are dangerous**: silently swallowing exceptions hides bugs; exception exists for a reason
+- **Anti-pattern**: `try { ... } catch (Exception e) { }` — problem disappears from stack trace
+- **At minimum, log it**: `catch (Exception e) { logger.error("...", e); }` — preserves evidence
+- **If truly ignorable**: document why in comment — "Safe to ignore; cleanup, no side effects"
+- **Example**: closing `Closeable` in finally might throw; safe to ignore if already closing
+- **Consider alternatives**: return empty result, set default value, or propagate exception upstream
+- **Testing**: in unit tests, if exception is expected, use `@Test(expected = ...)` or `assertThrows()`
+- **Recovery vs suppression**: if unrecoverable, let propagate; don't hide failure from caller
 
-### 78. Item Title
-- 
+### 78. Synchronize Access to Shared Mutable Data
+- **Race condition if unsynchronized**: multiple threads modifying shared state; reads/writes can interleave; unpredictable
+- **synchronized block/method**: ensures mutual exclusion; only one thread at a time in critical section
+- **Visibility**: synchronization also ensures visibility of changes across threads (memory barrier)
+- **Shared mutable data rule**: every access must be synchronized if any thread modifies; both read and write
+- **volatile alternative**: for simple flag flips, `volatile boolean` works; guarantees visibility without lock
+- **Atomics for numbers**: `AtomicInteger`, `AtomicLong` for thread-safe counters; lock-free
+- **Immutable better than synchronized**: if possible, make objects immutable; no synchronization needed
+- **Document synchronization policy**: state which fields are synchronized, which lock protects them
 
-### 79. Item Title
-- 
+### 79. Avoid Excessive Synchronization
+- **Lock contention**: too much synchronization reduces concurrency; threads wait for locks instead of working
+- **Holding locks too long**: avoid expensive operations inside synchronized block; release quickly
+- **Synchronizing method body**: better to synchronize only critical section with lock object
+- **Calls during sync are dangerous**: if synchronized method calls client code, deadlock or corruption risk
+- **Alien method problem**: calling external/unknown code while holding lock; can't control what it does
+- **Solution**: copy shared data, release lock, then operate on copy; then synchronize and update original
+- **CopyOnWriteArrayList example**: immutable copy for reads; synchronize only for writes; good when reads >> writes
+- **Performance profile first**: synchronization overhead real; measure contention; don't synchronize "just in case"
+- **Immutability again**: if possible, eliminate need for synchronization entirely
 
-### 80. Item Title
-- 
+### 80. Prefer Executors, Tasks, and Streams to Threads
+- **Don't create threads directly**: `new Thread(...)` is low-level; prefer `ExecutorService` (thread pools)
+- **ExecutorService benefits**: reuses threads, manages queue, scales workload; avoids thread creation overhead
+- **Example**: `Executors.newFixedThreadPool(n)` creates n-thread pool; submit `Runnable` or `Callable` tasks
+- **Streams for parallel work**: `stream().parallel()` manages threading; nicer syntax than managing threads
+- **ForkJoinPool**: `ExecutorService` subclass for divide-and-conquer; used by `parallelStream()`
+- **java.util.concurrent**: provides high-level utilities (`CountDownLatch`, `CyclicBarrier`, etc.); build on these
+- **Thread creation expensive**: spawning new thread slower and memory-intensive than reusing pooled threads
+- **Complexity hidden**: Executors/Streams hide synchronization, scheduling complexity; less bug-prone
+- **Graceful shutdown**: `shutdownNow()`, `awaitTermination()` for clean shutdown; manual threads harder to manage
 
-### 81. Item Title
-- 
+### 81. Prefer Concurrency Utilities to Wait and Notify
+- **Avoid wait()/notify()**: low-level, error-prone, hard to use correctly (spurious wakeups, etc.)
+- **java.util.concurrent utilities**: higher-level abstractions for common patterns; less code, fewer bugs
+- **CountDownLatch**: one-time synchronization; wait for n threads to finish — `latch.countDown()`, `latch.await()`
+- **CyclicBarrier**: reusable barrier; threads wait for all to reach point — parties can repeat
+- **Semaphore**: permits-based; acquire/release; useful for resource pools and rate limiting
+- **BlockingQueue**: thread-safe queue with blocking put/take; producer-consumer pattern built-in
+- **Exchanger**: threads exchange values; synchronizes at meeting point
+- **When you must use wait/notify**: document pattern clearly; always use in loop with condition (spurious wakeups)
+- **Strategy**: if task fits pattern (latch, barrier, queue, etc.), use that instead of raw wait/notify
 
-### 82. Item Title
-- 
+### 82. Document Thread Safety
+- **Thread safety level must be documented**: callers need to know if safe for concurrent access or single-threaded only
+- **Not-thread-safe**: method/class must be externally synchronized; use synchronized block around calls
+- **Thread-safe**: method/class safe for concurrent calls; no external synchronization needed
+- **Conditionally thread-safe**: some sequences are thread-safe, others require external sync (e.g., `Iterator`)
+- **Immutable**: objects immutable are inherently thread-safe; no synchronization needed
+- **Effectively immutable**: object not thread-safe, but once published, not modified; can be shared
+- **Javadoc @ThreadSafe annotation**: document level clearly; don't assume readers guess correctly
+- **Example**: `Collections.synchronizedList()` is thread-safe for all ops; `ArrayList` is not
+- **Deadlock documentation**: document if specific lock ordering required to avoid deadlock
 
-### 83. Item Title
-- 
+### 83. Use Lazy Initialization Judiciously
+- **Lazy initialization delays init until first use**: can improve startup time if field rarely used
+- **Adds complexity**: synchronization needed if multi-threaded; null checks everywhere; harder to debug
+- **Profile first**: don't lazy-init "just in case"; measure startup impact; might be negligible
+- **Double-checked locking pitfall**: naive attempt `if (field == null) synchronized { if (field == null) ... }` broken
+- **Volatile + double-checked**: `private volatile Field field;` works for primitives/objects; still complex
+- **Holder class pattern**: inner class initialized on first access — `return LazyHolder.field;` clean, no sync
+- **Supplier/Callable pattern**: wrap in lambda — `field = () -> expensiveInit();` defer until `.get()` called
+- **Cost-benefit**: startup cost rarely matters; only optimize if profiling proves it's bottleneck
+- **Readability trade-off**: simpler eager init if field always needed; defer complexity only when justified
 
-### 84. Item Title
-- 
+### 84. Don't Depend on the Thread Scheduler
+- **Scheduling is OS-dependent**: JVM doesn't guarantee thread execution order; varies by platform/OS
+- **Thread.yield() not reliable**: tells scheduler to pause, but might have no effect; don't use for synchronization
+- **Thread.sleep() hackish**: never use sleep to control thread timing; use proper synchronization primitives
+- **Busy-wait is wasteful**: spinning loop checking flag wastes CPU; use `wait()`, `await()`, or `BlockingQueue`
+- **Portable code assumption**: code working on one system might fail on another due to scheduling differences
+- **Priority manipulation weak**: `setPriority()` not reliable across platforms; most code should use normal priority
+- **Starvation risk**: high-priority threads can starve others; avoid relying on priority-based execution
+- **Robust design**: code should work regardless of scheduler behavior; don't assume thread execution timing
+- **Test concurrency thoroughly**: concurrent code often has hidden bugs that appear under different schedules
 
-### 85. Item Title
-- 
+### 85. Prefer Alternatives to Java Serialization
+- **Java serialization dangerous**: arbitrary code execution during deserialization; gadget chains allow RCE
+- **Binary format fragile**: hard to evolve; version incompatibility common; forward/backward compatibility hard
+- **Performance mediocre**: not particularly fast; produces large byte footprint compared to alternatives
+- **Prefer JSON/Protocol Buffers**: human-readable (JSON), language-neutral (Protobuf), security-conscious design
+- **JSON libraries**: Jackson, Gson — safe by default; explicit config for features; widely used
+- **Protocol Buffers**: binary, efficient, versioning-friendly; schema-based; Google-developed
+- **Avoid ObjectInputStream.readObject()**: if you must deserialize, use serial filters (JDK 9+) to allowlist types
+- **Immutable objects help**: deserialize to immutable; prevents post-deserialization mutation attacks
+- **If forced to use Java serialization**: never deserialize untrusted data; always assume hostile input
 
-### 86. Item Title
-- 
+### 86. Implement Serializable with Great Caution
+- **Once serializable, hard to unsupport**: changing class after serialization breaks compatibility; committed long-term
+- **serialVersionUID required**: explicit `serialVersionUID` needed to control versioning; default calculated, fragile
+- **Declaring serialVersionUID**: `private static final long serialVersionUID = 1L;` — increment when incompatible change
+- **Don't serialize sensitive data**: passwords, API keys, private fields should be transient
+- **readObject/writeObject custom logic**: override to handle security, validation, version migration; default unsafe
+- **Readiness for deserialization**: `readObject()` can construct partially-initialized objects; validate invariants
+- **No-arg constructor bypass**: deserialization bypasses constructors; invariants might be violated
+- **Test serialization thoroughly**: serialized form is part of API; test round-tripping; don't ship broken serialization
+- **Consider sealed classes**: if Serializable, control which subclasses allowed to prevent gadget chain exploits
 
-### 87. Item Title
-- 
+### 87. Consider Using a Custom Serialized Form
+- **Default serialization mirrors internal structure**: if internal structure changes, serialization breaks
+- **Custom form decouples API from implementation**: write cleaner, more stable serialized form than default
+- **writeObject/readObject override**: define what gets serialized; restructure at deserialization time
+- **Example**: internal `Date[]` array serialized as `int` count + individual fields; safer to evolve internally
+- **Transient fields help**: mark internal fields `transient`; write only logical data in `writeObject()`
+- **Backward compatibility**: custom form lets you support old serialized objects while changing internals
+- **Performance benefit**: custom form can be more compact; omit redundant or reconstructible data
+- **Cost**: custom serialization adds complexity; need to handle versioning, validation, migration carefully
+- **Worth the effort if**: serialization part of API, long-lived, stability critical; not for internal-only serialization
 
-### 88. Item Title
-- 
+### 88. Write readObject Methods Defensively
+- **readObject() is a constructor**: called to reconstruct object from bytes; must treat input as untrusted
+- **Validate invariants immediately**: after deserializing, check object state is valid; throw exception if not
+- **Copy mutable fields**: defensive copy of mutable deserialized objects — dates, arrays, collections
+- **Check null constraints**: if field should never be null, validate after deserialization
+- **Range validation**: numeric fields should be within expected bounds; enum fields should be valid enum values
+- **Example**: deserialized date range must be start <= end; field array length must match count
+- **Fail fast**: invalid state should cause exception during deserialization, not later during use
+- **Partial object risk**: readObject can create object in partially-invalid state; don't trust default initialization
+- **Override readObjectNoData()**: if class serialized before added field, handle missing fields safely
 
-### 89. Item Title
-- 
+### 89. For Instance Control, Prefer Enum Types to readResolve
+- **readResolve() for instance control**: return replacement object during deserialization; enforce singletons
+- **Singleton pattern problem**: deserialization creates new instance, breaking singleton guarantee
+- **readResolve workaround**: `return INSTANCE;` to return singleton instead of deserialized copy
+- **Enum better solution**: enums enforce singleton by design; serialization guaranteed to preserve instance
+- **Enum guarantees**: only one instance per enum constant, no matter how many times deserialized
+- **No readResolve needed**: enum automatically handles serialization correctly; instance guaranteed unique
+- **Caveat with readResolve**: reflection can still create new instances; enums prevent this at language level
+- **Migration path**: if singleton class becomes serialized, convert to enum if possible; cleaner than readResolve
+- **Example**: `enum Singleton { INSTANCE; }` safer and clearer than `class Singleton implements Serializable`
 
-### 90. Item Title
-- 
+### 90. Consider Serialization Proxies Instead of Serialized Instances
+- **Serialization proxy pattern**: serialize lightweight proxy instead of full object; deserialize to original class
+- **Proxy advantage**: decouples serialized form from implementation; safer than custom readObject
+- **Pattern**: inner `SerializationProxy` class with `writeReplace()`, proxy implements `Serializable`
+- **Deserialize via readResolve()**: proxy's `readResolve()` validates and reconstructs original object
+- **Invariant protection**: proxy can enforce invariants during reconstruction; impossible to violate state
+- **No need for readObject()**: proxy pattern eliminates dangerous `readObject()` entirely
+- **Cost**: requires proxy class; slightly more verbose than custom `readObject()` but safer
+- **Best for complex objects**: when invariants critical, serialization proxy worth the effort
+- **Limitation**: serialization proxies don't work well with classes in inheritance hierarchies; use for leaf classes
