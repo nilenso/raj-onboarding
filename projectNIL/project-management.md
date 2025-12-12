@@ -14,15 +14,6 @@ The board uses a custom "Stage" field for Kanban columns. When viewing the board
 
 ### Labels Reference
 
-#### Type Labels
-| Label | Color | Description |
-|-------|-------|-------------|
-| `type: feature` | `#0E8A16` (green) | Valuable slice - user-facing functionality |
-| `type: technical` | `#1D76DB` (blue) | Enabler/engineering task that supports features |
-| `type: spike` | `#FBCA04` (yellow) | Time-boxed research/investigation |
-| `type: bug` | `#D73A4A` (red) | Defect in existing functionality |
-| `type: chore` | `#C5DEF5` (light blue) | Tech debt, maintenance, dependencies |
-
 #### Status Labels
 | Label | Color | Description |
 |-------|-------|-------------|
@@ -46,7 +37,6 @@ gh issue list --repo nilenso/raj-onboarding
 gh issue create --repo nilenso/raj-onboarding \
   --title "Issue title" \
   --body "Issue body" \
-  --label "type: feature" \
   --label "priority: medium"
 
 # Add issue to project board
@@ -94,15 +84,15 @@ Reference: [The Common Sense Unit of Work](https://blog.nilenso.com/blog/2025/09
 
 ## Issue Types
 
-Not all work delivers direct customer value, and that's okay. Use labels to distinguish work types:
+Not all work delivers direct customer value, and that's okay. Use GitHub's native issue type mechanism to distinguish work:
 
-| Label | Purpose | Example |
-|-------|---------|---------|
-| `type: feature` | Valuable slices — user-facing functionality | "User can register with email" |
-| `type: technical` | Enabler/engineering tasks that support features | "Design database schema for auth" |
-| `type: spike` | Time-boxed research/investigation | "Spike: Evaluate JWT vs session auth" |
-| `type: bug` | Defects in existing functionality | "Login fails with special characters" |
-| `type: chore` | Tech debt, maintenance, dependencies | "Update Gradle to 8.x" |
+| Type | Purpose | Example |
+|------|---------|---------|
+| **Feature** | Valuable slices — user-facing functionality | "User can register with email" |
+| **Task** | Enabler/engineering tasks that support features | "Design database schema for auth" |
+| **Bug** | Defects in existing functionality | "Login fails with special characters" |
+
+For time-boxed research/investigation (spikes), use a Task with "Spike:" prefix in the title.
 
 ### Linking Technical Work to Value
 

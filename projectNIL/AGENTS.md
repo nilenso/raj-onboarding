@@ -45,7 +45,7 @@ This project follows a three-branch model:
 ## Project Management
 
 See [project-management.md](./project-management.md) for detailed guidelines on:
-- Issue types and labels (`type: feature`, `type: technical`, `type: spike`, `type: bug`, `type: chore`)
+- Issue types (using GitHub's native type mechanism: Feature, Task, Bug)
 - Kanban workflow (Backlog → Ready → In Progress → In Review → Done)
 - Writing good issues with acceptance criteria
 - Linking technical tasks to the features they enable
