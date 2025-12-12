@@ -47,7 +47,29 @@ gh project view 24 --owner nilenso --web
 
 # List project items
 gh project item-list 24 --owner nilenso
+
+# List available issue types (org-level)
+gh api orgs/nilenso/issue-types --jq '.[] | {name, id}'
+
+# Create an issue with a type (via API)
+gh api repos/nilenso/raj-onboarding/issues \
+  --method POST \
+  -f title="Issue title" \
+  -f body="Issue body" \
+  -f type="Feature"
+
+# Update an existing issue's type (via API)
+gh api repos/nilenso/raj-onboarding/issues/ISSUE_NUMBER \
+  --method PATCH \
+  -f type="Task"
+
+# Remove type from an issue
+gh api repos/nilenso/raj-onboarding/issues/ISSUE_NUMBER \
+  --method PATCH \
+  --raw-field type=null
 ```
+
+**Note:** The `gh issue create` command does not support the `--type` flag directly. Use the API commands above to set issue types.
 
 ---
 
