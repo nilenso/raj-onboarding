@@ -1,10 +1,14 @@
-name: CI - dev
+name: CI - dev & feature branches
 
 on:
   push:
-    branches: [ dev ]
+    branches: 
+      - dev
+      - 'feature-issue-*'
   pull_request:
-    branches: [ dev ]
+    branches: 
+      - dev
+      - main
 
 jobs:
   build-and-test:
