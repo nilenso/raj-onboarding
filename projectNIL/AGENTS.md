@@ -38,13 +38,17 @@ This project uses a multi-branch model with feature branches:
 
 All merges to `main` require a Pull Request, **except** for journal merges:
 
-| Source Branch | PR Required | Merge Strategy |
-|---------------|-------------|----------------|
-| `dev` | ✅ Yes | Squash and merge |
-| `feature-issue-*` | ✅ Yes | Squash and merge |
-| `journal` | ❌ No | Squash and merge with `[skip ci]` |
+| Source Branch | PR Required | Merge Strategy | Delete Branch After Merge |
+|---------------|-------------|----------------|---------------------------|
+| `dev` | ✅ Yes | Squash and merge | ❌ No (persistent branch) |
+| `feature-issue-*` | ✅ Yes | Squash and merge | ✅ Yes |
+| `journal` | ❌ No | Squash and merge with `[skip ci]` | ❌ No (persistent branch) |
 
 PRs should reference the issue number they address using `Closes #XX` in the PR description.
+
+**Branch Lifecycle:**
+- `dev` and `journal` are **persistent branches** — never delete them after merging
+- `feature-issue-*` branches are **ephemeral** — delete after PR is merged
 
 ### Journal Workflow
 
