@@ -51,17 +51,23 @@ gh project item-list 24 --owner nilenso
 # List available issue types (org-level)
 gh api orgs/nilenso/issue-types --jq '.[] | {name, id}'
 
-# Create an issue with a type (via API)
+# Create an issue with a type and assignee (via API)
 gh api repos/nilenso/raj-onboarding/issues \
   --method POST \
   -f title="Issue title" \
   -f body="Issue body" \
-  -f type="Feature"
+  -f type="Feature" \
+  -f "assignees[]=rajp152k"
 
 # Update an existing issue's type (via API)
 gh api repos/nilenso/raj-onboarding/issues/ISSUE_NUMBER \
   --method PATCH \
   -f type="Task"
+
+# Assign an issue to a user
+gh api repos/nilenso/raj-onboarding/issues/ISSUE_NUMBER \
+  --method PATCH \
+  -f "assignees[]=rajp152k"
 
 # Remove type from an issue
 gh api repos/nilenso/raj-onboarding/issues/ISSUE_NUMBER \
@@ -69,7 +75,9 @@ gh api repos/nilenso/raj-onboarding/issues/ISSUE_NUMBER \
   --raw-field type=null
 ```
 
-**Note:** The `gh issue create` command does not support the `--type` flag directly. Use the API commands above to set issue types.
+**Notes:**
+- The `gh issue create` command does not support the `--type` flag directly. Use the API commands above to set issue types.
+- **Always assign issues to `rajp152k`** when creating them.
 
 ---
 
