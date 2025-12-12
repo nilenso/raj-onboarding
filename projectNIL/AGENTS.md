@@ -19,15 +19,41 @@
 
 ## Branching Strategy
 
-This project follows a three-branch model:
+This project uses a multi-branch model with feature branches:
 
-| Branch | Purpose | CI | CD |
-|--------|---------|----|----|
-| `main` | Production branch | ✅ | ✅ |
-| `dev` | Development/integration branch | ✅ | ❌ |
-| `journal` | Onboarding logs & documentation | ❌ | ❌ |
+| Branch | Purpose | CI | CD | Merge to Main |
+|--------|---------|----|----|---------------|
+| `main` | Production branch | ✅ | ✅ | - |
+| `dev` | Technical tasks (non-feature work) | ✅ | ❌ | PR required, squash |
+| `journal` | Documentation entries | ❌ | ❌ | Daily squash, `[skip ci]`, no PR |
+| `feature-issue-<N>` | Feature work for issue #N | ✅ | ❌ | PR required, squash |
 
-**Important**: All commits to the `journal` branch **must include `[skip ci]` in the commit message** to prevent unnecessary CI triggers.
+### Branch Naming
+
+- **Feature branches**: `feature-issue-<number>` (e.g., `feature-issue-19`)
+- **Technical tasks**: Use `dev` branch directly
+- **Documentation**: Use `journal` branch
+
+### PR Requirements
+
+All merges to `main` require a Pull Request, **except** for journal merges:
+
+| Source Branch | PR Required | Merge Strategy |
+|---------------|-------------|----------------|
+| `dev` | ✅ Yes | Squash and merge |
+| `feature-issue-*` | ✅ Yes | Squash and merge |
+| `journal` | ❌ No | Squash and merge with `[skip ci]` |
+
+PRs should reference the issue number they address using `Closes #XX` in the PR description.
+
+### Journal Workflow
+
+Documentation entries follow this workflow:
+1. Commit to `journal` branch with `[skip ci]` in message
+2. Daily squash merge to `main` (no PR required)
+3. Use descriptive commit messages: `jour: <description> [skip ci]`
+
+**Important**: All commits to the `journal` branch **must include `[skip ci]`** to prevent unnecessary CI triggers.
 
 ## Commit Message Guidelines
 - Follow [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) style.
