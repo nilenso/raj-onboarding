@@ -1,0 +1,56 @@
+* 12-Dec-2025
+
+** Project Management Setup
+
+- Consumed [[https://blog.nilenso.com/blog/2025/09/17/the-common-sense-unit-of-work/][The Common Sense Unit of Work]] blog
+- Created [[file:../projectNIL/project-management.md][project-management.md]] with:
+  - INVEST criteria for units of work
+  - GitHub labels (status, priority)
+  - Kanban workflow (Backlog → Ready → In Progress → In Review → Done)
+  - gh CLI commands for issue management
+
+- Set up GitHub infrastructure:
+  - Labels: ~status: blocked~, ~status: needs-refinement~, ~priority: high/medium/low~
+  - Project board: https://github.com/orgs/nilenso/projects/24
+
+** Branching Strategy Update
+
+- Updated [[file:../projectNIL/AGENTS.md][AGENTS.md]] with refined branching model:
+  | Branch             | Purpose                | CI | CD | Merge to Main          |
+  |--------------------+------------------------+----+----+------------------------|
+  | ~main~             | Production             | ✅ | ✅ | -                      |
+  | ~dev~              | Technical tasks        | ✅ | ❌ | PR required, squash    |
+  | ~journal~          | Documentation          | ❌ | ❌ | Daily squash, no PR    |
+  | ~feature-issue-<N>~ | Feature work          | ✅ | ❌ | PR required, squash    |
+
+- Updated [[file:../.github/workflows/ci-dev.yml][ci-dev.yml]] to trigger on ~feature-issue-*~ branches
+
+** Domain Modelling (Issue #19)
+
+- Created [[file:../projectNIL/docs/domain.md][docs/domain.md]] with:
+  - 8 entities: Group, User, UserGroup, Session, ApiKey, Function, Environment, Execution
+  - Mermaid ERD diagram
+  - Access control logic (embedded permissions)
+  - User stories by phase
+  - Phase definitions (0: no auth, 1: auth, 2: analytics)
+
+- Created [[file:../projectNIL/docs/toThink.md][docs/toThink.md]] for open questions:
+  - Function body storage (spike needed)
+  - Execution table growth
+  - Function versioning
+
+- Added [[file:../projectNIL/AGENTS.md][domain policy]] in AGENTS.md: user drives domain work, agent reviews
+
+** Issues Created
+
+| #  | Title                                          | Type |
+|----+------------------------------------------------+------|
+| 19 | Domain modelling for Function as a Service     | Task |
+| 20 | Setup deployment server on DigitalOcean        | Task |
+| 21 | Document tech stack and libraries              | Task |
+| 23 | Spike: Research function body storage strategies | Task |
+
+** Misc
+
+- Created ~scratchpad/~ directory (gitignored) for discussions
+- Closed PR #22 (branching strategy update)
