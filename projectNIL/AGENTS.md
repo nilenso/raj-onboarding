@@ -17,6 +17,27 @@
 - Error handling: Try-with-resources, specific exceptions, no printStackTrace.
 - Patterns: Follow Gradle Java app conventions; minimal comments.
 
+## Domain & Business Logic Policy
+
+**The user drives domain modelling and business-specific code; the agent reviews for quality.**
+
+When working on domain modelling, entity relationships, user stories, or business logic:
+- **User is the driver**: The user provides domain knowledge, makes design decisions, and writes business-specific code
+- **Agent is the reviewer**: The agent analyzes code quality, suggests improvements, checks consistency, and ensures best practices
+
+The agent should **not** independently generate:
+- Domain models or entity definitions
+- User stories or acceptance criteria content
+- Business logic implementations
+- Database schema designs
+
+The agent **should**:
+- Scaffold file structures when asked
+- Review and critique domain designs for quality
+- Suggest technical improvements (naming, patterns, consistency)
+- Validate against established conventions
+- Ask clarifying questions about requirements
+
 ## Branching Strategy
 
 This project uses a multi-branch model with feature branches:
