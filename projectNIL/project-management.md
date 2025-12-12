@@ -84,13 +84,13 @@ Reference: [The Common Sense Unit of Work](https://blog.nilenso.com/blog/2025/09
 
 ## Issue Types
 
-Not all work delivers direct customer value, and that's okay. Use GitHub's native issue type mechanism to distinguish work:
+Not all work delivers direct customer value, and that's okay. Use GitHub's native issue type mechanism (org-level) to distinguish work:
 
-| Type | Purpose | Example |
-|------|---------|---------|
-| **Feature** | Valuable slices — user-facing functionality | "User can register with email" |
-| **Task** | Enabler/engineering tasks that support features | "Design database schema for auth" |
-| **Bug** | Defects in existing functionality | "Login fails with special characters" |
+| Type | GitHub Description | Usage |
+|------|-------------------|-------|
+| **Feature** | A request, idea, or new functionality | Valuable slices — user-facing functionality |
+| **Task** | A specific piece of work | Enabler/engineering tasks that support features |
+| **Bug** | An unexpected problem or behavior | Defects in existing functionality |
 
 For time-boxed research/investigation (spikes), use a Task with "Spike:" prefix in the title.
 
