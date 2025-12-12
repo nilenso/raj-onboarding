@@ -2,6 +2,65 @@
 
 This document defines how work is organized, tracked, and delivered in ProjectNIL using GitHub Projects (Kanban).
 
+## GitHub Setup
+
+### Project Board
+
+- **Project:** ProjectNIL
+- **URL:** https://github.com/orgs/nilenso/projects/23
+- **Repository:** nilenso/raj-onboarding
+
+The board uses a custom "Stage" field for Kanban columns. When viewing the board, ensure you're grouping by "Stage" (not the default "Status" field).
+
+### Labels Reference
+
+#### Type Labels
+| Label | Color | Description |
+|-------|-------|-------------|
+| `type: feature` | `#0E8A16` (green) | Valuable slice - user-facing functionality |
+| `type: technical` | `#1D76DB` (blue) | Enabler/engineering task that supports features |
+| `type: spike` | `#FBCA04` (yellow) | Time-boxed research/investigation |
+| `type: bug` | `#D73A4A` (red) | Defect in existing functionality |
+| `type: chore` | `#C5DEF5` (light blue) | Tech debt, maintenance, dependencies |
+
+#### Status Labels
+| Label | Color | Description |
+|-------|-------|-------------|
+| `status: blocked` | `#B60205` (red) | Waiting on external dependency or decision |
+| `status: needs-refinement` | `#FEF2C0` (light yellow) | Requires more specification before Ready |
+
+#### Priority Labels
+| Label | Color | Description |
+|-------|-------|-------------|
+| `priority: high` | `#B60205` (red) | Do this first; blocking other work or critical |
+| `priority: medium` | `#FBCA04` (yellow) | Important but not urgent |
+| `priority: low` | `#0E8A16` (green) | Nice to have; do when time permits |
+
+### CLI Commands
+
+```bash
+# List all issues
+gh issue list --repo nilenso/raj-onboarding
+
+# Create an issue with labels
+gh issue create --repo nilenso/raj-onboarding \
+  --title "Issue title" \
+  --body "Issue body" \
+  --label "type: feature" \
+  --label "priority: medium"
+
+# Add issue to project board
+gh project item-add 23 --owner nilenso --url <issue-url>
+
+# View project board
+gh project view 23 --owner nilenso --web
+
+# List project items
+gh project item-list 23 --owner nilenso
+```
+
+---
+
 ## Philosophy: The Unit of Work
 
 Our project management is grounded in the principle that **the unit of work is the fundamental abstraction** in software development. Getting this right determines the effectiveness of everything built on top — planning, tracking, and coordination.
