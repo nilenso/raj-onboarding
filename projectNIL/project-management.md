@@ -7,7 +7,7 @@ This document defines how work is organized, tracked, and delivered in ProjectNI
 ### Project Board
 
 - **Project:** ProjectNIL
-- **URL:** https://github.com/orgs/nilenso/projects/23
+- **URL:** https://github.com/orgs/nilenso/projects/24
 - **Repository:** nilenso/raj-onboarding
 
 The board uses a custom "Stage" field for Kanban columns. When viewing the board, ensure you're grouping by "Stage" (not the default "Status" field).
@@ -50,13 +50,13 @@ gh issue create --repo nilenso/raj-onboarding \
   --label "priority: medium"
 
 # Add issue to project board
-gh project item-add 23 --owner nilenso --url <issue-url>
+gh project item-add 24 --owner nilenso --url <issue-url>
 
 # View project board
-gh project view 23 --owner nilenso --web
+gh project view 24 --owner nilenso --web
 
 # List project items
-gh project item-list 23 --owner nilenso
+gh project item-list 24 --owner nilenso
 ```
 
 ---
@@ -182,7 +182,6 @@ Implementation hints, constraints, or decisions.
 - **Enables:** #XX (if this is a technical task)
 - **Depends on:** #XX (if blocked by another issue)
 ```
-
 ---
 
 ## Best Practices
