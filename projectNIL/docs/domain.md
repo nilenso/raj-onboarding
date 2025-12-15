@@ -1,5 +1,13 @@
 # Domain Model
 
+> **[Work in Progress / Malleable]**: This document captures the overall domain model across all phases.
+> For phase-specific implementation details, refer to the corresponding phase documents:
+> - [Phase 0](./phase0.md) - Core FaaS without auth (current implementation)
+> - Phase 1 - Auth + permissions (planned)
+> - Phase 2 - Analytics (planned)
+>
+> This document will be finalized at project completion.
+
 ## Overview
 
 ProjectNIL is a **Function as a Service (FaaS)** system that allows users to register, manage, and execute functions. The system supports:

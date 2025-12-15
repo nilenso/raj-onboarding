@@ -1,0 +1,164 @@
+* 15-Dec-2025
+
+** Phase 0 Architecture Design
+
+Major planning session establishing the complete Phase 0 architecture for ProjectNIL FaaS platform.
+
+*** Technology Stack Decisions
+
+Finalized the technology stack after extensive discussion:
+
+| Component        | Technology               | Rationale                                    |
+|------------------+--------------------------+----------------------------------------------|
+| API Service      | Spring Boot 3.4.x        | Industry standard, rich ecosystem            |
+| Java Version     | Java 21 (LTS)            | Required for Spring Boot 3.x, virtual threads|
+| Build Tool       | Gradle 8.x               | Already in project, flexible                 |
+| Database         | PostgreSQL 16.x          | JSONB support, BYTEA for WASM binaries       |
+| Migrations       | Liquibase                | Flexible changelog formats, good rollback    |
+| Message Queue    | RabbitMQ                 | Async compilation, service decoupling        |
+| WASM Runtime     | Chicory                  | Pure Java, no JNI dependencies               |
+| Compiler         | Node.js + AssemblyScript | TypeScript-like, fast compilation            |
+| Containers       | Podman Compose           | Local development orchestration              |
+
+*** Architecture Overview
+
+Designed microservices architecture with async compilation:
+
+#+begin_src
+User Request → API Service → RabbitMQ → Compiler Service
+                   ↓              ↑
+              PostgreSQL    (compilation result)
+                   ↓
+            Chicory WASM Runtime → Execution Result
+#+end_src
+
+Key design decisions:
+- Server-side compilation (users submit source, not WASM)
+- Async compilation via message queue
+- Compiler Interface pattern for language extensibility
+- WASM stored in PostgreSQL BYTEA column
+
+*** WASM Runtime Decision (Spike #23)
+
+Evaluated function body storage options:
+1. Code string (interpreted) - rejected: security risk
+2. Container images - rejected: too heavy for Phase 0
+3. *WASM modules* - chosen: sandboxed, performant, language-agnostic
+4. External storage (S3) - rejected: unnecessary complexity
+5. PostgreSQL procedures - rejected: security risk
+
+Created ADR: ~docs/decisions/001-wasm-runtime.md~
+
+*** Documentation Created
+
+| File                              | Description                              |
+|-----------------------------------+------------------------------------------|
+| ~docs/stack.md~                   | Complete technology stack with rationale |
+| ~docs/decisions/001-wasm-runtime.md~ | ADR for WASM runtime decision         |
+| ~docs/phase0.md~                  | Full architecture, schema, message formats |
+| ~docs/domain.md~                  | Added WIP tag for ongoing refinement     |
+
+*** Database Schema (Phase 0)
+
+Designed two tables:
+
+*functions*
+- id, name, description, language, source, wasm_binary, status, compile_error, timestamps
+- Status: PENDING → COMPILING → READY | FAILED
+
+*executions*
+- id, function_id, input, output, status, timestamps, metadata
+- Status: PENDING → RUNNING → COMPLETED | FAILED
+
+*** Message Queue Design
+
+| Component              | Purpose                           |
+|------------------------+-----------------------------------|
+| Exchange               | ~compilation.requests~ (topic)    |
+| Routing Key            | ~compile.{language}~              |
+| Results Queue          | ~compilation.results~             |
+
+Compiler Interface contract established - any language compiler must:
+1. Consume from ~compile.{language}~ queue
+2. Publish to ~compilation.results~ queue
+3. Follow defined message format
+
+*** GitHub Issue Management
+
+*Issues Closed:*
+| #  | Title                                     | Reason                    |
+|----+-------------------------------------------+---------------------------|
+| 19 | Domain modelling for Function as a Service | ERD and stories complete  |
+| 21 | Document tech stack and libraries         | ~docs/stack.md~ created   |
+| 23 | Spike: Research function body storage     | Decision: WASM + Chicory  |
+
+*Infrastructure Issues Created:*
+| #  | Title                                          | Priority |
+|----+------------------------------------------------+----------|
+| 32 | Restructure project for microservices monorepo | High     |
+| 33 | Setup Spring Boot API service with Gradle      | High     |
+| 34 | Setup PostgreSQL with Liquibase migrations     | High     |
+| 35 | Setup RabbitMQ integration with Spring AMQP    | High     |
+| 36 | Create AssemblyScript compiler service         | High     |
+| 37 | Integrate Chicory WASM runtime                 | High     |
+| 38 | Setup Podman Compose for local development     | Medium   |
+| 39 | Document Phase 0 architecture                  | Medium   |
+
+*User Stories Updated (#24-31):*
+- Added ~phase-0~, ~blocked~ labels
+- Updated acceptance criteria for new architecture
+- Documented dependencies on infrastructure issues
+
+*Labels Created:*
+- ~phase-0~ (green) - Phase 0 scope
+- ~infrastructure~ (purple) - Infrastructure/setup work
+- ~blocked~ (red) - Blocked by dependencies
+
+*** Project Board Status
+
+| Status  | Count | Issues                          |
+|---------+-------+---------------------------------|
+| Done    |     4 | #18, #19, #21, #23              |
+| Ready   |     3 | #20, #32, #39                   |
+| Backlog |    13 | Infrastructure + user stories   |
+
+*** Key Learnings
+
+- *Migrations* in greenfield: "migration" = versioned schema changes, even from empty → v1
+- *Spring ecosystem*: Boot (auto-config), Data (repositories), Cloud (distributed patterns)
+- *Eureka skipped*: RabbitMQ provides sufficient decoupling; service discovery not needed
+- *Compiler Interface*: Enables adding languages without modifying API service
+- *WASM data passing*: Complex (primitives only); will start simple, add JSON incrementally
+
+*** Next Steps
+
+1. Start with #32 (project restructure) - critical path
+2. #39 (documentation) can proceed in parallel
+3. All other infrastructure blocked until #32 complete
+
+** Concepts Explored
+
+*** Database Migrations
+- Version control for schema, not just data migration
+- Flyway vs Liquibase: chose Liquibase for learning breadth
+- Immutable migration files, ordered execution
+
+*** Spring Ecosystem
+- Spring Framework: DI container, core abstractions
+- Spring Boot: Auto-configuration, starters, embedded servers
+- Spring Data: Repository pattern, JPA/JDBC abstractions
+- Spring Cloud: Distributed patterns (Eureka, Config, Gateway) - deferred
+
+*** WebAssembly
+- Binary instruction format, sandboxed execution
+- Chicory: Pure Java runtime, no native dependencies
+- Languages → WASM: Rust, C, Go, AssemblyScript, etc.
+- Challenge: Data passing (WASM only understands primitives)
+
+** References
+
+- [[file:../projectNIL/docs/stack.md][Technology Stack Documentation]]
+- [[file:../projectNIL/docs/phase0.md][Phase 0 Architecture]]
+- [[file:../projectNIL/docs/decisions/001-wasm-runtime.md][ADR 001: WASM Runtime]]
+- [[https://www.assemblyscript.org/][AssemblyScript]]
+- [[https://github.com/nicksanford/chicory][Chicory WASM Runtime]]

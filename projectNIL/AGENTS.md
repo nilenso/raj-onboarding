@@ -95,6 +95,25 @@ Documentation entries follow this workflow:
 
 ## Project Management
 
+### GitHub Project Board
+
+This repository uses **GitHub Project #24** (`raj-onboarding`) for tracking work:
+
+- **Project ID**: 24
+- **Owner**: nilenso
+- **URL**: https://github.com/orgs/nilenso/projects/24
+
+To interact with the project board via CLI:
+```bash
+# List all items with status
+gh project item-list 24 --owner nilenso
+
+# View project details
+gh project view 24 --owner nilenso
+```
+
+**Note:** Issues are automatically added to the project board via GitHub workflows. Do not manually add issues using `gh project item-add`.
+
 See [project-management.md](./project-management.md) for detailed guidelines on:
 - Issue types (using GitHub's native type mechanism: Feature, Task, Bug)
 - Kanban workflow (Backlog → Ready → In Progress → In Review → Done)
