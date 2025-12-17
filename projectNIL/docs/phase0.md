@@ -14,7 +14,7 @@ Phase 0 delivers the core Function as a Service capabilities without authenticat
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────┐
-│                              User Request                                        │
+│                             User Request                                        │
 │         POST /functions { "language": "assemblyscript", "source": "..." }       │
 └─────────────────────────────────────┬───────────────────────────────────────────┘
                                       │
@@ -48,7 +48,7 @@ Phase 0 delivers the core Function as a Service capabilities without authenticat
 └─────────────────────────────────────────────────────────────────────────────────┘
                                       
 ┌─────────────────────────────────────────────────────────────────────────────────┐
-│                              PostgreSQL                                          │
+│                             PostgreSQL                                          │
 │   • functions: source code + compiled WASM binary                               │
 │   • executions: execution history and results                                   │
 └─────────────────────────────────────────────────────────────────────────────────┘
@@ -56,12 +56,12 @@ Phase 0 delivers the core Function as a Service capabilities without authenticat
 
 ### Services
 
-| Service | Technology | Port | Responsibility |
-|---------|------------|------|----------------|
-| api-service | Spring Boot 3.4.x / Java 21 | 8080 | REST API, database access, WASM execution |
-| compiler-assemblyscript | Node.js 20.x | N/A (queue) | Compile AssemblyScript → WASM |
-| rabbitmq | RabbitMQ 3.x | 5672, 15672 | Message broker |
-| postgres | PostgreSQL 16.x | 5432 | Persistence |
+| Service                 | Technology                  | Port        | Responsibility                            |
+|-------------------------|-----------------------------|-------------|-------------------------------------------|
+| api-service             | Spring Boot 4.0.0 / Java 25 | 8080        | REST API, database access, WASM execution |
+| compiler-assemblyscript | Node.js                | N/A (queue) | Compile AssemblyScript → WASM             |
+| rabbitmq                | RabbitMQ                | 5672, 15672 | Message broker                            |
+| postgres                | PostgreSQL              | 5432        | Persistence                               |
 
 ### Function Lifecycle
 
@@ -109,11 +109,11 @@ POST /functions/{id}/execute
 
 ### Exchange & Queues
 
-| Component | Type | Name | Purpose |
-|-----------|------|------|---------|
-| Exchange | Topic | `compilation.requests` | Route compilation jobs by language |
-| Queue | - | `compile.assemblyscript` | AssemblyScript compilation jobs |
-| Queue | - | `compilation.results` | Compilation results (all languages) |
+| Component | Type  | Name                     | Purpose                             |
+|-----------|-------|--------------------------|-------------------------------------|
+| Exchange  | Topic | `compilation.requests`   | Route compilation jobs by language  |
+| Queue     | -     | `compile.assemblyscript` | AssemblyScript compilation jobs     |
+| Queue     | -     | `compilation.results`    | Compilation results (all languages) |
 
 ### Routing
 
