@@ -158,7 +158,7 @@ Users submit source code (e.g., AssemblyScript/TypeScript), not pre-compiled WAS
 |------|------------|
 | WASM data passing is complex | Start with simple int→int functions, add JSON serialization incrementally |
 | Chicory performance issues | Acceptable for learning project; can switch to Wasmtime if needed |
-| Compiler service failures | Message queue provides buffering and retry capability |
+| Compiler service failures | pgmq provides buffering and retry capability |
 | Large WASM binaries | Enforce size limits; monitor and optimize |
 
 ## References

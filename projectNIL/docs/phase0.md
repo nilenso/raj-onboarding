@@ -24,7 +24,7 @@ Phase 0 delivers the core Function as a Service capabilities without authenticat
 │                                                                                 │
 │   • REST API (CRUD for functions, executions)                                   │
 │   • Persists function source with status=PENDING                                │
-│   • Publishes compilation job to RabbitMQ                                       │
+│   • Publishes compilation job to pgmq (PostgreSQL queue)                        │
 │   • Consumes compilation results, stores WASM binary                            │
 │   • Executes WASM via Chicory runtime                                           │
 └───────────┬─────────────────────────────────────────────────────────────────────┘
@@ -32,9 +32,9 @@ Phase 0 delivers the core Function as a Service capabilities without authenticat
             │ Publish: compile.{language}                  │ Consume: compilation.results
             ▼                                              │
 ┌─────────────────────────────────────────────────────────────────────────────────┐
-│                              RabbitMQ                                           │
-│   Exchange: compilation.requests (topic)                                        │
-│   Queue: compilation.results                                                    │
+│                          pgmq (PostgreSQL Queue)                                │
+│   Queue: compilation_jobs (routing by language in message)                      │
+│   Queue: compilation_results                                                    │
 └───────────┬─────────────────────────────────────────────────────────────────────┘
             │                                              ▲
             │ Consume: compile.assemblyscript              │ Publish result
@@ -60,8 +60,7 @@ Phase 0 delivers the core Function as a Service capabilities without authenticat
 |-------------------------|-----------------------------|-------------|-------------------------------------------|
 | api-service             | Spring Boot 4.0.0 / Java 25 | 8080        | REST API, database access, WASM execution |
 | compiler-assemblyscript | Node.js                | N/A (queue) | Compile AssemblyScript → WASM             |
-| rabbitmq                | RabbitMQ                | 5672, 15672 | Message broker                            |
-| postgres                | PostgreSQL              | 5432        | Persistence                               |
+| postgres                | PostgreSQL              | 5432        | Persistence + pgmq message queue          |
 
 ### Function Lifecycle
 
@@ -107,18 +106,17 @@ POST /functions/{id}/execute
 
 ## Message Queue Design
 
-### Exchange & Queues
+### Queues
 
-| Component | Type  | Name                     | Purpose                             |
-|-----------|-------|--------------------------|-------------------------------------|
-| Exchange  | Topic | `compilation.requests`   | Route compilation jobs by language  |
-| Queue     | -     | `compile.assemblyscript` | AssemblyScript compilation jobs     |
-| Queue     | -     | `compilation.results`    | Compilation results (all languages) |
+| Queue | Purpose |
+|-------|---------|
+| `compilation_jobs` | Compilation requests (routed by language field in message) |
+| `compilation_results` | Compilation results (all languages) |
 
 ### Routing
 
-- **Routing key pattern**: `compile.{language}`
-- **Example**: Message with routing key `compile.assemblyscript` goes to the AssemblyScript compiler queue
+- **Routing method**: Language specified in message payload (no broker-level routing)
+- **Example**: Compiler service filters `compilation_jobs` by `language` field in message
 
 ### Message Formats
 
@@ -179,8 +177,8 @@ Any compiler service (current or future) must adhere to this contract:
 
 ### Requirements
 
-1. **Consume** from queue: `compile.{language}` (e.g., `compile.assemblyscript`, `compile.rust`)
-2. **Publish** to queue: `compilation.results`
+1. **Consume** from queue: `compilation_jobs` (filter by language in message)
+2. **Publish** to queue: `compilation_results`
 3. **Message format**: As specified above
 4. **Behavior**:
    - Stateless (no local state between compilations)
@@ -189,19 +187,19 @@ Any compiler service (current or future) must adhere to this contract:
 
 ### Supported Languages (Phase 0)
 
-| Language | Queue | Compiler | Status |
-|----------|-------|----------|--------|
-| AssemblyScript | `compile.assemblyscript` | `asc` (Node.js) | Phase 0 |
-| Rust | `compile.rust` | `rustc` + `wasm-pack` | Future |
-| Go | `compile.go` | TinyGo | Future |
+| Language | Compiler | Status |
+|----------|----------|--------|
+| AssemblyScript | `asc` (Node.js) | Phase 0 |
+| Rust | `rustc` + `wasm-pack` | Future |
+| Go | TinyGo | Future |
 
 Adding a new language requires:
 1. Create new compiler service
-2. Bind to appropriate queue (`compile.{language}`)
+2. Filter `compilation_jobs` queue by language
 3. Implement compilation logic
-4. Publish results to `compilation.results`
+4. Publish results to `compilation_results`
 
-No changes to API service required.
+No changes to API service or queue structure required.
 
 ---
 
@@ -466,11 +464,11 @@ projectNIL/
 |----------|--------|-----------|
 | Function storage | WASM binary in PostgreSQL (BYTEA) | Simplicity, transactional consistency |
 | Runtime | Chicory (pure Java) | No JNI, easy embedding |
-| Compilation | Async via RabbitMQ | Decoupling, extensibility |
+| Compilation | Async via pgmq | Decoupling, extensibility, single data store |
 | First language | AssemblyScript | Easy toolchain, fast compilation |
 | Execution model | Synchronous (Phase 0) | Simplicity; async execution in later phase |
 | Pagination | Not implemented | Defer until needed |
-| Service discovery | Not implemented | RabbitMQ provides decoupling |
+| Service discovery | Not implemented | pgmq provides decoupling via database |
 
 See [ADR 001: WASM Runtime](./decisions/001-wasm-runtime.md) for detailed rationale on the WASM decision.
 

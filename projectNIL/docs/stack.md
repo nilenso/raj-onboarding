@@ -20,7 +20,7 @@ This document captures the technology choices and rationale for the project.
 │                                                                                 │
 │   • REST API (CRUD for functions, executions)                                   │
 │   • Persists source with status=PENDING                                         │
-│   • Publishes compilation job to RabbitMQ                                       │
+│   • Publishes compilation job to pgmq (message queue in PostgreSQL)             │
 │   • Consumes compilation results, updates DB with WASM binary                   │
 │   • Executes WASM via Chicory runtime                                           │
 └───────────┬─────────────────────────────────────────────────────────────────────┘
@@ -28,9 +28,9 @@ This document captures the technology choices and rationale for the project.
             │ Publish: compile.{language}                  │ Consume: compilation.results
             ▼                                              │
 ┌─────────────────────────────────────────────────────────────────────────────────┐
-│                              RabbitMQ                                           │
-│   Exchange: compilation.requests (topic)                                        │
-│   Queue: compilation.results                                                    │
+│                          pgmq (PostgreSQL Queue)                                │
+│   Queue: compilation_jobs (routing by language in message)                      │
+│   Queue: compilation_results                                                    │
 └───────────┬─────────────────────────────────────────────────────────────────────┘
             │                                              ▲
             │ Consume: compile.assemblyscript              │ Publish
@@ -60,7 +60,7 @@ This document captures the technology choices and rationale for the project.
 | **Spring Boot** | 3.4.x | Application framework |
 | **Spring Web** | - | REST API endpoints |
 | **Spring Data JPA** | - | Database access |
-| **Spring AMQP** | - | RabbitMQ integration |
+| **pgmq** | - | PostgreSQL-based message queue |
 | **Gradle** | 8.x | Build tool |
 
 **Why Spring Boot?**
@@ -107,15 +107,15 @@ This document captures the technology choices and rationale for the project.
 
 | Technology | Version | Purpose |
 |------------|---------|---------|
-| **RabbitMQ** | 3.x | Message broker |
-| **Spring AMQP** | - | Java client |
+| **pgmq** | Latest | PostgreSQL-native message queue |
 
-**Why RabbitMQ?**
-- Reliable message delivery with acknowledgments
-- Flexible routing (topic exchanges for language-based routing)
-- Management UI for debugging
-- Good Spring integration
-- Simpler than Kafka for this use case (no event sourcing needs)
+**Why pgmq?**
+- Built on PostgreSQL (single data store)
+- No additional infrastructure (AMQP broker, containers, ports)
+- Native SQL-based queuing with FIFO guarantees
+- Simple API with automatic message cleanup
+- Reduces operational complexity for Phase 0
+- Scales with PostgreSQL (already in use)
 
 **Why async compilation via message queue?**
 - Decouples API service from compiler services
@@ -194,8 +194,7 @@ This allows adding new language compilers without modifying the API service:
 |---------|------------|------|---------|
 | api-service | Spring Boot | 8080 | REST API, DB access, WASM execution |
 | compiler-assemblyscript | Node.js | N/A (queue only) | Compile AS → WASM |
-| rabbitmq | RabbitMQ | 5672, 15672 | Message broker |
-| postgres | PostgreSQL | 5432 | Database |
+| postgres | PostgreSQL | 5432 | Database + pgmq message queue |
 
 ## Architecture Decisions
 
@@ -203,7 +202,7 @@ This allows adding new language compilers without modifying the API service:
 
 We considered Spring Cloud Netflix Eureka for service discovery but decided against it for Phase 0:
 
-- **RabbitMQ provides decoupling**: Services communicate via queues, not direct HTTP calls
+- **pgmq provides decoupling**: Services communicate via database queues, not direct HTTP calls
 - **No dynamic scaling yet**: Fixed set of services for Phase 0
 - **Reduced complexity**: One less moving part to manage
 - **Can add later**: Architecture supports adding Eureka if needed
@@ -281,5 +280,5 @@ projectNIL/
 - [Spring Boot Documentation](https://docs.spring.io/spring-boot/docs/current/reference/html/)
 - [Chicory WASM Runtime](https://github.com/nicksanford/chicory)
 - [AssemblyScript](https://www.assemblyscript.org/)
-- [RabbitMQ Tutorials](https://www.rabbitmq.com/getstarted.html)
+- [pgmq Documentation](https://github.com/tembo-io/pgmq)
 - [Liquibase Documentation](https://docs.liquibase.com/)
