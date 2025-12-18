@@ -45,6 +45,19 @@ Need async communication between API service and compiler services for non-block
 
 **Migration path**: Can switch to RabbitMQ if throughput needs increase.
 
+## Setup
+
+Using containerized PostgreSQL 18 with pgmq pre-installed:
+
+```bash
+podman run -d --name pgmq-postgres \
+  -e POSTGRES_PASSWORD=postgres \
+  -p 5432:5432 \
+  ghcr.io/pgmq/pg18-pgmq:latest
+```
+
 ## References
 
-- [pgmq](https://github.com/tembo-io/pgmq)
+- [pgmq GitHub](https://github.com/pgmq/pgmq)
+- [pgmq on PGXN](https://pgxn.org/dist/pgmq/)
+- [Container images](https://github.com/pgmq/pgmq/pkgs/container/pg18-pgmq)

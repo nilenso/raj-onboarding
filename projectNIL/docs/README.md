@@ -37,7 +37,48 @@ A Function as a Service (FaaS) platform. Users submit source code, it compiles t
 |---------|------|------|---------|
 | api-service | Spring Boot / Java 25 | 8080 | REST API, DB, WASM execution |
 | compiler-assemblyscript | Node.js | - | Compile AS → WASM |
-| postgres | PostgreSQL 16 + pgmq | 5432 | Persistence + message queue |
+| postgres | PostgreSQL 18 + pgmq | 5432 | Persistence + message queue |
+
+## Local Development
+
+Start PostgreSQL with pgmq pre-installed:
+
+```bash
+podman run -d --name pgmq-postgres \
+  -e POSTGRES_PASSWORD=postgres \
+  -p 5432:5432 \
+  ghcr.io/pgmq/pg18-pgmq:latest
+```
+
+Connect and enable pgmq:
+
+```bash
+psql postgres://postgres:postgres@localhost:5432/postgres
+```
+
+```sql
+CREATE EXTENSION pgmq;
+
+-- Create queues
+SELECT pgmq.create('compilation_jobs');
+SELECT pgmq.create('compilation_results');
+```
+
+### pgmq Quick Reference
+
+```sql
+-- Send message
+SELECT pgmq.send('compilation_jobs', '{"functionId": "...", "language": "assemblyscript", "source": "..."}');
+
+-- Read message (invisible for 30s)
+SELECT * FROM pgmq.read('compilation_jobs', 30, 1);
+
+-- Delete after processing
+SELECT pgmq.delete('compilation_jobs', 1);
+
+-- Or archive for retention
+SELECT pgmq.archive('compilation_jobs', 1);
+```
 
 ## Tech Stack
 
