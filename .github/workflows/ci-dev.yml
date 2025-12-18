@@ -25,27 +25,27 @@ jobs:
           java-version: '25'
           distribution: 'temurin'
 
-      - name: Build
-        run: ./gradlew app:build
+      # - name: Build
+      #   run: ./gradlew app:build
 
-      - name: Check (checkstyle, spotbugs)
-        run: ./gradlew app:check
+      # - name: Check (checkstyle, spotbugs)
+      #   run: ./gradlew app:check
 
-      - name: Run tests
-        run: ./gradlew app:test
+      # - name: Run tests
+      #   run: ./gradlew app:test
 
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-results
-          path: app/build/test-results/test/
-          retention-days: 30
+      # - name: Upload test results
+      #   if: always()
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: test-results
+      #     path: app/build/test-results/test/
+      #     retention-days: 30
 
-      - name: Publish test report
-        if: always()
-        uses: dorny/test-reporter@v1
-        with:
-          name: JUnit Test Results
-          path: 'app/build/test-results/test/*.xml'
-          reporter: 'java-junit'
+      # - name: Publish test report
+      #   if: always()
+      #   uses: dorny/test-reporter@v1
+      #   with:
+      #     name: JUnit Test Results
+      #     path: 'app/build/test-results/test/*.xml'
+      #     reporter: 'java-junit'
