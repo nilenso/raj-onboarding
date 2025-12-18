@@ -10,7 +10,7 @@ This document captures the technology choices and rationale for the project.
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────┐
-│                              User Request                                        │
+│                             User Request                                        │
 │         POST /functions { "language": "assemblyscript", "source": "..." }       │
 └─────────────────────────────────────┬───────────────────────────────────────────┘
                                       │
@@ -44,7 +44,7 @@ This document captures the technology choices and rationale for the project.
 └─────────────────────────────────────────────────────────────────────────────────┘
                                       
 ┌─────────────────────────────────────────────────────────────────────────────────┐
-│                              PostgreSQL                                          │
+│                             PostgreSQL                                          │
 │   • functions: id, name, language, source, wasm_binary, status, ...             │
 │   • executions: id, function_id, input, output, status, ...                     │
 └─────────────────────────────────────────────────────────────────────────────────┘
@@ -56,7 +56,7 @@ This document captures the technology choices and rationale for the project.
 
 | Technology | Version | Purpose |
 |------------|---------|---------|
-| **Java** | 21 (LTS) | Primary language |
+| **Java** | 25 | Primary language |
 | **Spring Boot** | 3.4.x | Application framework |
 | **Spring Web** | - | REST API endpoints |
 | **Spring Data JPA** | - | Database access |
@@ -70,11 +70,11 @@ This document captures the technology choices and rationale for the project.
 - Strong community and documentation
 - Good fit for learning the Java enterprise ecosystem
 
-**Why Java 21?**
-- Current LTS (Long Term Support) release
+**Why Java 25?**
+- Latest release with modern language features
 - Required minimum for Spring Boot 3.x is Java 17
-- Java 21 brings virtual threads, pattern matching improvements
-- Stable and widely supported (vs Java 25 which is bleeding edge)
+- Java 25 brings latest virtual threads, pattern matching, and other modern features
+- Strong performance improvements and language enhancements
 
 **Why Gradle over Maven?**
 - More flexible build scripts (Groovy/Kotlin DSL)
