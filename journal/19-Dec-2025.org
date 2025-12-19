@@ -1,0 +1,28 @@
+* 19-Dec-2025
+
+** Phase 0 Infrastructure & API Planning
+
+Today focused on initializing the core infrastructure for the microservices monorepo and planning the internal architecture of the API Service.
+
+*** Progress Summary
+- Infrastructure Scaffolding:
+  - Initialized Liquibase migrations for functions, executions, and PGMQ (#34).
+  - Configured project-wide Gradle build system with subproject supports (#32).
+  - Setup Podman Compose for local development (PostgreSQL 18 + PGMQ) (#38, #43).
+- CI/CD:
+  - Established GitHub Actions workflows for continuous integration and deployment.
+- Technical Planning:
+  - Conducted status quo review of current Phase 0 issues.
+  - Finalized shift to PGMQ (ADR 002) for asynchronous compilation.
+  - Defined necessary components for API Service: WASM Bridge (data marshalling), PGMQ Poller, and Virtual Thread configuration for Java 25.
+
+*** Architecture Refinement (API Service #33)
+Defined the class hierarchy and package structure to handle the complexities of async compilation and sandboxed execution:
+- ~com.projectnil.api.runtime~: Logic for memory allocation and data transfer between Java and WASM (Chicory).
+- ~com.projectnil.api.queue~: PGMQ producers and background pollers for compilation jobs.
+- ~com.projectnil.api.config~: Performance tuning for Java 25 virtual threads.
+
+*** Next Steps
+- Implement technical design for API Service class structure.
+- Execute Spring Boot scaffolding and PGMQ integration.
+- Initialize AssemblyScript compiler service implementation.
