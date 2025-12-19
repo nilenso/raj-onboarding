@@ -1,0 +1,32 @@
+name: CI - dev & feature branches
+
+on:
+  push:
+    branches: 
+      - main
+      - dev
+      - 'feature-issue-*'
+  pull_request:
+    branches: 
+      - main
+
+jobs:
+  check-test-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      runs:
+        working-directory: projectNIL
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check (checkstyle, spotbugs, javadoc)
+        run: ./gradlew check
+
+      - name: Run tests
+        run: ./gradlew test
+
+      - name: Build
+        run: ./gradlew build

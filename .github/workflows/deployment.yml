@@ -1,0 +1,17 @@
+name: CI/CD - main
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    needs: check-test-build 
+    runs-on: ubuntu-latest
+    if: success()
+
+    steps:
+      - name: deploy 
+        run: |
+          echo "to be configured, scp image and podman compose"
+          
