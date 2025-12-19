@@ -1,0 +1,44 @@
+# ProjectNIL Local Development Environment
+# Usage: podman-compose up -d
+
+services:
+  postgres:
+    image: ghcr.io/pgmq/pg18-pgmq:v1.8.0
+    container_name: projectnil-db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: projectnil
+      POSTGRES_USER: projectnil
+      POSTGRES_PASSWORD: projectnil
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U projectnil -d projectnil"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # Liquibase migration runner
+  # Runs migrations and exits
+  liquibase:
+    image: liquibase/liquibase:4.30
+    container_name: projectnil-migrations
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./migrations:/liquibase/changelog
+    command: >
+      --search-path=/liquibase/changelog
+      --url=jdbc:postgresql://postgres:5432/projectnil
+      --username=projectnil
+      --password=projectnil
+      --changeLogFile=db.changelog-master.yaml
+      update
+    profiles:
+      - migrate
+
+volumes:
+  postgres_data:

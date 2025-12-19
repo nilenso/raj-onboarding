@@ -1,0 +1,7 @@
+databaseChangeLog:
+  - include:
+      file: changelog/001-create-functions-table.yaml
+  - include:
+      file: changelog/002-create-executions-table.yaml
+  - include:
+      file: changelog/003-setup-pgmq-queues.yaml

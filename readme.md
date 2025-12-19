@@ -1,7 +1,7 @@
 # Raj's Onboarding Logs 
 
-[![integrations](https://github.com/nilenso/raj-onboarding/actions/workflows/integrations.yml/badge.svg?branch=dev)](https://github.com/nilenso/raj-onboarding/actions/workflows/ci-dev.yml)
-[![deployment](https://github.com/nilenso/raj-onboarding/actions/workflows/deployment.yml/badge.svg?branch=main)](https://github.com/nilenso/raj-onboarding/actions/workflows/ci-cd-main.yml)
+[![integrations](https://github.com/nilenso/raj-onboarding/actions/workflows/integrations.yml/badge.svg?branch=dev)](https://github.com/nilenso/raj-onboarding/actions/workflows/integrations.yml)
+[![deployment](https://github.com/nilenso/raj-onboarding/actions/workflows/deployment.yml/badge.svg?branch=main)](https://github.com/nilenso/raj-onboarding/actions/workflows/deployment.yml)
 
 ### Agentic Tooling Disclaimer
 

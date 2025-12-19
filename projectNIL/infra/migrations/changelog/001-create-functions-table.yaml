@@ -1,0 +1,106 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001-create-function-status-enum
+      author: projectnil
+      changes:
+        - sql:
+            sql: >
+              CREATE TYPE function_status AS ENUM (
+                'PENDING',
+                'COMPILING',
+                'READY',
+                'FAILED'
+              );
+      rollback:
+        - sql:
+            sql: DROP TYPE function_status;
+
+  - changeSet:
+      id: 001-create-functions-table
+      author: projectnil
+      changes:
+        - createTable:
+            tableName: functions
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  defaultValueComputed: gen_random_uuid()
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: description
+                  type: text
+              - column:
+                  name: language
+                  type: varchar(50)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: source
+                  type: text
+                  constraints:
+                    nullable: false
+              - column:
+                  name: wasm_binary
+                  type: bytea
+              - column:
+                  name: status
+                  type: function_status
+                  defaultValue: PENDING
+                  constraints:
+                    nullable: false
+              - column:
+                  name: compile_error
+                  type: text
+              - column:
+                  name: created_at
+                  type: timestamptz
+                  defaultValueComputed: now()
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: timestamptz
+                  defaultValueComputed: now()
+                  constraints:
+                    nullable: false
+      rollback:
+        - dropTable:
+            tableName: functions
+
+  - changeSet:
+      id: 001-create-functions-name-index
+      author: projectnil
+      changes:
+        - createIndex:
+            indexName: idx_functions_name
+            tableName: functions
+            columns:
+              - column:
+                  name: name
+      rollback:
+        - dropIndex:
+            indexName: idx_functions_name
+            tableName: functions
+
+  - changeSet:
+      id: 001-create-functions-status-index
+      author: projectnil
+      changes:
+        - createIndex:
+            indexName: idx_functions_status
+            tableName: functions
+            columns:
+              - column:
+                  name: status
+      rollback:
+        - dropIndex:
+            indexName: idx_functions_status
+            tableName: functions
