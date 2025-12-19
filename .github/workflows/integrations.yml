@@ -3,12 +3,11 @@ name: CI - dev & feature branches
 on:
   push:
     branches: 
-      - main
       - dev
       - 'feature-issue-*'
   pull_request:
     branches: 
-      - main
+      - dev
 
 jobs:
   check-test-build:
