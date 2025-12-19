@@ -23,7 +23,7 @@ jobs:
       #   run: ./gradlew build
         
       - name: Check (checkstyle, spotbugs, javadoc)
-        run: ./gradlew app:check
+        run: ./gradlew check
         working-directory: projectNIL
 
       # - name: Run tests
