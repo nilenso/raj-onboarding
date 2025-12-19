@@ -1,22 +1,22 @@
 plugins {
     id("java")
-    id("org.springframework.boot") version "3.4.1"
-    id("io.spring.dependency-management") version "1.1.7"
+    alias(libs.plugins.spring.boot)
+    alias(libs.plugins.spring.dependency-management)
 }
 
 group = "com.projectnil"
 version = "0.0.1-SNAPSHOT"
 
 dependencies {
-    implementation("org.springframework.boot:spring-boot-starter-web")
-    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-    implementation("org.liquibase:liquibase-core")
-    runtimeOnly("org.postgresql:postgresql")
+    implementation(libs.spring.boot.starter.web)
+    implementation(libs.spring.boot.starter.data-jpa)
+    implementation(libs.liquibase.core)
+    runtimeOnly(libs.postgresql)
     
     // Chicory WASM runtime
-    implementation("io.github.chicory-wasm:core:0.0.1")
+    implementation(libs.chicory.core)
     
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation(libs.spring.boot.starter.test)
 }
 
 tasks.named<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
