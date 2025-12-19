@@ -1,0 +1,115 @@
+databaseChangeLog:
+  - changeSet:
+      id: 002-create-execution-status-enum
+      author: projectnil
+      changes:
+        - sql:
+            sql: >
+              CREATE TYPE execution_status AS ENUM (
+                'PENDING',
+                'RUNNING',
+                'COMPLETED',
+                'FAILED'
+              );
+      rollback:
+        - sql:
+            sql: DROP TYPE execution_status;
+
+  - changeSet:
+      id: 002-create-executions-table
+      author: projectnil
+      changes:
+        - createTable:
+            tableName: executions
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  defaultValueComputed: gen_random_uuid()
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: function_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_executions_function
+                    references: functions(id)
+                    deleteCascade: true
+              - column:
+                  name: input
+                  type: jsonb
+              - column:
+                  name: output
+                  type: jsonb
+              - column:
+                  name: status
+                  type: execution_status
+                  defaultValue: PENDING
+                  constraints:
+                    nullable: false
+              - column:
+                  name: error_message
+                  type: text
+              - column:
+                  name: started_at
+                  type: timestamptz
+              - column:
+                  name: completed_at
+                  type: timestamptz
+              - column:
+                  name: created_at
+                  type: timestamptz
+                  defaultValueComputed: now()
+                  constraints:
+                    nullable: false
+      rollback:
+        - dropTable:
+            tableName: executions
+
+  - changeSet:
+      id: 002-create-executions-function-id-index
+      author: projectnil
+      changes:
+        - createIndex:
+            indexName: idx_executions_function_id
+            tableName: executions
+            columns:
+              - column:
+                  name: function_id
+      rollback:
+        - dropIndex:
+            indexName: idx_executions_function_id
+            tableName: executions
+
+  - changeSet:
+      id: 002-create-executions-status-index
+      author: projectnil
+      changes:
+        - createIndex:
+            indexName: idx_executions_status
+            tableName: executions
+            columns:
+              - column:
+                  name: status
+      rollback:
+        - dropIndex:
+            indexName: idx_executions_status
+            tableName: executions
+
+  - changeSet:
+      id: 002-create-executions-created-at-index
+      author: projectnil
+      changes:
+        - createIndex:
+            indexName: idx_executions_created_at
+            tableName: executions
+            columns:
+              - column:
+                  name: created_at
+                  descending: true
+      rollback:
+        - dropIndex:
+            indexName: idx_executions_created_at
+            tableName: executions

@@ -1,0 +1,33 @@
+databaseChangeLog:
+  - changeSet:
+      id: 003-enable-pgmq-extension
+      author: projectnil
+      comment: Enable pgmq extension (pre-installed in pg18-pgmq image)
+      changes:
+        - sql:
+            sql: CREATE EXTENSION IF NOT EXISTS pgmq;
+      rollback:
+        - sql:
+            sql: DROP EXTENSION IF EXISTS pgmq;
+
+  - changeSet:
+      id: 003-create-compilation-jobs-queue
+      author: projectnil
+      comment: Queue for compilation requests from API to Compiler service
+      changes:
+        - sql:
+            sql: SELECT pgmq.create('compilation_jobs');
+      rollback:
+        - sql:
+            sql: SELECT pgmq.drop_queue('compilation_jobs');
+
+  - changeSet:
+      id: 003-create-compilation-results-queue
+      author: projectnil
+      comment: Queue for compilation results from Compiler back to API service
+      changes:
+        - sql:
+            sql: SELECT pgmq.create('compilation_results');
+      rollback:
+        - sql:
+            sql: SELECT pgmq.drop_queue('compilation_results');

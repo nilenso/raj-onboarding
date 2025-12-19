@@ -41,7 +41,45 @@ A Function as a Service (FaaS) platform. Users submit source code, it compiles t
 
 ## Local Development
 
-Start PostgreSQL with pgmq pre-installed:
+### Prerequisites
+
+- [Podman](https://podman.io/) (or Docker)
+- [Podman Compose](https://github.com/containers/podman-compose) (or Docker Compose)
+
+### Quick Start
+
+```bash
+cd projectNIL/infra
+
+# Start PostgreSQL with pgmq
+podman compose up -d postgres
+
+# Run database migrations
+podman compose --profile migrate up liquibase
+
+# Verify setup
+podman exec projectnil-db psql -U projectnil -d projectnil -c "\dt"
+```
+
+### Common Commands
+
+```bash
+# View logs
+podman compose logs -f postgres
+
+# Stop services
+podman compose down
+
+# Reset database (destroy all data)
+podman compose down -v
+
+# Connect to database
+podman exec -it projectnil-db psql -U projectnil -d projectnil
+```
+
+### Manual Setup (Alternative)
+
+If you prefer to run PostgreSQL manually:
 
 ```bash
 podman run -d --name pgmq-postgres \
@@ -84,7 +122,7 @@ SELECT pgmq.archive('compilation_jobs', 1);
 
 | Component | Technology | ADR |
 |-----------|------------|-----|
-| Runtime | Java 25, Spring Boot 4 | - |
+| Runtime | Java 25, Spring Boot 3.4 | - |
 | Database | PostgreSQL 18, Liquibase | - |
 | Message Queue | pgmq | [ADR-002](./decisions/002-message-queue-pgmq.md) |
 | WASM Runtime | Chicory | [ADR-001](./decisions/001-wasm-runtime.md) |
@@ -110,7 +148,13 @@ POST /functions
 
 ## Database Schema
 
+Managed via Liquibase migrations in `infra/migrations/`.
+
 ```sql
+-- Status enums
+CREATE TYPE function_status AS ENUM ('PENDING', 'COMPILING', 'READY', 'FAILED');
+CREATE TYPE execution_status AS ENUM ('PENDING', 'RUNNING', 'COMPLETED', 'FAILED');
+
 CREATE TABLE functions (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name            VARCHAR(255) NOT NULL,
@@ -118,22 +162,30 @@ CREATE TABLE functions (
     language        VARCHAR(50) NOT NULL,
     source          TEXT NOT NULL,
     wasm_binary     BYTEA,
-    status          VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+    status          function_status NOT NULL DEFAULT 'PENDING',
     compile_error   TEXT,
-    created_at      TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at      TIMESTAMP NOT NULL DEFAULT NOW()
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE executions (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    function_id     UUID REFERENCES functions(id) ON DELETE SET NULL,
-    input           JSONB NOT NULL,
+    function_id     UUID REFERENCES functions(id) ON DELETE CASCADE,
+    input           JSONB,
     output          JSONB,
-    status          VARCHAR(20) NOT NULL DEFAULT 'PENDING',
-    started_at      TIMESTAMP NOT NULL DEFAULT NOW(),
-    completed_at    TIMESTAMP,
-    metadata        JSONB
+    status          execution_status NOT NULL DEFAULT 'PENDING',
+    error_message   TEXT,
+    started_at      TIMESTAMPTZ,
+    completed_at    TIMESTAMPTZ,
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+-- Indexes
+CREATE INDEX idx_functions_name ON functions(name);
+CREATE INDEX idx_functions_status ON functions(status);
+CREATE INDEX idx_executions_function_id ON executions(function_id);
+CREATE INDEX idx_executions_status ON executions(status);
+CREATE INDEX idx_executions_created_at ON executions(created_at DESC);
 ```
 
 ## Message Formats
@@ -161,32 +213,34 @@ CREATE TABLE executions (
 
 ```
 projectNIL/
+├── common/                          # Shared entities and utilities
+│   └── entities/
+│
 ├── services/
-│   ├── api-service/                 # Spring Boot
-│   │   ├── build.gradle
-│   │   └── src/main/
-│   │       ├── java/com/projectnil/api/
-│   │       │   ├── controller/
-│   │       │   ├── service/
-│   │       │   ├── repository/
-│   │       │   ├── model/
-│   │       │   ├── messaging/
-│   │       │   └── runtime/
-│   │       └── resources/
-│   │           ├── application.yml
-│   │           └── db/changelog/
+│   ├── api/                         # Spring Boot API service
+│   │   └── build.gradle.kts
 │   │
-│   └── compiler-assemblyscript/     # Node.js
-│       ├── package.json
-│       └── src/
+│   └── compiler-assembly-script/    # Node.js compiler service
+│       └── build.gradle.kts
+│
+├── infra/                           # Infrastructure configuration
+│   ├── compose.yml                  # Podman/Docker Compose
+│   └── migrations/                  # Liquibase database migrations
+│       ├── db.changelog-master.yaml
+│       └── changelog/
+│           ├── 001-create-functions-table.yaml
+│           ├── 002-create-executions-table.yaml
+│           └── 003-setup-pgmq-queues.yaml
+│
+├── docs/
+│   ├── README.md                    # This file
+│   ├── api.md                       # API reference
+│   ├── roadmap.md                   # Future phases
+│   └── decisions/                   # ADRs
 │
 ├── gradle/libs.versions.toml
-├── compose.yml
-└── docs/
-    ├── README.md                    # This file
-    ├── api.md                       # API reference
-    ├── roadmap.md                   # Future phases
-    └── decisions/                   # ADRs
+├── build.gradle.kts
+└── settings.gradle.kts
 ```
 
 ## Related Docs
