@@ -14,6 +14,12 @@ subprojects {
     apply(plugin = "java")
     apply(plugin = "checkstyle")
 
+    java {
+        toolchain {
+            languageVersion.set(JavaLanguageVersion.of(25))
+        }
+    }
+
     repositories {
             mavenCentral()
     }
