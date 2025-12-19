@@ -22,7 +22,7 @@ This document maintains the current versions and rationale for the ProjectNIL te
 
 | Component | Technology | Version | Rationale |
 |-----------|------------|---------|-----------|
-| **WASM Runtime** | Chicory | 0.0.1 | Pure Java implementation, avoiding native JNI overhead and complexity. |
+| **WASM Runtime** | Chicory | 1.6.1 | Pure Java implementation, avoiding native JNI overhead and complexity. |
 | **Compiler** | AssemblyScript | Latest | TypeScript-like syntax for easy developer onboarding to WASM. |
 
 ## Infrastructure
@@ -38,6 +38,6 @@ Refer to `/projectNIL/gradle/libs.versions.toml` for exact build-time dependenci
 
 - `springBoot`: 4.0.0
 - `junit`: 5.11.4
-- `chicory`: 0.0.1
+- `chicory`: 1.6.1
 - `postgresql`: Driver compatible with PG 18
 - `liquibase`: 4.30.0

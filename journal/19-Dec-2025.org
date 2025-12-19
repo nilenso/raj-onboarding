@@ -14,7 +14,7 @@ Today focused on initializing the core infrastructure for the microservices mono
 - Technical Planning:
   - Conducted status quo review of current Phase 0 issues.
   - Finalized shift to PGMQ (ADR 002) for asynchronous compilation.
-  - Upgraded stack to **Spring Boot 4.0.0 (Spring Framework 7)** and **Java 25**.
+  - Upgraded stack to **Spring Boot 4.0.0 (Spring Framework 7)**, **Java 25**, and **Chicory 1.6.1**.
   - Defined necessary components for API Service: WASM Bridge (data marshalling), PGMQ Poller, and Virtual Thread configuration for Java 25.
 
 *** Architecture Refinement (API Service #33)

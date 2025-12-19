@@ -1,7 +1,7 @@
 plugins {
     id("java")
     alias(libs.plugins.spring.boot)
-    alias(libs.plugins.spring.dependency-management)
+    alias(libs.plugins.spring.dependency.management)
 }
 
 group = "com.projectnil"
@@ -9,12 +9,12 @@ version = "0.0.1-SNAPSHOT"
 
 dependencies {
     implementation(libs.spring.boot.starter.web)
-    implementation(libs.spring.boot.starter.data-jpa)
+    implementation(libs.spring.boot.starter.data.jpa)
     implementation(libs.liquibase.core)
     runtimeOnly(libs.postgresql)
     
     // Chicory WASM runtime
-    implementation(libs.chicory.core)
+    implementation(libs.chicory.runtime)
     
     testImplementation(libs.spring.boot.starter.test)
 }

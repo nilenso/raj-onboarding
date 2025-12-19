@@ -1,4 +1,5 @@
-import org.gradle.api.tasks.testing.Test // <--- 1. CRITICAL IMPORT
+import org.gradle.api.tasks.testing.Test
+import org.gradle.api.plugins.JavaPluginExtension
 
 plugins {
     id("base")
@@ -14,7 +15,7 @@ subprojects {
     apply(plugin = "java")
     apply(plugin = "checkstyle")
 
-    java {
+    configure<JavaPluginExtension> {
         toolchain {
             languageVersion.set(JavaLanguageVersion.of(25))
         }

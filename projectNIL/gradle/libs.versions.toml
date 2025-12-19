@@ -3,6 +3,7 @@ checkstyle = "10.21.0"
 junit = "5.11.4"
 springBoot = "4.0.0"
 springDependencyManagement = "1.1.7"
+chicory = "1.6.1"
 
 [libraries]
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }
@@ -11,7 +12,7 @@ spring-boot-starter-data-jpa = { module = "org.springframework.boot:spring-boot-
 spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test" }
 liquibase-core = { module = "org.liquibase:liquibase-core" }
 postgresql = { module = "org.postgresql:postgresql" }
-chicory-core = { module = "io.github.chicory-wasm:core", version = "0.0.1" }
+chicory-runtime = { module = "com.dylibso.chicory:runtime", version.ref = "chicory" }
 
 [plugins]
 spring-boot = { id = "org.springframework.boot", version.ref = "springBoot" }
