@@ -84,8 +84,8 @@ SELECT pgmq.archive('compilation_jobs', 1);
 
 | Component | Technology | ADR |
 |-----------|------------|-----|
-| Runtime | Java 25, Spring Boot 3.4 | - |
-| Database | PostgreSQL 16, Liquibase | - |
+| Runtime | Java 25, Spring Boot 4 | - |
+| Database | PostgreSQL 18, Liquibase | - |
 | Message Queue | pgmq | [ADR-002](./decisions/002-message-queue-pgmq.md) |
 | WASM Runtime | Chicory | [ADR-001](./decisions/001-wasm-runtime.md) |
 | Compiler | AssemblyScript (asc) | - |
