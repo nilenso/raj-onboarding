@@ -9,4 +9,4 @@ rootProject.name = "projectNIL"
 
 include("services:api")
 include("services:compiler-assembly-script")
-include("common:shared-models")
+include("common")
