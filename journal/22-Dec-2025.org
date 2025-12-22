@@ -17,4 +17,9 @@
 - [[file:../projectNIL/infra/prod.compose.yml][Implemented prod.compose.yml]] for Podman orchestration.
 - [[file:../projectNIL/infra/ansible/provision.yml][Authored Ansible playbook]] for remote Droplet provisioning.
 - [[file:../.github/workflows/deployment.yml][Overhauled GitHub Deployment workflow]] for automated Build -> Transfer -> Deploy pipeline.
+- Resolved Postgres 18+ volume incompatibilities by [[file:../projectNIL/infra/prod.compose.yml][correcting mount path]] to =/var/lib/postgresql=.
+- Fixed Podman image resolution by using fully qualified registry names for Liquibase.
+- Stabilized production deployment with verifiable [[http://157.245.108.179:8080/health][Health Endpoint]].
+- [[file:../projectNIL/docs/deployment-roadmap.md][Documented troubleshooting and maintenance]] procedures for Droplet orchestration.
+- Completed engineering task [[https://github.com/nilenso/raj-onboarding/issues/20][#20: Setup deployment server on DigitalOcean]].
 
