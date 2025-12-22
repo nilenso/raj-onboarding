@@ -68,6 +68,9 @@ jobs:
             podman load -i /opt/projectnil/compiler-image.tar
             cd /opt/projectnil/infra
             # Podman-compose might need specific help to avoid building
-            podman-compose -f prod.compose.yml up -d
+            if ! podman-compose -f prod.compose.yml up -d; then
+              echo "Deployment failed"
+              exit 1
+            fi
             rm /opt/projectnil/*.tar
 
