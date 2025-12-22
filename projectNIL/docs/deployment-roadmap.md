@@ -42,6 +42,32 @@ The `:services:api` depends on `:common`. A naive build within the API Dockerfil
     - SCP images and the `prod.compose.yml` to the Droplet.
     - Run `podman load` and `podman-compose up`.
 
+## Bootstrap Instructions
+
+To provision the droplet for the first time:
+
+1.  **Set GitHub Secrets** (One-time Setup):
+    ```bash
+    gh secret set DROPLET_IP --body "157.245.108.179"
+    gh secret set DROPLET_USER --body "root"
+    gh secret set SSH_PRIVATE_KEY < ~/.ssh/id_ed25519  # Replace with your private key path
+    ```
+
+2.  **Run Ansible Provisioning** (Local Machine):
+    ```bash
+    cd projectNIL/infra/ansible
+    ansible-playbook -i "157.245.108.179," -u root provision.yml
+    ```
+    - Expected output shows successful installation of Podman/Podman-Compose and directory setup.
+
+3.  **Verify Setup**:
+    - SSH into the droplet: `ssh root@157.245.108.179`
+    - Confirm Podman is installed: `podman --version`
+    - Check UFW rules: `ufw status`
+    - Ensure directory exists: `ls /opt/projectnil/infra/migrations`
+
+After bootstrap, every push to `main` will automatically deploy the latest code via the GitHub workflow.
+
 ## 4. Risks & Considerations
 - **Architecture:** The Droplet is x86_64. Ensure build steps happen on the correct architecture or use `buildx`.
 - **Secrets:** Use GitHub Secrets for DB passwords and SSH keys.
