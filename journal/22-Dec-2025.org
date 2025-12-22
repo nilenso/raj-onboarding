@@ -1,0 +1,10 @@
+* [2025-12-22 Mon] - API Service Design and Lombok Integration
+
+- [[file:../projectNIL/common/src/main/java/com/projectnil/common/domain/Function.java][Refactored Function entity]] and [[file:../projectNIL/common/src/main/java/com/projectnil/common/domain/Execution.java][Execution entity]] with Lombok builder and accessors.
+- [[file:../projectNIL/common/src/main/java/com/projectnil/common/domain/FunctionStatus.java][Restored FunctionStatus]] and [[file:../projectNIL/common/src/main/java/com/projectnil/common/domain/ExecutionStatus.java][ExecutionStatus]] enums.
+- [[file:../projectNIL/services/api/src/main/java/com/projectnil/api/web/][Scaffolded Web DTOs]] and [[file:../projectNIL/services/api/src/main/java/com/projectnil/api/queue/][Queue DTOs]] using Java Records.
+- [[file:../projectNIL/services/api/src/main/java/com/projectnil/api/runtime/WasmRuntime.java][Defined WasmRuntime interface]] for abstraction.
+- [[file:../projectNIL/services/api/src/main/java/com/projectnil/api/ApiApplication.java][Initialized ApiApplication]] with Spring Boot 4.0.0 persistence config.
+- [[file:../projectNIL/effectivejava-anvil/ADOPTION.md][Documented Effective Java items adoption]] (Items 2, 15, 16, 17, 34).
+- [[file:../projectNIL/docs/design-api-service.md][Updated API service design documentation]] with technical nuances.
+- Completed engineering task [[https://github.com/nilenso/raj-onboarding/issues/44][#44: Define API Service Package Structure]].

@@ -104,22 +104,18 @@ public class CompilationPoller {
 3. **Compiler Service** (External Node.js):
    - Pulls from `compilation_jobs`.
    - Compiles and creates binary.
-   - Pushes `CompilationResult` to `compilation_results`.
-4. **CompilationPoller**:
-   - Detects new message in `compilation_results`.
-   - Updates `Function` entity in DB with `wasmBinary` and sets status to `READY`.
-   - Acknowledges/Deletes message from PGMQ.
-
 ---
 
-## 6. Project Configuration
+## 7. Technical Nuances & Decisions
 
-### Virtual Threads (Java 25)
-Enabling in `application.yml`:
-```yaml
-spring:
-  threads:
-    virtual:
-      enabled: true
-```
-This ensures Tomcat and all `@Async` tasks run on lightweight virtual threads.
+### Persistence Configuration (Spring Boot 4.0.0+)
+In this specific environment, entity scanning and JPA repository configuration moved from `org.springframework.boot.autoconfigure.domain` to `org.springframework.boot.persistence.autoconfigure`.
+- Use `@EntityScan("com.projectnil.common.domain")` on `ApiApplication`.
+
+### Records for DTOs
+All Web and Queue DTOs are implemented as Java `records`. This enforces immutability (Effective Java Item 17) and provides a clean separation from mutable JPA entities.
+
+### Lombok Configuration
+- Star imports are prohibited by Checkstyle.
+- `@Builder.Default` is required alongside field initialization for default values (e.g., `FunctionStatus.PENDING`) to work within the builder pattern.
+
