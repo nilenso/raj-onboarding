@@ -8,4 +8,9 @@ plugins {
 
 dependencies {
         implementation(libs.spring.boot.starter.data.jpa)
+        compileOnly(libs.lombok)
+        annotationProcessor(libs.lombok)
+
+        testCompileOnly(libs.lombok)
+        testAnnotationProcessor(libs.lombok)
 }
