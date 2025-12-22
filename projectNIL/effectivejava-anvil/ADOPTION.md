@@ -46,3 +46,19 @@ We use strongly-typed enums for all state and status fields within the domain mo
 *   **Code Reference**:
     *   `Function.java`, Line 46: `private FunctionStatus status;`
     *   `Execution.java`, Line 45: `private ExecutionStatus status;`
+
+## Item 17: Minimize mutability (using Records for DTOs)
+
+We use Java `records` for Data Transfer Objects (DTOs) to enforce immutability for data crossing system boundaries. This ensures thread safety and simplifies the data flow by preventing accidental mutations.
+
+*   **Implementation**:
+    *   `com.projectnil.api.web` and `com.projectnil.api.queue` packages use `records` for all request, response, and job objects.
+*   **Rationale**: DTOs are "data carriers." Making them immutable prevents side effects when passing objects between controllers, services, and message publishers.
+
+## Async Pattern for Long-Running Tasks
+
+While not a direct Effective Java item, we follow the best practice of asynchronous execution for non-deterministic tasks to maintain system responsiveness.
+
+*   **Implementation**: Function execution creates a `PENDING` execution record and returns the identifier immediately, while a background worker manages the WASM runtime lifecycle.
+*   **Rationale**: Prevents thread exhaustion in the web layer and provides a resilient polling mechanism for clients.
+

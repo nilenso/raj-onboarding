@@ -18,6 +18,12 @@ dependencies {
     // Chicory WASM runtime
     implementation(libs.chicory.runtime)
     
+    // Lombok
+    compileOnly(libs.lombok)
+    annotationProcessor(libs.lombok)
+    testCompileOnly(libs.lombok)
+    testAnnotationProcessor(libs.lombok)
+    
     testImplementation(libs.spring.boot.starter.test)
 }
 
