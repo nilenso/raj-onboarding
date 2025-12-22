@@ -7,8 +7,6 @@ plugins {
 
 val checkstyleVersion = libs.versions.checkstyle.get()
 
-// Note: Ensure your TOML has 'junit-jupiter' (aggregator) or use 'libs.junit.jupiter.api' 
-// based on your provided TOML. I'm assuming you want the aggregator.
 val junitLibrary = libs.junit.jupiter
 
 subprojects {
@@ -32,13 +30,9 @@ subprojects {
     }
 
     dependencies {
-        // 2. FIX: Use string syntax for dynamic plugins
-        // Instead of testImplementation(...), use "testImplementation"(...)
         "testImplementation"(junitLibrary)
     }
 
-    // 3. FIX: Use 'withType' or 'named' to configure the task
-    // Instead of tasks.test { }, use this:
     tasks.withType<Test> {
         useJUnitPlatform()
         testLogging {
