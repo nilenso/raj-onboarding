@@ -72,3 +72,19 @@ After bootstrap, every push to `main` will automatically deploy the latest code 
 - **Architecture:** The Droplet is x86_64. Ensure build steps happen on the correct architecture or use `buildx`.
 - **Secrets:** Use GitHub Secrets for DB passwords and SSH keys.
 - **Podman Rootless:** We will aim for rootless Podman to follow security best practices.
+
+## 5. Troubleshooting & Maintenance
+
+### Known Issues
+- **Postgres Volume Path:** The PGMQ/Postgres 18+ images require the volume mounted at `/var/lib/postgresql` (not `/var/lib/postgresql/data`) to support `pg_upgrade` mechanisms.
+- **Podman Short-names:** Production environments enforce fully qualified image names (e.g., `docker.io/liquibase/liquibase:4.30`).
+
+### Maintenance Commands
+If the database enters a corrupted state during development:
+```bash
+# SSH into the droplet
+ssh root@157.245.108.179
+
+# Remove the postgres volume (DATA LOSS WARNING)
+podman volume rm infra_postgres_prod_data
+```

@@ -67,8 +67,6 @@ jobs:
             podman load -i /opt/projectnil/api-image.tar
             podman load -i /opt/projectnil/compiler-image.tar
             cd /opt/projectnil/infra
-            # Ensure stale volume is gone so Postgres can init cleanly
-            podman volume rm infra_postgres_prod_data || true
             # Podman-compose might need specific help to avoid building
             if ! podman-compose -f prod.compose.yml up -d; then
               echo "Deployment failed"
