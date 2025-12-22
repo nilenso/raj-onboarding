@@ -1,0 +1,29 @@
+# provision.yml
+- name: Provision DigitalOcean Droplet for Podman
+  hosts: all
+  become: true
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Install Podman and Podman-Compose
+      apt:
+        name:
+          - podman
+          - podman-compose
+        state: present
+
+    - name: Ensure app directory exists
+      file:
+        path: /opt/projectnil/infra/migrations
+        state: directory
+        mode: '0755'
+        recurse: yes
+
+    - name: Configure UFW for API access
+      ufw:
+        rule: allow
+        port: '8080'
+        proto: tcp
