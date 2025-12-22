@@ -70,6 +70,10 @@ jobs:
             # Podman-compose might need specific help to avoid building
             if ! podman-compose -f prod.compose.yml up -d; then
               echo "Deployment failed"
+              echo "--- DB LOGS ---"
+              podman logs projectnil-db
+              echo "--- MIGRATION LOGS ---"
+              podman logs projectnil-migrations
               exit 1
             fi
             rm /opt/projectnil/*.tar
