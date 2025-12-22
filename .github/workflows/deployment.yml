@@ -1,38 +1,61 @@
-name:  main
+name: deployment
 
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches:
-      - main
 
 jobs:
-  check-test-build:
+  build-and-deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
-    defaults:
-      run:
-        working-directory: projectNIL
-
+    timeout-minutes: 20
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Check (checkstyle, spotbugs, javadoc)
-        run: ./gradlew check
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
 
-      - name: Run tests
-        run: ./gradlew test
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-      - name: Build
-        run: ./gradlew build
+      - name: Build API Image
+        uses: docker/build-push-action@v5
+        with:
+          context: projectNIL
+          file: projectNIL/infra/docker/api.Dockerfile
+          platforms: linux/amd64
+          outputs: type=docker,dest=/tmp/api-image.tar
+          tags: projectnil-api:latest
 
-  deploy:
-    needs: check-test-build 
-    runs-on: ubuntu-latest
-    if: success()
+      - name: Build Sentinel Compiler Image
+        uses: docker/build-push-action@v5
+        with:
+          context: projectNIL
+          file: projectNIL/infra/docker/compiler.Dockerfile
+          platforms: linux/amd64
+          outputs: type=docker,dest=/tmp/compiler-image.tar
+          tags: projectnil-compiler:latest
 
-    steps:
-      - name: deploy 
-        run: echo "to be configured, scp image and podman compose"
+      - name: Transfer artifacts and deploy
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.DROPLET_IP }}
+          username: ${{ secrets.DROPLET_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "/tmp/api-image.tar,/tmp/compiler-image.tar,projectNIL/infra/prod.compose.yml,projectNIL/infra/migrations"
+          target: "/opt/projectnil"
+          strip_components: 1
+
+      - name: Execute remote deployment
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DROPLET_IP }}
+          username: ${{ secrets.DROPLET_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            podman load -i /opt/projectnil/api-image.tar
+            podman load -i /opt/projectnil/compiler-image.tar
+            cd /opt/projectnil/infra
+            podman-compose -f prod.compose.yml up -d
+            rm /opt/projectnil/*.tar
