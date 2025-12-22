@@ -12,6 +12,8 @@ dependencies {
     implementation(libs.spring.boot.starter.data.jpa)
     implementation(libs.liquibase.core)
     runtimeOnly(libs.postgresql)
+
+    implementation(project(":common"))
     
     // Chicory WASM runtime
     implementation(libs.chicory.runtime)
