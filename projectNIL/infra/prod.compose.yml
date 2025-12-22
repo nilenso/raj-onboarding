@@ -18,9 +18,7 @@ services:
       retries: 5
 
   api:
-    build:
-      context: ..
-      dockerfile: docker/api.Dockerfile
+    image: projectnil-api:latest
     container_name: projectnil-api
     ports:
       - "8080:8080"
@@ -32,6 +30,11 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+
+  compiler:
+    image: projectnil-compiler:latest
+    container_name: projectnil-compiler
+
 
   liquibase:
     image: liquibase/liquibase:4.30

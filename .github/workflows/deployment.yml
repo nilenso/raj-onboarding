@@ -25,7 +25,7 @@ jobs:
           context: projectNIL
           file: projectNIL/infra/docker/api.Dockerfile
           platforms: linux/amd64
-          outputs: type=docker,dest=/tmp/api-image.tar
+          outputs: type=docker,dest=api-image.tar
           tags: projectnil-api:latest
 
       - name: Build Sentinel Compiler Image
@@ -34,8 +34,16 @@ jobs:
           context: projectNIL
           file: projectNIL/infra/docker/compiler.Dockerfile
           platforms: linux/amd64
-          outputs: type=docker,dest=/tmp/compiler-image.tar
+          outputs: type=docker,dest=compiler-image.tar
           tags: projectnil-compiler:latest
+
+      - name: Prepare Deployment Artifacts
+        run: |
+          mkdir -p dist/infra
+          mv api-image.tar dist/
+          mv compiler-image.tar dist/
+          cp projectNIL/infra/prod.compose.yml dist/infra/
+          cp -r projectNIL/infra/migrations dist/infra/
 
       - name: Transfer artifacts and deploy
         uses: appleboy/scp-action@v0.1.7
@@ -43,7 +51,7 @@ jobs:
           host: ${{ secrets.DROPLET_IP }}
           username: ${{ secrets.DROPLET_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "/tmp/api-image.tar,/tmp/compiler-image.tar,projectNIL/infra/prod.compose.yml,projectNIL/infra/migrations"
+          source: "dist/*"
           target: "/opt/projectnil"
           strip_components: 1
 
@@ -54,8 +62,12 @@ jobs:
           username: ${{ secrets.DROPLET_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
+            # Check files 
+            ls -R /opt/projectnil
             podman load -i /opt/projectnil/api-image.tar
             podman load -i /opt/projectnil/compiler-image.tar
             cd /opt/projectnil/infra
+            # Podman-compose might need specific help to avoid building
             podman-compose -f prod.compose.yml up -d
             rm /opt/projectnil/*.tar
+
