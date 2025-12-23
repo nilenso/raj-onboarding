@@ -1,0 +1,4 @@
+* 2025-12-23
+- Added constructor-focused coverage for `Function` and `Execution` that exercises the Lombok builder, default statuses, and protected no-arg constructors. See [[projectNIL/common/src/test/java/com/projectnil/common/domain/FunctionTest.java][FunctionTest]] and [[projectNIL/common/src/test/java/com/projectnil/common/domain/ExecutionTest.java][ExecutionTest]].
+- Added the JUnit Platform launcher to the shared libs catalog and `common` test runtime to satisfy Gradle’s test executor requirements ([[projectNIL/gradle/libs.versions.toml][libs.versions.toml]], [[projectNIL/common/build.gradle.kts][common build]]).
+- Tests: `./gradlew common:test --tests "com.projectnil.common.domain.FunctionTest" --tests "com.projectnil.common.domain.ExecutionTest"`
