@@ -3,17 +3,6 @@
 [![integrations](https://github.com/nilenso/raj-onboarding/actions/workflows/integrations.yml/badge.svg?branch=dev)](https://github.com/nilenso/raj-onboarding/actions/workflows/integrations.yml)
 [![deployment](https://github.com/nilenso/raj-onboarding/actions/workflows/deployment.yml/badge.svg?branch=main)](https://github.com/nilenso/raj-onboarding/actions/workflows/deployment.yml)
 
-### Agentic Tooling Disclaimer
-
- - LLMs were explicitly employed (write access) for some portions of the project: 
-   - Documentation
-     - diagramming DSLs (mermaid/plantuml)
-     - minor documentation commentary over code when necessary 
-     - commit messages (conventional commits style) : tag lines and descriptions
-   - CI/CD setup
-   
- - Apart from the above, they were granted read-only access to the repository to help me discuss the domain-oriented aspects (SWE Wisdom, writing effective Java, Design, Architecture) I wish to improve my grasp of: the source code (other than deterministically auto-generated (`gradle init` for instance) files) is hand-crafted and have marked any exceptions (if any) in [LLM generated]  fences. 
-
 ## Overview 
 
 ### [Journal](journal)
