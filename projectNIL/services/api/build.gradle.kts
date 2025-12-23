@@ -12,9 +12,17 @@ dependencies {
     implementation(libs.spring.boot.starter.data.jpa)
     implementation(libs.liquibase.core)
     runtimeOnly(libs.postgresql)
+
+    implementation(project(":common"))
     
     // Chicory WASM runtime
     implementation(libs.chicory.runtime)
+    
+    // Lombok
+    compileOnly(libs.lombok)
+    annotationProcessor(libs.lombok)
+    testCompileOnly(libs.lombok)
+    testAnnotationProcessor(libs.lombok)
     
     testImplementation(libs.spring.boot.starter.test)
 }

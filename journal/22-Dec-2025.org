@@ -1,0 +1,25 @@
+* [2025-12-22 Mon] - API Service Design and Lombok Integration
+
+- [[file:../projectNIL/common/src/main/java/com/projectnil/common/domain/Function.java][Refactored Function entity]] and [[file:../projectNIL/common/src/main/java/com/projectnil/common/domain/Execution.java][Execution entity]] with Lombok builder and accessors.
+- [[file:../projectNIL/common/src/main/java/com/projectnil/common/domain/FunctionStatus.java][Restored FunctionStatus]] and [[file:../projectNIL/common/src/main/java/com/projectnil/common/domain/ExecutionStatus.java][ExecutionStatus]] enums.
+- [[file:../projectNIL/services/api/src/main/java/com/projectnil/api/web/][Scaffolded Web DTOs]] and [[file:../projectNIL/services/api/src/main/java/com/projectnil/api/queue/][Queue DTOs]] using Java Records.
+- [[file:../projectNIL/services/api/src/main/java/com/projectnil/api/runtime/WasmRuntime.java][Defined WasmRuntime interface]] for abstraction.
+- [[file:../projectNIL/services/api/src/main/java/com/projectnil/api/ApiApplication.java][Initialized ApiApplication]] with Spring Boot 4.0.0 persistence config.
+- [[file:../projectNIL/effectivejava-anvil/ADOPTION.md][Documented Effective Java items adoption]] (Items 2, 15, 16, 17, 34).
+- [[file:../projectNIL/docs/design-api-service.md][Updated API service design documentation]] with technical nuances.
+- Completed engineering task [[https://github.com/nilenso/raj-onboarding/issues/44][#44: Define API Service Package Structure]].
+
+* [2025-12-22 Mon] - Baseline CD Setup (Issue #20)
+
+- [[file:../projectNIL/docs/deployment-roadmap.md][Established Deployment Roadmap]] with Ansible to DigitalOcean shift.
+- [[file:../projectNIL/services/api/src/main/java/com/projectnil/api/web/health/HealthController.java][Implemented HealthController]] for baseline CD verification.
+- [[file:../projectNIL/infra/docker/api.Dockerfile][Created multi-stage API Dockerfile]] and [[file:../projectNIL/infra/docker/compiler.Dockerfile][sentinel Compiler Dockerfile]].
+- [[file:../projectNIL/infra/prod.compose.yml][Implemented prod.compose.yml]] for Podman orchestration.
+- [[file:../projectNIL/infra/ansible/provision.yml][Authored Ansible playbook]] for remote Droplet provisioning.
+- [[file:../.github/workflows/deployment.yml][Overhauled GitHub Deployment workflow]] for automated Build -> Transfer -> Deploy pipeline.
+- Resolved Postgres 18+ volume incompatibilities by [[file:../projectNIL/infra/prod.compose.yml][correcting mount path]] to =/var/lib/postgresql=.
+- Fixed Podman image resolution by using fully qualified registry names for Liquibase.
+- Stabilized production deployment with verifiable [[http://157.245.108.179:8080/health][Health Endpoint]].
+- [[file:../projectNIL/docs/deployment-roadmap.md][Documented troubleshooting and maintenance]] procedures for Droplet orchestration.
+- Completed engineering task [[https://github.com/nilenso/raj-onboarding/issues/20][#20: Setup deployment server on DigitalOcean]].
+
