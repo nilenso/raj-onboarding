@@ -1,0 +1,160 @@
+package com.projectnil.api.service;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.projectnil.api.repository.ExecutionRepository;
+import com.projectnil.api.runtime.WasmExecutionException;
+import com.projectnil.api.runtime.WasmRuntime;
+import com.projectnil.api.web.ExecutionRequest;
+import com.projectnil.api.web.ExecutionResponse;
+import com.projectnil.common.domain.Execution;
+import com.projectnil.common.domain.ExecutionStatus;
+import com.projectnil.common.domain.Function;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+/**
+ * Service for executing functions.
+ * Orchestrates the WASM runtime execution and persists execution records.
+ */
+@Service
+public class ExecutionService {
+
+    private static final Logger LOG = LoggerFactory.getLogger(ExecutionService.class);
+
+    private final FunctionService functionService;
+    private final ExecutionRepository executionRepository;
+    private final WasmRuntime wasmRuntime;
+    private final ObjectMapper objectMapper;
+
+    public ExecutionService(
+            FunctionService functionService,
+            ExecutionRepository executionRepository,
+            WasmRuntime wasmRuntime,
+            ObjectMapper objectMapper) {
+        this.functionService = functionService;
+        this.executionRepository = executionRepository;
+        this.wasmRuntime = wasmRuntime;
+        this.objectMapper = objectMapper;
+    }
+
+    /**
+     * Execute a function with the given input.
+     *
+     * <p>Flow per scope/flows.md Flow 3:
+     * <ol>
+     *   <li>Validate function exists and is READY</li>
+     *   <li>Create Execution record with RUNNING status</li>
+     *   <li>Execute WASM via WasmRuntime</li>
+     *   <li>Update Execution with result (COMPLETED or FAILED)</li>
+     * </ol>
+     *
+     * @param functionId the function ID
+     * @param request the execution request containing input
+     * @return the execution response
+     * @throws FunctionNotFoundException if function not found
+     * @throws FunctionNotReadyException if function not in READY status
+     */
+    @Transactional
+    public ExecutionResponse execute(UUID functionId, ExecutionRequest request) {
+        LOG.info("execution.started functionId={}", functionId);
+
+        // Validate function exists and is READY (throws if not)
+        Function function = functionService.findReadyById(functionId);
+
+        // Serialize input to JSON string for storage and WASM
+        String inputJson = serializeInput(request.input());
+
+        // Create execution record with RUNNING status
+        Execution execution = Execution.builder()
+                .functionId(functionId)
+                .input(inputJson)
+                .status(ExecutionStatus.RUNNING)
+                .startedAt(LocalDateTime.now())
+                .build();
+        execution = executionRepository.save(execution);
+
+        try {
+            // Execute WASM
+            byte[] outputBytes = wasmRuntime.execute(function.getWasmBinary(), inputJson);
+            String outputJson = new String(outputBytes, StandardCharsets.UTF_8);
+
+            // Update execution as COMPLETED
+            execution.setStatus(ExecutionStatus.COMPLETED);
+            execution.setOutput(outputJson);
+            execution.setCompletedAt(LocalDateTime.now());
+            execution = executionRepository.save(execution);
+
+            LOG.info("execution.completed executionId={} functionId={}",
+                    execution.getId(), functionId);
+
+            return toResponse(execution);
+
+        } catch (WasmExecutionException e) {
+            // User code error (trap, timeout) - mark as FAILED but return 200
+            LOG.warn("execution.failed executionId={} functionId={} error={}",
+                    execution.getId(), functionId, e.getMessage());
+
+            execution.setStatus(ExecutionStatus.FAILED);
+            execution.setErrorMessage(e.getMessage());
+            execution.setCompletedAt(LocalDateTime.now());
+            execution = executionRepository.save(execution);
+
+            return toResponse(execution);
+
+        } catch (Exception e) {
+            // Unexpected error - still mark execution as FAILED
+            LOG.error("execution.failed executionId={} functionId={} unexpected error",
+                    execution.getId(), functionId, e);
+
+            execution.setStatus(ExecutionStatus.FAILED);
+            execution.setErrorMessage("Internal error: " + e.getMessage());
+            execution.setCompletedAt(LocalDateTime.now());
+            execution = executionRepository.save(execution);
+
+            return toResponse(execution);
+        }
+    }
+
+    /**
+     * Find an execution by ID.
+     *
+     * @param executionId the execution ID
+     * @return the execution response
+     * @throws ExecutionNotFoundException if not found
+     */
+    @Transactional(readOnly = true)
+    public ExecutionResponse findById(UUID executionId) {
+        Execution execution = executionRepository.findById(executionId)
+                .orElseThrow(() -> new ExecutionNotFoundException(executionId));
+        return toResponse(execution);
+    }
+
+    private String serializeInput(Object input) {
+        if (input == null) {
+            return "{}";
+        }
+        try {
+            return objectMapper.writeValueAsString(input);
+        } catch (JsonProcessingException e) {
+            throw new IllegalArgumentException("Failed to serialize input to JSON", e);
+        }
+    }
+
+    private ExecutionResponse toResponse(Execution execution) {
+        return new ExecutionResponse(
+                execution.getId(),
+                execution.getFunctionId(),
+                execution.getStatus(),
+                execution.getOutput(),
+                execution.getErrorMessage(),
+                execution.getCreatedAt()
+        );
+    }
+}
