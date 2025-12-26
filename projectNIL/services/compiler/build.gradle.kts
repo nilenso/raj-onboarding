@@ -13,6 +13,9 @@ dependencies {
     implementation(libs.spring.boot.starter.jdbc)
     implementation(libs.postgresql)
     implementation(libs.jackson.databind)
+
+    testImplementation(libs.spring.boot.starter.test)
+    testImplementation(libs.junit.jupiter)
 }
 
 

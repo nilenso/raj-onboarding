@@ -15,7 +15,6 @@ public class ProcessExecutor {
 
     public ProcessResult execute(List<String> command, Duration timeout) throws IOException, InterruptedException {
         ProcessBuilder builder = new ProcessBuilder(command);
-        builder.redirectErrorStream(true);
         Process process = builder.start();
         boolean finished = process.waitFor(timeout.toMillis(), TimeUnit.MILLISECONDS);
         if (!finished) {
