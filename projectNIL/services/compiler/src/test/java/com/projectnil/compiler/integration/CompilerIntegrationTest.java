@@ -24,6 +24,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import org.testcontainers.utility.TestcontainersConfiguration;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assumptions;
@@ -35,9 +38,9 @@ import org.postgresql.util.PGobject;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.util.FileSystemUtils;
-import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.utility.TestcontainersConfiguration;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class CompilerIntegrationTest {
@@ -54,12 +57,16 @@ class CompilerIntegrationTest {
 
     @BeforeAll
     void startContainer() {
-        Assumptions.assumeTrue(isDockerAvailable(), "Docker is required for integration tests");
-        postgres = new PostgreSQLContainer<>(PGMQ_IMAGE)
-            .withDatabaseName("projectnil")
-            .withUsername("projectnil")
-            .withPassword("projectnil");
-        postgres.start();
+        Assumptions.assumeTrue(isContainerRuntimeAvailable(), "Docker/Podman is required for integration tests");
+        try {
+            postgres = new PostgreSQLContainer<>(PGMQ_IMAGE)
+                .withDatabaseName("projectnil")
+                .withUsername("projectnil")
+                .withPassword("projectnil");
+            postgres.start();
+        } catch (Exception ex) {
+            Assumptions.assumeTrue(false, "Unable to start container: " + ex.getMessage());
+        }
     }
 
     @AfterAll
@@ -192,11 +199,37 @@ class CompilerIntegrationTest {
         }
     }
 
+    private boolean isContainerRuntimeAvailable() {
+        return isPodmanAvailable() || isDockerAvailable();
+    }
+
+    private boolean isPodmanAvailable() {
+        return commandExists("podman") && canRun("podman", "ps");
+    }
+
     private boolean isDockerAvailable() {
+        return commandExists("docker") && canRun("docker", "ps");
+    }
+
+    private boolean commandExists(String command) {
         try {
-            DockerClientFactory.instance().client();
-            return true;
-        } catch (Throwable throwable) {
+            Process which = new ProcessBuilder("/bin/sh", "-c", "command -v " + command).start();
+            return which.waitFor() == 0;
+        } catch (Exception ex) {
+            return false;
+        }
+    }
+
+    private boolean canRun(String command, String arg) {
+        try {
+            Process process = new ProcessBuilder(command, arg).start();
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                while (reader.readLine() != null) {
+                    // drain output
+                }
+            }
+            return process.waitFor() == 0;
+        } catch (Exception ex) {
             return false;
         }
     }
