@@ -1,0 +1,28 @@
+#!/bin/sh
+SOURCE=""
+OUTPUT="module.wasm"
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --binaryFile)
+      shift
+      OUTPUT="$1"
+      ;;
+    --measure|--optimize)
+      ;;
+    *)
+      if [ -z "$SOURCE" ]; then
+        SOURCE="$1"
+      fi
+      ;;
+  esac
+  shift
+done
+if [ -z "$SOURCE" ]; then
+  echo "no source provided" >&2
+  exit 1
+fi
+if grep -q "fail" "$SOURCE"; then
+  echo "compile error" >&2
+  exit 1
+fi
+echo "fake wasm" > "$OUTPUT"
