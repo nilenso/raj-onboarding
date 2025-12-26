@@ -1,7 +1,9 @@
 # DESIGN: API Service Blueprint
 
 Status: Draft
-Related: #44, #33, #37, #41
+Related: #44, #33, #37, #41, #50
+
+Canonical end-to-end spec lives under `projectNIL/scope/`.
 
 ## 1. Domain Entities (`com.projectnil.api.domain`)
 

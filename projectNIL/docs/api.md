@@ -1,5 +1,7 @@
 # API Reference
 
+Canonical API + queue contracts live in `projectNIL/scope/contracts.md`.
+
 Base URL: `http://localhost:8080`
 
 ## Endpoints
