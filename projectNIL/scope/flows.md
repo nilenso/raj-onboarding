@@ -89,11 +89,7 @@ sequenceDiagram
 
   C->>API: POST /functions/{id}/execute
   API->>DB: SELECT functions.status by id
-  alt status != READY
-    API-->>C: 400 Bad Request (cannot execute non-READY)
-  else READY
-    API-->>C: 200 (delegates to Flow 3)
-  end
+  API-->>C: 400 Bad Request (cannot execute non-READY)
 ```
 
 ## Flow 5: Execute Function (Runtime failure)
