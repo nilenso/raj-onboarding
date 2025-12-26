@@ -58,20 +58,63 @@ podman compose --profile migrate up liquibase
 podman exec projectnil-db psql -U projectnil -d projectnil -c "\dt"
 ```
 
+### Running the Full Stack
+
+To run the complete stack including the compiler service:
+
+```bash
+cd projectNIL/infra
+
+# Start postgres and run migrations first
+podman compose up -d postgres
+podman compose --profile migrate up liquibase
+
+# Build and start compiler service (first build takes a few minutes)
+podman compose --profile full up -d compiler
+
+# Verify services are running
+podman compose ps
+
+# Check compiler logs
+podman compose logs -f compiler
+```
+
+### Testing Compilation End-to-End
+
+```bash
+# Send a test compilation job
+podman exec projectnil-db psql -U projectnil -d projectnil -c \
+  "SELECT pgmq.send('compilation_jobs', '{
+    \"functionId\": \"12345678-1234-1234-1234-123456789abc\",
+    \"language\": \"assemblyscript\",
+    \"source\": \"export function add(a: i32, b: i32): i32 { return a + b; }\"
+  }'::jsonb);"
+
+# Check for compilation result (wait a few seconds)
+podman exec projectnil-db psql -U projectnil -d projectnil -c \
+  "SELECT message->>'functionId', message->>'success', message->>'error'
+   FROM pgmq.read('compilation_results', 30, 10);"
+```
+
 ### Common Commands
 
 ```bash
 # View logs
 podman compose logs -f postgres
+podman compose logs -f compiler
 
-# Stop services
-podman compose down
+# Stop all services
+podman compose --profile full down
 
 # Reset database (destroy all data)
-podman compose down -v
+podman compose --profile full down -v
 
 # Connect to database
 podman exec -it projectnil-db psql -U projectnil -d projectnil
+
+# Rebuild compiler after code changes
+podman compose --profile full build compiler
+podman compose --profile full up -d compiler
 ```
 
 ### Manual Setup (Alternative)

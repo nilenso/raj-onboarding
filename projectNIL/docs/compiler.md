@@ -188,7 +188,7 @@ This document serves as the blueprint for implementing issue #36 using the JVM-b
    - Integration test using Testcontainers with pgmq-enabled Postgres (`ghcr.io/pgmq/pg18-pgmq:v1.8.0`).
    - CI passes on GitHub Actions with Docker; local dev uses Podman.
 
-8. **Docs & Deployment Updates** 🔲
-   - Update `infra/compose.yml` to add compiler service.
-   - Wire `infra/docker/compiler.Dockerfile` for production builds.
-   - End-to-end smoke test with full compose stack.
+8. **Docs & Deployment Updates** ✅
+   - Updated `infra/compose.yml` with compiler service under `full` profile.
+   - Wired `infra/docker/compiler.Dockerfile` with multi-stage build (JDK for build, JRE + Node.js for runtime).
+   - Verified end-to-end flow: job → compilation → result in local compose stack.
