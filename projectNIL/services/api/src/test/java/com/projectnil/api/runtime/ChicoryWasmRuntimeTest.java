@@ -55,7 +55,7 @@ class ChicoryWasmRuntimeTest {
 
         @Test
         @DisplayName("echo module returns input unchanged")
-        void execute_echo_returnsInputUnchanged() throws Exception {
+        void executeEchoReturnsInputUnchanged() throws Exception {
             byte[] wasmBinary = loadWasm("echo");
             String input = "{\"foo\":\"bar\",\"num\":42}";
 
@@ -66,7 +66,7 @@ class ChicoryWasmRuntimeTest {
 
         @Test
         @DisplayName("add module computes sum correctly")
-        void execute_add_computesSum() throws Exception {
+        void executeAddComputesSum() throws Exception {
             byte[] wasmBinary = loadWasm("add");
             String input = "{\"a\":10,\"b\":5}";
 
@@ -77,7 +77,7 @@ class ChicoryWasmRuntimeTest {
 
         @Test
         @DisplayName("add module handles negative numbers")
-        void execute_add_handlesNegativeNumbers() throws Exception {
+        void executeAddHandlesNegativeNumbers() throws Exception {
             byte[] wasmBinary = loadWasm("add");
             String input = "{\"a\":-5,\"b\":3}";
 
@@ -88,7 +88,7 @@ class ChicoryWasmRuntimeTest {
 
         @Test
         @DisplayName("greet module concatenates string")
-        void execute_greet_concatenatesString() throws Exception {
+        void executeGreetConcatenatesString() throws Exception {
             byte[] wasmBinary = loadWasm("greet");
             String input = "{\"name\":\"Alice\"}";
 
@@ -99,7 +99,7 @@ class ChicoryWasmRuntimeTest {
 
         @Test
         @DisplayName("greet module uses default for missing name")
-        void execute_greet_usesDefaultName() throws Exception {
+        void executeGreetUsesDefaultName() throws Exception {
             byte[] wasmBinary = loadWasm("greet");
             String input = "{}";
 
@@ -110,7 +110,7 @@ class ChicoryWasmRuntimeTest {
 
         @Test
         @DisplayName("handles empty JSON object")
-        void execute_echo_handlesEmptyObject() throws Exception {
+        void executeEchoHandlesEmptyObject() throws Exception {
             byte[] wasmBinary = loadWasm("echo");
             String input = "{}";
 
@@ -121,7 +121,7 @@ class ChicoryWasmRuntimeTest {
 
         @Test
         @DisplayName("handles unicode strings")
-        void execute_echo_handlesUnicode() throws Exception {
+        void executeEchoHandlesUnicode() throws Exception {
             byte[] wasmBinary = loadWasm("echo");
             String input = "{\"message\":\"Hello, 世界! 🌍\"}";
 
@@ -137,7 +137,7 @@ class ChicoryWasmRuntimeTest {
 
         @Test
         @DisplayName("throws WasmAbiException when handle export is missing")
-        void execute_noHandle_throwsAbiException() throws Exception {
+        void executeNoHandleThrowsAbiException() throws Exception {
             byte[] wasmBinary = loadWasm("no-handle");
 
             WasmAbiException exception = assertThrows(
@@ -151,7 +151,7 @@ class ChicoryWasmRuntimeTest {
 
         @Test
         @DisplayName("throws WasmExecutionException for invalid WASM binary")
-        void execute_invalidBinary_throwsException() {
+        void executeInvalidBinaryThrowsException() {
             byte[] invalidBinary = "not a wasm module".getBytes();
 
             WasmExecutionException exception = assertThrows(
@@ -164,7 +164,7 @@ class ChicoryWasmRuntimeTest {
 
         @Test
         @DisplayName("throws WasmExecutionException for empty WASM binary")
-        void execute_emptyBinary_throwsException() {
+        void executeEmptyBinaryThrowsException() {
             byte[] emptyBinary = new byte[0];
 
             assertThrows(
@@ -180,7 +180,7 @@ class ChicoryWasmRuntimeTest {
 
         @Test
         @DisplayName("throws WasmExecutionException on trap")
-        void execute_trap_throwsExecutionException() throws Exception {
+        void executeTrapThrowsExecutionException() throws Exception {
             byte[] wasmBinary = loadWasm("trap");
 
             WasmExecutionException exception = assertThrows(
@@ -196,7 +196,7 @@ class ChicoryWasmRuntimeTest {
         @Test
         @DisplayName("throws WasmExecutionException on timeout")
         @Timeout(5) // Test should complete within 5 seconds
-        void execute_infiniteLoop_timesOut() throws Exception {
+        void executeInfiniteLoopTimesOut() throws Exception {
             byte[] wasmBinary = loadWasm("infinite-loop");
             ChicoryWasmRuntime shortTimeoutRuntime = 
                 new ChicoryWasmRuntime(stringCodec, SHORT_TIMEOUT);
@@ -218,7 +218,7 @@ class ChicoryWasmRuntimeTest {
 
         @Test
         @DisplayName("respects custom timeout configuration")
-        void runtime_respectsCustomTimeout() {
+        void runtimeRespectsCustomTimeout() {
             Duration customTimeout = Duration.ofSeconds(30);
             ChicoryWasmRuntime customRuntime = 
                 new ChicoryWasmRuntime(stringCodec, customTimeout);
