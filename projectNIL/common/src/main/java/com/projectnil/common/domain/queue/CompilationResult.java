@@ -1,4 +1,4 @@
-package com.projectnil.api.queue;
+package com.projectnil.common.domain.queue;
 
 import java.util.UUID;
 
