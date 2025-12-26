@@ -20,11 +20,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Check (checkstyle, spotbugs, javadoc)
-        run: ./gradlew check
+      - name: Cache Gradle packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('projectNIL/gradle/libs.versions.toml', 'projectNIL/gradle/wrapper/gradle-wrapper.properties', 'projectNIL/settings.gradle.kts', 'projectNIL/build.gradle.kts') }}
+          restore-keys: |
+            gradle-${{ runner.os }}-
 
-      - name: Run tests
-        run: ./gradlew test
-
-      - name: Build
-        run: ./gradlew build
+      - name: Build (check + test)
+        run: ./gradlew build --build-cache

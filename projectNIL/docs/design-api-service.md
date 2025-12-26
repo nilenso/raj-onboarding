@@ -1,7 +1,9 @@
 # DESIGN: API Service Blueprint
 
-Status: Draft
-Related: #44, #33, #37, #41
+Status: Active
+Related: #44, #33, #37, #41, #50, #29
+
+Canonical end-to-end spec lives under `projectNIL/scope/`.
 
 ## 1. Domain Entities (`com.projectnil.api.domain`)
 
@@ -19,8 +21,8 @@ Related: #44, #33, #37, #41
 ### `Execution`
 - `UUID id`
 - `UUID functionId` (FK)
-- `String input` (JSON string)
-- `String output` (JSON string)
+- `String input` (JSON serialized from the HTTP object)
+- `String output` (JSON serialized response)
 - `ExecutionStatus status` (PENDING, RUNNING, COMPLETED, FAILED)
 - `String errorMessage`
 - `LocalDateTime startedAt/completedAt`
@@ -71,8 +73,37 @@ public interface WasmRuntime {
 }
 ```
 
-### `runtime.ChicoryRuntime` (Implementation)
-Actual implementation using Chicory 1.6.1. Handles memory allocation and pointer management.
+### `runtime.ChicoryWasmRuntime` (Implementation)
+Actual implementation using Chicory 1.6.1. Key features:
+- Parses WASM binary and instantiates module with host functions
+- Provides `env.abort` host function required by AssemblyScript
+- Validates `handle` export and AssemblyScript runtime exports
+- Uses `WasmStringCodec` for language-specific string I/O
+- Enforces configurable timeout (default 10s) via `ExecutorService`
+- Logs warnings for high memory usage (>16MB)
+
+### `runtime.WasmStringCodec` (Interface)
+Abstracts language-specific string memory handling:
+```java
+public interface WasmStringCodec {
+    void validateExports(Instance instance) throws WasmAbiException;
+    int writeString(Instance instance, String value);
+    String readString(Instance instance, int pointer);
+    void cleanup(Instance instance, int pointer);
+}
+```
+
+### `runtime.AssemblyScriptStringCodec` (Implementation)
+Handles AssemblyScript's UTF-16LE encoding and GC-managed memory:
+- Uses `__new`, `__pin`, `__unpin` for memory management
+- Reads string length from `rtSize` field at `pointer - 4`
+- Converts between Java String (UTF-16) and AS memory layout
+
+### `runtime.WasmExecutionException`
+Runtime errors: traps, timeouts, invalid output.
+
+### `runtime.WasmAbiException`
+ABI violations: missing exports, wrong signatures.
 
 ### `queue.MessagePublisher` (Interface)
 Generic interface for sending messages to queues.
@@ -101,9 +132,43 @@ public class CompilationPoller {
    - Saves `Function` with status `PENDING`.
    - Maps `Function` to `CompilationJob`.
    - Calls `MessagePublisher.publish("compilation_jobs", job)`.
-3. **Compiler Service** (External Node.js):
+3. **Compiler Service** (External JVM worker):
    - Pulls from `compilation_jobs`.
-   - Compiles and creates binary.
+   - Compiles AssemblyScript to WASM.
+   - Publishes `CompilationResult` to `compilation_results`.
+4. **API Service** (CompilationPoller):
+   - Polls `compilation_results` queue.
+   - Updates `Function` with WASM binary and status `READY`, or error and status `FAILED`.
+
+```
+PENDING ──(job published)──> COMPILING ──(success)──> READY
+                                │
+                                └──(failure)──> FAILED
+```
+
+---
+
+## 6. Execute State Machine
+
+1. **Client** calls `POST /functions/{id}/execute`.
+2. **API Controller**:
+   - Validates `Function.status == READY` (rejects with 400 if not).
+   - Creates `Execution` with status `PENDING`.
+   - Invokes `WasmRuntime.execute(wasmBinary, inputJson)`.
+3. **WasmRuntime**:
+   - Parses WASM, instantiates module with host functions.
+   - Writes input string to memory, calls `handle()`.
+   - Reads output string from memory, returns result.
+4. **API Controller**:
+   - On success: Updates `Execution` status to `COMPLETED`, stores output.
+   - On failure: Updates `Execution` status to `FAILED`, stores error message.
+
+```
+PENDING ──(start)──> RUNNING ──(success)──> COMPLETED
+                        │
+                        └──(failure)──> FAILED
+```
+
 ---
 
 ## 7. Technical Nuances & Decisions
@@ -118,4 +183,58 @@ All Web and Queue DTOs are implemented as Java `records`. This enforces immutabi
 ### Lombok Configuration
 - Star imports are prohibited by Checkstyle.
 - `@Builder.Default` is required alongside field initialization for default values (e.g., `FunctionStatus.PENDING`) to work within the builder pattern.
+
+---
+
+## 8. Implementation Status
+
+### Completed
+
+| Component | Location | Status |
+|-----------|----------|--------|
+| Domain entities | `common/src/.../domain/` | Done |
+| Queue DTOs | `common/src/.../domain/queue/` | Done |
+| Web DTOs | `api/src/.../web/` | Done |
+| WASM Runtime | `api/src/.../runtime/` | Done (PR #37) |
+| Health endpoint | `api/src/.../web/health/` | Done |
+
+### Not Yet Implemented
+
+| Component | Location | Blocked By |
+|-----------|----------|------------|
+| FunctionRepository | `api/src/.../repository/` | - |
+| ExecutionRepository | `api/src/.../repository/` | - |
+| FunctionService | `api/src/.../service/` | Repositories |
+| ExecutionService | `api/src/.../service/` | Repositories, WASM Runtime (done) |
+| FunctionController | `api/src/.../web/` | Services |
+| MessagePublisher impl | `api/src/.../queue/` | - |
+| CompilationPoller | `api/src/.../queue/` | MessagePublisher |
+| Global exception handler | `api/src/.../web/` | - |
+| Database configuration | `application.yaml` | - |
+
+### Endpoint Implementation Status
+
+| Method | Endpoint | Issue | Status |
+|--------|----------|-------|--------|
+| POST | `/functions` | #24 | Not started |
+| GET | `/functions` | #25 | Not started |
+| GET | `/functions/{id}` | #26 | Not started |
+| PUT | `/functions/{id}` | #27 | Not started |
+| DELETE | `/functions/{id}` | #28 | Not started |
+| POST | `/functions/{id}/execute` | #29 | Unblocked by #37 |
+| GET | `/functions/{id}/executions` | #30 | Not started |
+| GET | `/executions/{id}` | #31 | Not started |
+
+---
+
+## 9. Next Steps (Recommended Order)
+
+1. **Database configuration** - Add datasource config to `application.yaml`
+2. **Repositories** - Create `FunctionRepository` and `ExecutionRepository`
+3. **FunctionService** - CRUD operations for functions
+4. **FunctionController** - REST endpoints for functions
+5. **ExecutionService** - Wire WASM runtime for execution
+6. **ExecutionController** - Execute endpoint + execution queries
+7. **MessagePublisher** - PGMQ integration for compilation jobs
+8. **CompilationPoller** - Background polling for compilation results
 

@@ -1,0 +1,24 @@
+server:
+  port: ${SERVER_PORT:8081}
+
+spring:
+  application:
+    name: compiler-service
+  datasource:
+    url: ${PGMQ_URL:jdbc:postgresql://localhost:5432/projectnil}
+    username: ${PGMQ_USERNAME:projectnil}
+    password: ${PGMQ_PASSWORD:projectnil}
+
+compiler:
+  language: assemblyscript
+  job-queue: compilation_jobs
+  result-queue: compilation_results
+  timeout-ms: 10000
+  poll-interval-ms: 1000
+  asc-binary: ${ASC_BINARY:asc}
+  workspace-dir: ${COMPILER_TMP_DIR:./tmp/compiler}
+
+pgmq:
+  url: ${PGMQ_URL:jdbc:postgresql://localhost:5432/projectnil}
+  username: ${PGMQ_USERNAME:projectnil}
+  password: ${PGMQ_PASSWORD:projectnil}

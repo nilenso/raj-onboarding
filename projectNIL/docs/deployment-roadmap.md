@@ -8,7 +8,7 @@ We have chosen **Ansible** for this implementation.
 
 ### Rationale:
 - **Compatibility:** User specifically requested `podman-compose`. Ansible represents the best tool for managing configuration files (the compose YAML) and system-level services (Podman) on a remote host.
-- **Scope:** Kamal is highly opinionated towards Traefik and Docker. Ansible is more flexible for the specialized needs of our multi-module Java/Node project.
+- **Scope:** Kamal is highly opinionated towards Traefik and Docker. Ansible is more flexible for the specialized needs of our multi-module Java project.
 - **Reproducibility:** Ansible playbooks will serve as documentation for our server setup (FW, Podman, SSH).
 
 ## 2. Multi-Module Image Strategy
@@ -27,7 +27,7 @@ The `:services:api` depends on `:common`. A naive build within the API Dockerfil
 
 ### Phase 1: Containerization
 - [ ] Create `infra/docker/api.Dockerfile` (JDK 25, multi-stage).
-- [ ] Create `infra/docker/compiler.Dockerfile` (Node.js).
+- [ ] Create `infra/docker/compiler.Dockerfile` (JDK 25).
 - [ ] Implement `infra/prod.compose.yml` for Podman.
 
 ### Phase 2: Server Provisioning (Ansible)

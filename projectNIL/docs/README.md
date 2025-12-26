@@ -2,33 +2,30 @@
 
 A Function as a Service (FaaS) platform. Users submit source code, it compiles to WebAssembly, and executes on demand in a sandboxed environment.
 
+> **Note:** `projectNIL/scope/` is the canonical specification. This doc summarizes the system and focuses on operational context.
+
 ## Architecture
 
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                              User Request                                   │
-│      POST /functions { "language": "assemblyscript", "source": "..." }      │
-└─────────────────────────────────┬───────────────────────────────────────────┘
-                                  │
-                                  ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                       API Service (Spring Boot)                             │
-│                                                                             │
-│   REST API → Persist source → Publish to pgmq → Execute WASM (Chicory)      │
-└───────────┬─────────────────────────────────────────────────────────────────┘
-            │                                           ▲
-            │ compilation_jobs                          │ compilation_results
-            ▼                                           │
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                              PostgreSQL                                     │
-│   Tables: functions, executions    |    pgmq: compilation_jobs, results     │
-└───────────┬─────────────────────────────────────────────────────────────────┘
-            │                                           ▲
-            ▼                                           │
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                    Compiler Service (Node.js)                               │
-│                    AssemblyScript → WASM via asc                            │
-└─────────────────────────────────────────────────────────────────────────────┘
+Canonical, end-to-end architecture lives in `projectNIL/scope/architecture.md`.
+
+```mermaid
+flowchart LR
+  Client[Client] -->|HTTP JSON| API[API Service]
+
+  subgraph DB[PostgreSQL]
+    Tables[(functions, executions)]
+    Jobs[[pgmq: compilation_jobs]]
+    Results[[pgmq: compilation_results]]
+  end
+
+  API -->|JPA| Tables
+  API -->|pgmq send| Jobs
+
+  Compiler[Compiler Service\n(assemblyscript, future langs)] -->|pgmq read| Jobs
+  Compiler -->|pgmq send| Results
+
+  API -->|pgmq read| Results
+  API -->|execute WASM| Wasm[WASM Runtime (Chicory)]
 ```
 
 ## Services
@@ -36,7 +33,7 @@ A Function as a Service (FaaS) platform. Users submit source code, it compiles t
 | Service | Tech | Port | Purpose |
 |---------|------|------|---------|
 | api-service | Spring Boot 4.x / Java 25 | 8080 | REST API, DB, WASM execution |
-| compiler-assemblyscript | Node.js (Latest LTS) | - | Compile AS → WASM |
+| compiler | Java 25 / CLI tooling | - | Compile AS → WASM (see docs/compiler.md) |
 | postgres | PostgreSQL 18 + pgmq | 5432 | Persistence + message queue |
 
 ## Local Development
@@ -61,20 +58,63 @@ podman compose --profile migrate up liquibase
 podman exec projectnil-db psql -U projectnil -d projectnil -c "\dt"
 ```
 
+### Running the Full Stack
+
+To run the complete stack including the compiler service:
+
+```bash
+cd projectNIL/infra
+
+# Start postgres and run migrations first
+podman compose up -d postgres
+podman compose --profile migrate up liquibase
+
+# Build and start compiler service (first build takes a few minutes)
+podman compose --profile full up -d compiler
+
+# Verify services are running
+podman compose ps
+
+# Check compiler logs
+podman compose logs -f compiler
+```
+
+### Testing Compilation End-to-End
+
+```bash
+# Send a test compilation job
+podman exec projectnil-db psql -U projectnil -d projectnil -c \
+  "SELECT pgmq.send('compilation_jobs', '{
+    \"functionId\": \"12345678-1234-1234-1234-123456789abc\",
+    \"language\": \"assemblyscript\",
+    \"source\": \"export function add(a: i32, b: i32): i32 { return a + b; }\"
+  }'::jsonb);"
+
+# Check for compilation result (wait a few seconds)
+podman exec projectnil-db psql -U projectnil -d projectnil -c \
+  "SELECT message->>'functionId', message->>'success', message->>'error'
+   FROM pgmq.read('compilation_results', 30, 10);"
+```
+
 ### Common Commands
 
 ```bash
 # View logs
 podman compose logs -f postgres
+podman compose logs -f compiler
 
-# Stop services
-podman compose down
+# Stop all services
+podman compose --profile full down
 
 # Reset database (destroy all data)
-podman compose down -v
+podman compose --profile full down -v
 
 # Connect to database
 podman exec -it projectnil-db psql -U projectnil -d projectnil
+
+# Rebuild compiler after code changes
+podman compose --profile full build compiler
+podman compose --profile full up -d compiler
 ```
 
 ### Manual Setup (Alternative)
@@ -135,19 +175,16 @@ See [stack.md](./stack.md) for full rationale and library versions.
 
 ## Function Lifecycle
 
-```
-POST /functions
-      │
-      ▼
-┌─────────┐  queue   ┌───────────┐  success  ┌─────────┐
-│ PENDING │─────────▶│ COMPILING │──────────▶│  READY  │
-└─────────┘          └───────────┘           └─────────┘
-                          │                       │
-                          │ error                 │ POST /execute
-                          ▼                       ▼
-                    ┌──────────┐           ┌───────────┐
-                    │  FAILED  │           │ Execution │
-                    └──────────┘           └───────────┘
+Canonical state machines and flows live in:
+- `projectNIL/scope/entities.md`
+- `projectNIL/scope/flows.md`
+
+```mermaid
+stateDiagram-v2
+  [*] --> PENDING
+  PENDING --> COMPILING
+  COMPILING --> READY
+  COMPILING --> FAILED
 ```
 
 ## Database Schema
@@ -194,6 +231,8 @@ CREATE INDEX idx_executions_created_at ON executions(created_at DESC);
 
 ## Message Formats
 
+Canonical queue and HTTP contracts are captured in `projectNIL/scope/contracts.md`.
+
 **Compilation Request** (API → Compiler):
 ```json
 {
@@ -213,19 +252,29 @@ CREATE INDEX idx_executions_created_at ON executions(created_at DESC);
 }
 ```
 
+## CI Operational Notes
+- Gradle caching (`actions/cache@v4`) now persists `~/.gradle/caches` and `~/.gradle/wrapper` during the “CI - dev & feature branches” workflow.
+- Cold run (commit `b0145a7`, cache miss) executed `./gradlew build --build-cache` in ~80 s and uploaded a ~276 MB cache.
+- Warm run (empty commit `ci: trigger cache verification`, SHA `441010f`) restored that cache (log shows `Cache hit` and multiple `FROM-CACHE` tasks) and completed in ~22 s.
+- Use empty commits when you need to validate cache health without changing code.
+
 ## Project Structure
 
 ```
 projectNIL/
-├── common/                          # Shared entities and utilities
-│   └── entities/
+├── common/                          # Shared domain objects and queue DTOs
+│   └── src/main/java/.../domain/
+│       ├── Function.java, Execution.java, ...
+│       └── queue/                   # CompilationJob, CompilationResult
 │
 ├── services/
 │   ├── api/                         # Spring Boot API service
 │   │   └── build.gradle.kts
 │   │
-│   └── compiler-assembly-script/    # Node.js compiler service
-│       └── build.gradle.kts
+│   └── compiler/                    # AssemblyScript compiler service
+│       ├── build.gradle.kts
+│       ├── scripts/run-with-podman.sh  # helper for local Podman tests
+│       └── src/                     # see docs/compiler.md for structure
 │
 ├── infra/                           # Infrastructure configuration
 │   ├── compose.yml                  # Podman/Docker Compose

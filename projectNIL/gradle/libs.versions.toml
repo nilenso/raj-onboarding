@@ -6,17 +6,22 @@ springBoot = "4.0.0"
 springDependencyManagement = "1.1.7"
 chicory = "1.6.1"
 lombok = "1.18.42"
+testcontainers = "1.20.3"
 
 [libraries]
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }
 junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher", version.ref = "junitPlatform" }
 spring-boot-starter-web = { module = "org.springframework.boot:spring-boot-starter-web" }
 spring-boot-starter-data-jpa = { module = "org.springframework.boot:spring-boot-starter-data-jpa", version.ref = "springBoot" }
+spring-boot-starter-jdbc = { module = "org.springframework.boot:spring-boot-starter-jdbc" }
 spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test" }
 liquibase-core = { module = "org.liquibase:liquibase-core" }
 postgresql = { module = "org.postgresql:postgresql" }
 chicory-runtime = { module = "com.dylibso.chicory:runtime", version.ref = "chicory" }
 lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
+jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind" }
+testcontainers-junit = { module = "org.testcontainers:junit-jupiter", version.ref = "testcontainers" }
+testcontainers-postgres = { module = "org.testcontainers:postgresql", version.ref = "testcontainers" }
 
 [plugins]
 spring-boot = { id = "org.springframework.boot", version.ref = "springBoot" }
