@@ -12,6 +12,8 @@ compiler:
   result-queue: compilation_results
   timeout-ms: 10000
   poll-interval-ms: 1000
+  asc-binary: ${ASC_BINARY:asc}
+  workspace-dir: ${COMPILER_TMP_DIR:./tmp/compiler}
 
 pgmq:
   url: ${PGMQ_URL:jdbc:postgresql://localhost:5432/projectnil}

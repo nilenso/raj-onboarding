@@ -8,5 +8,7 @@ public record CompilerProperties(
     String jobQueue,
     String resultQueue,
     long timeoutMs,
-    long pollIntervalMs
+    long pollIntervalMs,
+    String ascBinary,
+    String workspaceDir
 ) {}
