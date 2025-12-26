@@ -28,7 +28,7 @@ jobs:
           outputs: type=docker,dest=api-image.tar
           tags: projectnil-api:latest
 
-      - name: Build Sentinel Compiler Image
+      - name: Build Compiler Image
         uses: docker/build-push-action@v5
         with:
           context: projectNIL
