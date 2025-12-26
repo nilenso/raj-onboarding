@@ -1,12 +1,25 @@
 # AGENTS.md - Guidelines for agentic coding in ProjectNIL
 
 ## Build/Lint/Test Commands
-- Build: `./gradlew app:build`
-- Lint/Check: `./gradlew app:check` (runs checkstyle, spotbugs)
-- Test all: `./gradlew app:test`
-- Single test: `./gradlew app:test --tests "rnil.enso.AppTest.testMethod"`
-- Run app: `./gradlew app:run`
-- Clean: `./gradlew app:clean`
+
+### All Modules
+- Build all: `./gradlew build`
+- Test all: `./gradlew test`
+- Check all: `./gradlew check` (runs checkstyle)
+- Clean all: `./gradlew clean`
+
+### Per-Module Commands
+- API service: `./gradlew :services:api:test`
+- Compiler service: `./gradlew :services:compiler:test`
+- Common module: `./gradlew :common:test`
+
+### Single Test
+- `./gradlew :services:api:test --tests "com.projectnil.api.runtime.ChicoryWasmRuntimeTest"`
+
+### Running Services
+- Full stack: `podman compose -f infra/compose.yml up -d`
+- API only: `./gradlew :services:api:bootRun`
+- Compiler only: `./gradlew :services:compiler:bootRun`
 
 ## Code Style Guidelines
 - Java 25+ (foojay-resolver).

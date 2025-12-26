@@ -1,7 +1,7 @@
 # DESIGN: API Service Blueprint
 
-Status: Draft
-Related: #44, #33, #37, #41, #50
+Status: Active
+Related: #44, #33, #37, #41, #50, #29
 
 Canonical end-to-end spec lives under `projectNIL/scope/`.
 
@@ -134,7 +134,41 @@ public class CompilationPoller {
    - Calls `MessagePublisher.publish("compilation_jobs", job)`.
 3. **Compiler Service** (External JVM worker):
    - Pulls from `compilation_jobs`.
-   - Compiles and creates binary.
+   - Compiles AssemblyScript to WASM.
+   - Publishes `CompilationResult` to `compilation_results`.
+4. **API Service** (CompilationPoller):
+   - Polls `compilation_results` queue.
+   - Updates `Function` with WASM binary and status `READY`, or error and status `FAILED`.
+
+```
+PENDING ──(job published)──> COMPILING ──(success)──> READY
+                                │
+                                └──(failure)──> FAILED
+```
+
+---
+
+## 6. Execute State Machine
+
+1. **Client** calls `POST /functions/{id}/execute`.
+2. **API Controller**:
+   - Validates `Function.status == READY` (rejects with 400 if not).
+   - Creates `Execution` with status `PENDING`.
+   - Invokes `WasmRuntime.execute(wasmBinary, inputJson)`.
+3. **WasmRuntime**:
+   - Parses WASM, instantiates module with host functions.
+   - Writes input string to memory, calls `handle()`.
+   - Reads output string from memory, returns result.
+4. **API Controller**:
+   - On success: Updates `Execution` status to `COMPLETED`, stores output.
+   - On failure: Updates `Execution` status to `FAILED`, stores error message.
+
+```
+PENDING ──(start)──> RUNNING ──(success)──> COMPLETED
+                        │
+                        └──(failure)──> FAILED
+```
+
 ---
 
 ## 7. Technical Nuances & Decisions
@@ -149,4 +183,58 @@ All Web and Queue DTOs are implemented as Java `records`. This enforces immutabi
 ### Lombok Configuration
 - Star imports are prohibited by Checkstyle.
 - `@Builder.Default` is required alongside field initialization for default values (e.g., `FunctionStatus.PENDING`) to work within the builder pattern.
+
+---
+
+## 8. Implementation Status
+
+### Completed
+
+| Component | Location | Status |
+|-----------|----------|--------|
+| Domain entities | `common/src/.../domain/` | Done |
+| Queue DTOs | `common/src/.../domain/queue/` | Done |
+| Web DTOs | `api/src/.../web/` | Done |
+| WASM Runtime | `api/src/.../runtime/` | Done (PR #37) |
+| Health endpoint | `api/src/.../web/health/` | Done |
+
+### Not Yet Implemented
+
+| Component | Location | Blocked By |
+|-----------|----------|------------|
+| FunctionRepository | `api/src/.../repository/` | - |
+| ExecutionRepository | `api/src/.../repository/` | - |
+| FunctionService | `api/src/.../service/` | Repositories |
+| ExecutionService | `api/src/.../service/` | Repositories, WASM Runtime (done) |
+| FunctionController | `api/src/.../web/` | Services |
+| MessagePublisher impl | `api/src/.../queue/` | - |
+| CompilationPoller | `api/src/.../queue/` | MessagePublisher |
+| Global exception handler | `api/src/.../web/` | - |
+| Database configuration | `application.yaml` | - |
+
+### Endpoint Implementation Status
+
+| Method | Endpoint | Issue | Status |
+|--------|----------|-------|--------|
+| POST | `/functions` | #24 | Not started |
+| GET | `/functions` | #25 | Not started |
+| GET | `/functions/{id}` | #26 | Not started |
+| PUT | `/functions/{id}` | #27 | Not started |
+| DELETE | `/functions/{id}` | #28 | Not started |
+| POST | `/functions/{id}/execute` | #29 | Unblocked by #37 |
+| GET | `/functions/{id}/executions` | #30 | Not started |
+| GET | `/executions/{id}` | #31 | Not started |
+
+---
+
+## 9. Next Steps (Recommended Order)
+
+1. **Database configuration** - Add datasource config to `application.yaml`
+2. **Repositories** - Create `FunctionRepository` and `ExecutionRepository`
+3. **FunctionService** - CRUD operations for functions
+4. **FunctionController** - REST endpoints for functions
+5. **ExecutionService** - Wire WASM runtime for execution
+6. **ExecutionController** - Execute endpoint + execution queries
+7. **MessagePublisher** - PGMQ integration for compilation jobs
+8. **CompilationPoller** - Background polling for compilation results
 

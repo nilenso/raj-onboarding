@@ -254,6 +254,53 @@ public record WasmRuntimeProperties(Duration timeout) {
 |-------|----------------|---------|
 | Execution timeout | `ExecutorService` + thread interrupt | 10 seconds |
 | Memory warning | Log when > 256 pages (16MB) | Warning only |
+| String size sanity check | Rejects strings > 10MB | 10MB |
+
+---
+
+## 6.1 Implementation Details (Technical Reference)
+
+This section documents implementation details that may be useful for debugging or future enhancements.
+
+### Thread Model
+
+- **One executor per execution**: A new `Executors.newSingleThreadExecutor()` is created for each `execute()` call
+- **Thread safety**: The runtime is thread-safe - each execution is completely independent
+- **Interrupt handling**: Timeout uses `future.cancel(true)` which relies on Chicory honoring thread interrupts
+- **Resource cleanup**: Executor is always shut down in `finally` block with `shutdownNow()`
+
+### Memory Management Details
+
+- **No hard memory limit**: Memory can grow without bound; only warning is logged
+- **Memory growth**: No explicit limit on WASM memory growth during execution
+- **Input pointer pinning**: Only the input pointer is pinned/unpinned
+- **Output pointer**: Not pinned - relies on AS GC not running during the synchronous read
+
+### String Handling
+
+- **String class ID**: Hardcoded as `2` for AssemblyScript strings
+- **RT_SIZE_OFFSET**: `-4` bytes (rtSize stored 4 bytes before pointer)
+- **10MB sanity check**: Rejects string sizes > 10MB to prevent memory corruption attacks
+- **Log truncation**: Input/output values truncated to 100 characters in logs
+
+### Null Return Handling
+
+When the WASM `handle` function returns a null pointer (0):
+- Returns `null` from `readString()`
+- `execute()` throws `WasmExecutionException("WASM function returned null")`
+
+### Abort Message Extraction
+
+When AssemblyScript calls `abort()`:
+- The runtime attempts to read the abort message from memory using the codec
+- If reading fails (defensive), only the raw error is logged
+- The exception message includes the abort location (file, line, column)
+
+### Cleanup Behavior
+
+- **Best-effort unpinning**: `__unpin` is called in a finally block
+- **Cleanup failures**: Logged as warnings but do not cause execution to fail
+- **Already cleaned up**: No error if cleanup is called multiple times
 
 ---
 
@@ -279,6 +326,16 @@ Pre-compiled WASM modules in `services/api/src/test/resources/wasm/`:
 - **ABI validation** (3): missing handle, invalid binary, empty binary
 - **Runtime errors** (2): trap, timeout
 - **Configuration** (1): custom timeout
+
+### Test Coverage Gaps (Known)
+
+The following edge cases are not covered by unit tests:
+- Memory warning threshold being triggered (>16MB)
+- Abort host function behavior (AS abort() call)
+- Cleanup failure path (when `__unpin` fails)
+- 10MB string size limit rejection
+- Null pointer returned from handle
+- Integration test with `WasmRuntimeConfiguration` Spring beans
 
 ### Compiling Test Modules
 
