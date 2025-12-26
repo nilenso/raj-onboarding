@@ -1,6 +1,5 @@
 package com.projectnil.compiler.messaging;
 
-import com.projectnil.common.domain.queue.CompilationJob;
 import com.projectnil.common.domain.queue.CompilationResult;
 import java.util.Optional;
 
