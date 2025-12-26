@@ -33,7 +33,7 @@ flowchart LR
 | Service | Tech | Port | Purpose |
 |---------|------|------|---------|
 | api-service | Spring Boot 4.x / Java 25 | 8080 | REST API, DB, WASM execution |
-| compiler-assemblyscript | Node.js (Latest LTS) | - | Compile AS → WASM |
+| compiler | Java 25 / CLI tooling | - | Compile AS → WASM (see docs/compiler.md) |
 | postgres | PostgreSQL 18 + pgmq | 5432 | Persistence + message queue |
 
 ## Local Development
@@ -58,20 +58,63 @@ podman compose --profile migrate up liquibase
 podman exec projectnil-db psql -U projectnil -d projectnil -c "\dt"
 ```
 
+### Running the Full Stack
+
+To run the complete stack including the compiler service:
+
+```bash
+cd projectNIL/infra
+
+# Start postgres and run migrations first
+podman compose up -d postgres
+podman compose --profile migrate up liquibase
+
+# Build and start compiler service (first build takes a few minutes)
+podman compose --profile full up -d compiler
+
+# Verify services are running
+podman compose ps
+
+# Check compiler logs
+podman compose logs -f compiler
+```
+
+### Testing Compilation End-to-End
+
+```bash
+# Send a test compilation job
+podman exec projectnil-db psql -U projectnil -d projectnil -c \
+  "SELECT pgmq.send('compilation_jobs', '{
+    \"functionId\": \"12345678-1234-1234-1234-123456789abc\",
+    \"language\": \"assemblyscript\",
+    \"source\": \"export function add(a: i32, b: i32): i32 { return a + b; }\"
+  }'::jsonb);"
+
+# Check for compilation result (wait a few seconds)
+podman exec projectnil-db psql -U projectnil -d projectnil -c \
+  "SELECT message->>'functionId', message->>'success', message->>'error'
+   FROM pgmq.read('compilation_results', 30, 10);"
+```
+
 ### Common Commands
 
 ```bash
 # View logs
 podman compose logs -f postgres
+podman compose logs -f compiler
 
-# Stop services
-podman compose down
+# Stop all services
+podman compose --profile full down
 
 # Reset database (destroy all data)
-podman compose down -v
+podman compose --profile full down -v
 
 # Connect to database
 podman exec -it projectnil-db psql -U projectnil -d projectnil
+
+# Rebuild compiler after code changes
+podman compose --profile full build compiler
+podman compose --profile full up -d compiler
 ```
 
 ### Manual Setup (Alternative)
@@ -219,15 +262,19 @@ Canonical queue and HTTP contracts are captured in `projectNIL/scope/contracts.m
 
 ```
 projectNIL/
-├── common/                          # Shared entities and utilities
-│   └── entities/
+├── common/                          # Shared domain objects and queue DTOs
+│   └── src/main/java/.../domain/
+│       ├── Function.java, Execution.java, ...
+│       └── queue/                   # CompilationJob, CompilationResult
 │
 ├── services/
 │   ├── api/                         # Spring Boot API service
 │   │   └── build.gradle.kts
 │   │
-│   └── compiler-assembly-script/    # Node.js compiler service
-│       └── build.gradle.kts
+│   └── compiler/                    # AssemblyScript compiler service
+│       ├── build.gradle.kts
+│       ├── scripts/run-with-podman.sh  # helper for local Podman tests
+│       └── src/                     # see docs/compiler.md for structure
 │
 ├── infra/                           # Infrastructure configuration
 │   ├── compose.yml                  # Podman/Docker Compose
