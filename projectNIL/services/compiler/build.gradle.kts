@@ -10,7 +10,9 @@ version = "0.0.1-SNAPSHOT"
 dependencies {
     implementation(project(":common"))
     implementation(libs.spring.boot.starter.web)
-    implementation(libs.spring.boot.starter.data.jpa)
+    implementation(libs.spring.boot.starter.jdbc)
+
+    runtimeOnly(libs.postgresql)
 }
 
 tasks.named<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
