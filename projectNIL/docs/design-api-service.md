@@ -1,7 +1,9 @@
 # DESIGN: API Service Blueprint
 
 Status: Draft
-Related: #44, #33, #37, #41
+Related: #44, #33, #37, #41, #50
+
+Canonical end-to-end spec lives under `projectNIL/scope/`.
 
 ## 1. Domain Entities (`com.projectnil.api.domain`)
 
@@ -19,8 +21,8 @@ Related: #44, #33, #37, #41
 ### `Execution`
 - `UUID id`
 - `UUID functionId` (FK)
-- `String input` (JSON string)
-- `String output` (JSON string)
+- `String input` (JSON serialized from the HTTP object)
+- `String output` (JSON serialized response)
 - `ExecutionStatus status` (PENDING, RUNNING, COMPLETED, FAILED)
 - `String errorMessage`
 - `LocalDateTime startedAt/completedAt`

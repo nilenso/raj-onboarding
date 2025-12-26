@@ -2,33 +2,30 @@
 
 A Function as a Service (FaaS) platform. Users submit source code, it compiles to WebAssembly, and executes on demand in a sandboxed environment.
 
+> **Note:** `projectNIL/scope/` is the canonical specification. This doc summarizes the system and focuses on operational context.
+
 ## Architecture
 
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                              User Request                                   │
-│      POST /functions { "language": "assemblyscript", "source": "..." }      │
-└─────────────────────────────────┬───────────────────────────────────────────┘
-                                  │
-                                  ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                       API Service (Spring Boot)                             │
-│                                                                             │
-│   REST API → Persist source → Publish to pgmq → Execute WASM (Chicory)      │
-└───────────┬─────────────────────────────────────────────────────────────────┘
-            │                                           ▲
-            │ compilation_jobs                          │ compilation_results
-            ▼                                           │
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                              PostgreSQL                                     │
-│   Tables: functions, executions    |    pgmq: compilation_jobs, results     │
-└───────────┬─────────────────────────────────────────────────────────────────┘
-            │                                           ▲
-            ▼                                           │
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                    Compiler Service (Node.js)                               │
-│                    AssemblyScript → WASM via asc                            │
-└─────────────────────────────────────────────────────────────────────────────┘
+Canonical, end-to-end architecture lives in `projectNIL/scope/architecture.md`.
+
+```mermaid
+flowchart LR
+  Client[Client] -->|HTTP JSON| API[API Service]
+
+  subgraph DB[PostgreSQL]
+    Tables[(functions, executions)]
+    Jobs[[pgmq: compilation_jobs]]
+    Results[[pgmq: compilation_results]]
+  end
+
+  API -->|JPA| Tables
+  API -->|pgmq send| Jobs
+
+  Compiler[Compiler Service\n(assemblyscript, future langs)] -->|pgmq read| Jobs
+  Compiler -->|pgmq send| Results
+
+  API -->|pgmq read| Results
+  API -->|execute WASM| Wasm[WASM Runtime (Chicory)]
 ```
 
 ## Services
@@ -135,19 +132,16 @@ See [stack.md](./stack.md) for full rationale and library versions.
 
 ## Function Lifecycle
 
-```
-POST /functions
-      │
-      ▼
-┌─────────┐  queue   ┌───────────┐  success  ┌─────────┐
-│ PENDING │─────────▶│ COMPILING │──────────▶│  READY  │
-└─────────┘          └───────────┘           └─────────┘
-                          │                       │
-                          │ error                 │ POST /execute
-                          ▼                       ▼
-                    ┌──────────┐           ┌───────────┐
-                    │  FAILED  │           │ Execution │
-                    └──────────┘           └───────────┘
+Canonical state machines and flows live in:
+- `projectNIL/scope/entities.md`
+- `projectNIL/scope/flows.md`
+
+```mermaid
+stateDiagram-v2
+  [*] --> PENDING
+  PENDING --> COMPILING
+  COMPILING --> READY
+  COMPILING --> FAILED
 ```
 
 ## Database Schema
@@ -193,6 +187,8 @@ CREATE INDEX idx_executions_created_at ON executions(created_at DESC);
 ```
 
 ## Message Formats
+
+Canonical queue and HTTP contracts are captured in `projectNIL/scope/contracts.md`.
 
 **Compilation Request** (API → Compiler):
 ```json
