@@ -209,6 +209,12 @@ Canonical queue and HTTP contracts are captured in `projectNIL/scope/contracts.m
 }
 ```
 
+## CI Operational Notes
+- Gradle caching (`actions/cache@v4`) now persists `~/.gradle/caches` and `~/.gradle/wrapper` during the “CI - dev & feature branches” workflow.
+- Cold run (commit `b0145a7`, cache miss) executed `./gradlew build --build-cache` in ~80 s and uploaded a ~276 MB cache.
+- Warm run (empty commit `ci: trigger cache verification`, SHA `441010f`) restored that cache (log shows `Cache hit` and multiple `FROM-CACHE` tasks) and completed in ~22 s.
+- Use empty commits when you need to validate cache health without changing code.
+
 ## Project Structure
 
 ```
