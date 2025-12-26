@@ -57,19 +57,12 @@ The platform SHOULD expose the expanded view (even if `FunctionResponse` remains
 ```
 
 ### DTO: `ExecutionRequest`
-Canonical contract is JSON.
-
-Option A (recommended, aligns with API docs):
+Canonical contract:
 ```json
 { "input": { "a": 5, "b": 3 } }
 ```
 
-Option B (current Java DTO shape):
-```json
-{ "input": "{\"a\":5,\"b\":3}" }
-```
-
-`scope/practices.md` records the recommended convergence here.
+The API serializes the JSON object to store it in `executions.input`.
 
 ### DTO: `ExecutionResponse`
 ```json

@@ -25,6 +25,7 @@ sequenceDiagram
   API-->>C: 201 FunctionResponse(status=PENDING)
 
   CS->>QJ: read CompilationJob
+  CS->>DB: mark function status COMPILING
   CS->>CS: compile source -> wasmBinary
   CS->>QR: send CompilationResult(success=true, wasmBinary, error=null)
 
@@ -50,6 +51,7 @@ sequenceDiagram
   API-->>C: 201 FunctionResponse(status=PENDING)
 
   CS->>QJ: read CompilationJob
+  CS->>DB: mark function status COMPILING
   CS->>CS: compile -> error (syntax/type)
   CS->>QR: send CompilationResult(success=false, wasmBinary=null, error=stderr)
 
@@ -137,6 +139,7 @@ sequenceDiagram
 ```
 
 ## Observed Gaps to Converge (tracked in `scope/practices.md`)
-- Define whether `execute` response for failures is `200` with `status=FAILED` vs an HTTP error.
-- Decide if the API sets `Function.status=COMPILING` immediately after publishing job.
-- Decide canonical shape of `ExecutionRequest.input` (JSON object vs JSON string).
+(Resolved here)
+- Runtime failures return `200` with `ExecutionResponse.status=FAILED`; platform failures still surface as 5xx.
+- `Function.status` transitions to `COMPILING` only after the compiler service picks up the job.
+- `ExecutionRequest.input` is a JSON object in the canonical HTTP contract.

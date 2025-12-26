@@ -49,21 +49,15 @@ Recommended rules:
 
 ## API Error Semantics (Convergence)
 
-There are two viable conventions for runtime failures:
-- **Option A**: Always return `200` with `ExecutionResponse.status=FAILED` (current docs imply this).
-- **Option B**: Return `5xx` for runtime/platform failures and still persist an `Execution` record.
+Canonical policy:
+- Return `200` with `ExecutionResponse.status=FAILED` when the failure is produced by the user’s function (runtime trap/logic error) and the platform remains healthy.
+- Return `5xx` only when the platform cannot record/update the execution (DB outage, runtime infrastructure failure).
 
-Canonical recommendation:
-- Return `200` for *function* runtime failures (treated as a domain outcome).
-- Return `5xx` only for platform failures where the execution could not be recorded.
+## DTO Contract: `ExecutionRequest.input`
 
-## DTO Convergence: `ExecutionRequest.input`
-
-Current code uses `ExecutionRequest(String input)` (stringified JSON), while docs show `input` as an object.
-
-Canonical recommendation:
-- Standardize on `input: object` in HTTP.
-- API should persist the serialized JSON string into `executions.input`.
+Canonical contract:
+- `input` MUST be a JSON object in HTTP requests.
+- The API serializes that object to JSON for persistence in `executions.input`.
 
 ## Security (Phase 0)
 - WASM provides sandboxing boundaries, but the platform still MUST:
