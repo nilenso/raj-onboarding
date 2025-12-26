@@ -7,5 +7,6 @@ public record CompilerProperties(
     String language,
     String jobQueue,
     String resultQueue,
-    long timeoutMs
+    long timeoutMs,
+    long pollIntervalMs
 ) {}

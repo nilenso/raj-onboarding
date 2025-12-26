@@ -11,6 +11,7 @@ compiler:
   job-queue: compilation_jobs
   result-queue: compilation_results
   timeout-ms: 10000
+  poll-interval-ms: 1000
 
 pgmq:
   url: ${PGMQ_URL:jdbc:postgresql://localhost:5432/projectnil}
