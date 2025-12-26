@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: compiler-service
+
+compiler:
+  language: assemblyscript
+  job-queue: compilation_jobs
+  result-queue: compilation_results
+  timeout-ms: 10000
