@@ -33,7 +33,7 @@ flowchart LR
 | Service | Tech | Port | Purpose |
 |---------|------|------|---------|
 | api-service | Spring Boot 4.x / Java 25 | 8080 | REST API, DB, WASM execution |
-| compiler | Java 25 / CLI tooling | - | Compile AS → WASM |
+| compiler | Java 25 / CLI tooling | - | Compile AS → WASM (see docs/compiler.md) |
 | postgres | PostgreSQL 18 + pgmq | 5432 | Persistence + message queue |
 
 ## Local Development
@@ -226,7 +226,7 @@ projectNIL/
 │   ├── api/                         # Spring Boot API service
 │   │   └── build.gradle.kts
 │   │
-│   └── compiler/    # JVM compiler service
+│   └── compiler/    # JVM compiler service (see docs/compiler.md)
 │       └── build.gradle.kts
 │
 ├── infra/                           # Infrastructure configuration

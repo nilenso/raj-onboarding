@@ -4,7 +4,7 @@
 The AssemblyScript compiler service is the reference implementation of the ProjectNIL Compiler Interface. It consumes `CompilationJob` messages coming from the API service, compiles AssemblyScript source code into a WASM binary using the `asc` toolchain, and publishes `CompilationResult` messages back to the platform.
 
 ## 2. Message Contracts
-ProjectNIL already defines the queue DTOs under `services/api/src/main/java/com/projectnil/api/queue/`:
+ProjectNIL already defines the queue DTOs under `common/src/main/java/com/projectnil/common/domain/queue/` (after consolidation):
 
 - `CompilationJob`: `{ functionId, language, source }`
 - `CompilationResult`: `{ functionId, success, wasmBinary, error }`
@@ -95,50 +95,64 @@ Use `dotenv` only for local development; production will inject environment vari
 ## 10. Modularity & Shared Interfaces
 To keep compiler services consistent across languages, split responsibilities and codify reusable contracts:
 
-### Layered Components
-1. **Messaging Adapter** (`messaging.js`): Owns pgmq connection lifecycle, `read/delete/archive` helpers, and JSON serialization. This module exposes a language-agnostic API so other compilers can reuse it by importing from a shared package (future `services/compiler-kit`).
-2. **Job Router** (`index.js`): Glues messaging to compilation. It applies language filters, controls concurrency, and handles retries. Business logic remains minimal so it can be copied between language implementations.
-3. **Compilation Engine** (`compiler.js`): Implements `compile(job: CompilationJob): Promise<CompilationResultPayload>`. Only this layer changes per language.
-4. **Filesystem Workspace** (`workspace.js`, optional): Standardizes how temp directories/files are created, ensuring deterministic cleanup regardless of language.
+### Layered Components (JVM)
+1. **Messaging Adapter** (`PgmqClient`): Owns pgmq connection lifecycle, `read/delete/archive` helpers, and JSON serialization (using shared DTO records in `common`).
+2. **Job Router** (`CompilerRunner`): Glues messaging to compilation. It applies language filters, controls concurrency, and handles retries.
+3. **Compilation Engine** (`LanguageCompiler` implementations): Implements the language-specific shell orchestration (write source, run toolchain, read WASM, map output).
+4. **Filesystem Workspace** (utility classes): Standardizes temp directories, path hygiene, and cleanup.
 
-### Suggested Interfaces (TypeScript-ish pseudocode)
-```ts
-export interface CompilationJobPayload {
-  functionId: string;
-  language: string;
-  source: string;
-}
-
-export interface CompilationOutcome {
-  success: boolean;
-  wasmBinary?: Buffer;
-  error?: string;
-  logs?: string;
-}
-
-export interface LanguageCompiler {
-  language(): string;           // e.g., "assemblyscript"
-  compile(job: CompilationJobPayload): Promise<CompilationOutcome>;
-}
-```
-
-All language services implement `LanguageCompiler` and register it with a common runner (exposed as a shared Java library in the future):
+### Core Interfaces (Java)
 ```java
-public static void main(String[] args) {
-    var runner = CompilerRunner.create(new AssemblyScriptCompiler());
-    runner.start();
+public interface LanguageCompiler {
+    String language();
+    CompilationOutcome compile(CompilationJob job) throws CompilationException;
+}
+
+public interface WorkspaceManager {
+    Path createWorkspace(UUID functionId) throws IOException;
+    Path writeSource(Path workspace, String source) throws IOException;
+    Path readWasm(Path workspace) throws IOException;
+    void cleanup(Path workspace);
+}
+
+public interface CompilerRunner {
+    void start();
 }
 ```
-The runner handles pgmq polling, base64 encoding, and result publishing, while the compiler focuses on turning `source` into a WASM binary.
+- `CompilationOutcome` encapsulates `success`, optional Base64 wasm bytes, stderr logs, and compiler duration.
+- Future languages implement `LanguageCompiler` and plug into the runner via configuration or service loading.
 
 ### Shared Utilities Roadmap
-- **`@projectnil/compiler-kit`** (future package) to house:
-  - pgmq client + reconnection logic
-  - JSON schema validation for incoming jobs
-  - Standard error/result mappers
-  - Metrics/logging helpers
-- Each new compiler imports the kit and implements only the `compile()` method.
+- Promote `LanguageCompiler`, `CompilationOutcome`, and DTO records to a common JVM package (e.g., `com.projectnil.compiler.shared`).
+- Provide reusable `PgmqClient`, `WorkspaceManager`, and `ProcessExecutor` utilities so new language compilers only implement `LanguageCompiler`.
 
 This separation keeps the AssemblyScript implementation clean today and sets us up to onboard Rust/Go compilers quickly.
 
 This document serves as the blueprint for implementing issue #36 using the JVM-based compiler service.
+
+## 11. Implementation Roadmap
+1. **Consolidate Shared Contracts**
+   - Move `CompilationJob`, `CompilationResult`, and related queue DTOs into `common` so both API and compiler import the same records.
+   - Relocate `MessagePublisher`, `MessageListener`, and any queue abstractions into `common` to avoid duplication.
+2. **Define Compiler Interfaces**
+   - Create `LanguageCompiler`, `WorkspaceManager`, `CompilationOutcome`, and supporting abstractions under `services/compiler/src/main/java/com/projectnil/compiler/core/` (or `common` if shared later).
+   - Ensure dependency inversion by keeping language-specific logic behind `LanguageCompiler` implementations.
+3. **Implement Spring Boot Application**
+   - Scaffold `Application.java` as a Spring Boot service exposing health endpoints and wiring the compiler runner via configuration properties (`compiler.language`, queue names, timeouts).
+   - Configure connection properties for Postgres/pgmq and structured logging.
+4. **Implement Messaging Adapter**
+   - Build `PgmqClient` using the shared DTOs. Responsibilities: poll jobs with visibility timeout, delete/archive processed messages, publish results.
+   - Provide transactional guards/idempotency and structured logging hooks.
+5. **Implement AssemblyScript Compiler**
+   - Use `WorkspaceManager` to create per-job directories, write `.ts` source, run `asc` via `ProcessBuilder`, capture stderr/stdout, and map to `CompilationOutcome`.
+   - Implement base64 encoding of the `.wasm` artifact and propagate compiler errors.
+6. **Wire Runner + Filtering**
+   - Implement `CompilerRunner` (could be a scheduled task or reactive loop) that repeatedly polls the job queue, filters by `language`, invokes the compiler, and publishes results.
+   - Handle retries, backoff, and error classification (transient vs permanent).
+7. **Testing & Validation**
+   - Unit tests for `WorkspaceManager`, `ProcessExecutor`, and `AssemblyScriptCompiler` (mocking subprocess execution).
+   - Integration tests using Testcontainers for pgmq/Postgres verifying job → result round trip.
+   - Smoke test scenario documented in `docs/testing-strategy.md` once compose wiring is ready.
+8. **Docs & Deployment Updates**
+   - Update `infra/compose.yml`, `infra/docker/compiler.Dockerfile`, and README snippets as the service becomes runnable.
+   - Keep `docs/compiler.md` and `scope` references in sync with implementation progress.
