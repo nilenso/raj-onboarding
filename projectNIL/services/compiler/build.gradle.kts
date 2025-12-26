@@ -11,9 +11,10 @@ dependencies {
     implementation(project(":common"))
     implementation(libs.spring.boot.starter.web)
     implementation(libs.spring.boot.starter.jdbc)
-
-    runtimeOnly(libs.postgresql)
+    implementation(libs.postgresql)
+    implementation(libs.jackson.databind)
 }
+
 
 tasks.named<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
     mainClass.set("com.projectnil.compiler.CompilerApplication")
