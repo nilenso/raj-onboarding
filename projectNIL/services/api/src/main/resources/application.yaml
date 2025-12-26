@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: projectnil-api
+
+# WASM Runtime Configuration
+projectnil:
+  wasm:
+    timeout: 10s
