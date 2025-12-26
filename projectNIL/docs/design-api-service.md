@@ -73,8 +73,37 @@ public interface WasmRuntime {
 }
 ```
 
-### `runtime.ChicoryRuntime` (Implementation)
-Actual implementation using Chicory 1.6.1. Handles memory allocation and pointer management.
+### `runtime.ChicoryWasmRuntime` (Implementation)
+Actual implementation using Chicory 1.6.1. Key features:
+- Parses WASM binary and instantiates module with host functions
+- Provides `env.abort` host function required by AssemblyScript
+- Validates `handle` export and AssemblyScript runtime exports
+- Uses `WasmStringCodec` for language-specific string I/O
+- Enforces configurable timeout (default 10s) via `ExecutorService`
+- Logs warnings for high memory usage (>16MB)
+
+### `runtime.WasmStringCodec` (Interface)
+Abstracts language-specific string memory handling:
+```java
+public interface WasmStringCodec {
+    void validateExports(Instance instance) throws WasmAbiException;
+    int writeString(Instance instance, String value);
+    String readString(Instance instance, int pointer);
+    void cleanup(Instance instance, int pointer);
+}
+```
+
+### `runtime.AssemblyScriptStringCodec` (Implementation)
+Handles AssemblyScript's UTF-16LE encoding and GC-managed memory:
+- Uses `__new`, `__pin`, `__unpin` for memory management
+- Reads string length from `rtSize` field at `pointer - 4`
+- Converts between Java String (UTF-16) and AS memory layout
+
+### `runtime.WasmExecutionException`
+Runtime errors: traps, timeouts, invalid output.
+
+### `runtime.WasmAbiException`
+ABI violations: missing exports, wrong signatures.
 
 ### `queue.MessagePublisher` (Interface)
 Generic interface for sending messages to queues.

@@ -121,12 +121,58 @@ Because languages differ in calling conventions, ProjectNIL MUST standardize an 
 ### Canonical ABI (Phase 0)
 - The compiled module MUST export a function named `handle`.
 - Signature MUST be logically: `handle(inputJson: string) -> string`.
-- `inputJson` and output strings are UTF-8.
+- `inputJson` and output strings are UTF-8 at the API boundary.
 
 This keeps the API runtime generic across languages.
 
+### AssemblyScript-Specific ABI
+
+AssemblyScript modules compiled with `--exportRuntime` MUST export:
+
+| Export | WASM Signature | Purpose |
+|--------|----------------|---------|
+| `handle` | `(i32) -> i32` | User function (string pointers) |
+| `__new` | `(i32, i32) -> i32` | Allocate managed object |
+| `__pin` | `(i32) -> i32` | Pin object (prevent GC) |
+| `__unpin` | `(i32) -> void` | Unpin object (allow GC) |
+| `memory` | (memory export) | Linear memory |
+
+**String Memory Layout**:
+```
+┌────────────────────────────────┬─────────────────────────────┐
+│  20-byte header (GC metadata)  │  UTF-16LE payload           │
+├────────────────────────────────┼─────────────────────────────┤
+│  ... | rtId (4B) | rtSize (4B) │  string data (rtSize bytes) │
+└────────────────────────────────┴─────────────────────────────┘
+         offset -8    offset -4    offset 0 (pointer)
+```
+
+- `rtId = 2` for strings
+- `rtSize` = byte length of UTF-16LE payload
+
+**Required Host Import**:
+- `env.abort(messagePtr: i32, fileNamePtr: i32, line: i32, column: i32) -> void`
+  - Called by AssemblyScript runtime on assertion failures
+  - The API runtime provides this as a host function that throws `WasmExecutionException`
+
+### Compilation Requirements
+
+AssemblyScript source MUST be compiled with:
+```bash
+asc source.ts --outFile module.wasm --exportRuntime --runtime incremental --optimize
+```
+
 ### Runtime Interface
-The API’s internal runtime contract is represented as:
+The API's internal runtime contract is represented as:
 - `com.projectnil.api.runtime.WasmRuntime.execute(wasmBinary, inputJson) -> byte[]`
 
 The returned bytes SHOULD represent UTF-8 JSON.
+
+### Error Handling
+
+| Error Type | HTTP Response | Notes |
+|------------|---------------|-------|
+| WASM trap (unreachable, div by zero) | 200 with `status=FAILED` | User code error |
+| Missing `handle` export | 500 | ABI violation |
+| Execution timeout | 200 with `status=FAILED` | Resource limit |
+| Platform failure | 500 | Infrastructure error |
