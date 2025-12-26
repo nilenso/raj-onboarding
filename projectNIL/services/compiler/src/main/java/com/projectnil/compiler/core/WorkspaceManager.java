@@ -9,7 +9,9 @@ public interface WorkspaceManager {
 
     Path writeSource(Path workspace, String source) throws IOException;
 
-    Path readWasm(Path workspace) throws IOException;
+    Path outputDirectory(Path workspace);
+
+    Path wasmFile(Path workspace);
 
     void cleanup(Path workspace);
 }
