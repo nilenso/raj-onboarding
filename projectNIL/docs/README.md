@@ -219,15 +219,19 @@ Canonical queue and HTTP contracts are captured in `projectNIL/scope/contracts.m
 
 ```
 projectNIL/
-├── common/                          # Shared entities and utilities
-│   └── entities/
+├── common/                          # Shared domain objects and queue DTOs
+│   └── src/main/java/.../domain/
+│       ├── Function.java, Execution.java, ...
+│       └── queue/                   # CompilationJob, CompilationResult
 │
 ├── services/
 │   ├── api/                         # Spring Boot API service
 │   │   └── build.gradle.kts
 │   │
-│   └── compiler/    # JVM compiler service (see docs/compiler.md)
-│       └── build.gradle.kts
+│   └── compiler/                    # AssemblyScript compiler service
+│       ├── build.gradle.kts
+│       ├── scripts/run-with-podman.sh  # helper for local Podman tests
+│       └── src/                     # see docs/compiler.md for structure
 │
 ├── infra/                           # Infrastructure configuration
 │   ├── compose.yml                  # Podman/Docker Compose
