@@ -197,20 +197,21 @@ All Web and Queue DTOs are implemented as Java `records`. This enforces immutabi
 | Web DTOs | `api/src/.../web/` | Done |
 | WASM Runtime | `api/src/.../runtime/` | Done (PR #37) |
 | Health endpoint | `api/src/.../web/health/` | Done |
+| Database configuration | `api/src/.../resources/application.yaml` | Done (#29) |
+| FunctionRepository | `api/src/.../repository/` | Done (#29) |
+| ExecutionRepository | `api/src/.../repository/` | Done (#29) |
+| FunctionService | `api/src/.../service/` | Done (#29) |
+| ExecutionService | `api/src/.../service/` | Done (#29) |
+| FunctionController | `api/src/.../web/` | Partial (#29 - execute only) |
+| Global exception handler | `api/src/.../web/` | Done (#29) |
 
 ### Not Yet Implemented
 
 | Component | Location | Blocked By |
 |-----------|----------|------------|
-| FunctionRepository | `api/src/.../repository/` | - |
-| ExecutionRepository | `api/src/.../repository/` | - |
-| FunctionService | `api/src/.../service/` | Repositories |
-| ExecutionService | `api/src/.../service/` | Repositories, WASM Runtime (done) |
-| FunctionController | `api/src/.../web/` | Services |
+| FunctionController CRUD | `api/src/.../web/` | - |
 | MessagePublisher impl | `api/src/.../queue/` | - |
 | CompilationPoller | `api/src/.../queue/` | MessagePublisher |
-| Global exception handler | `api/src/.../web/` | - |
-| Database configuration | `application.yaml` | - |
 
 ### Endpoint Implementation Status
 
@@ -221,7 +222,7 @@ All Web and Queue DTOs are implemented as Java `records`. This enforces immutabi
 | GET | `/functions/{id}` | #26 | Not started |
 | PUT | `/functions/{id}` | #27 | Not started |
 | DELETE | `/functions/{id}` | #28 | Not started |
-| POST | `/functions/{id}/execute` | #29 | Unblocked by #37 |
+| POST | `/functions/{id}/execute` | #29 | **Done** |
 | GET | `/functions/{id}/executions` | #30 | Not started |
 | GET | `/executions/{id}` | #31 | Not started |
 
@@ -229,12 +230,11 @@ All Web and Queue DTOs are implemented as Java `records`. This enforces immutabi
 
 ## 9. Next Steps (Recommended Order)
 
-1. **Database configuration** - Add datasource config to `application.yaml`
-2. **Repositories** - Create `FunctionRepository` and `ExecutionRepository`
-3. **FunctionService** - CRUD operations for functions
-4. **FunctionController** - REST endpoints for functions
-5. **ExecutionService** - Wire WASM runtime for execution
-6. **ExecutionController** - Execute endpoint + execution queries
-7. **MessagePublisher** - PGMQ integration for compilation jobs
-8. **CompilationPoller** - Background polling for compilation results
+1. ~~**Database configuration** - Add datasource config to `application.yaml`~~ Done
+2. ~~**Repositories** - Create `FunctionRepository` and `ExecutionRepository`~~ Done
+3. **FunctionService CRUD** - Add create, update, delete operations
+4. **FunctionController CRUD** - REST endpoints for function management
+5. **MessagePublisher** - PGMQ integration for compilation jobs
+6. **CompilationPoller** - Background polling for compilation results
+7. **Execution queries** - `GET /executions/{id}` and `GET /functions/{id}/executions`
 

@@ -15,6 +15,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -35,9 +37,11 @@ public class Execution {
     @Column(name = "function_id", nullable = false)
     private UUID functionId;
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "input", columnDefinition = "jsonb")
     private String input;
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "output", columnDefinition = "jsonb")
     private String output;
 

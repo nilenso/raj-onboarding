@@ -1,7 +1,7 @@
 # Session Handoff Document
 
-**Last Updated**: December 26, 2025  
-**Current Branch**: `dev`  
+**Last Updated**: December 27, 2025  
+**Current Branch**: `feature-issue-29`  
 **Last PR Merged**: #57 (WASM Runtime Implementation)
 
 This document captures the current state of ProjectNIL for session continuity.
@@ -10,31 +10,36 @@ This document captures the current state of ProjectNIL for session continuity.
 
 ## 1. What Was Completed This Session
 
-### Issue #37: Runtime - Integrate Chicory WASM
+### Issue #29: Execute a Function
 
-**Status**: Merged (PR #57)
+**Status**: Implementation complete on `feature-issue-29` branch
 
-Implemented the WASM runtime for executing compiled AssemblyScript functions:
+Implemented the execute function endpoint per Issue #29 acceptance criteria:
 
 | File | Purpose |
 |------|---------|
-| `ChicoryWasmRuntime.java` | Main runtime using Chicory 1.6.1 |
-| `WasmStringCodec.java` | Interface for language-specific string I/O |
-| `AssemblyScriptStringCodec.java` | UTF-16LE encoding + GC memory management |
-| `WasmExecutionException.java` | Runtime errors (traps, timeouts) |
-| `WasmAbiException.java` | ABI violations (missing exports) |
-| `WasmRuntimeProperties.java` | Configuration with 10s default timeout |
-| `WasmRuntimeConfiguration.java` | Spring bean wiring |
-| `ChicoryWasmRuntimeTest.java` | 13 unit tests |
+| `repository/FunctionRepository.java` | Spring Data JPA repository for Functions |
+| `repository/ExecutionRepository.java` | Spring Data JPA repository for Executions |
+| `service/FunctionService.java` | Service with `findById()` and `findReadyById()` validation |
+| `service/FunctionNotFoundException.java` | Exception for missing functions (404) |
+| `service/FunctionNotReadyException.java` | Exception for non-READY functions (400) |
+| `service/ExecutionService.java` | Orchestrates WASM execution and persistence |
+| `service/ExecutionNotFoundException.java` | Exception for missing executions (404) |
+| `web/FunctionController.java` | REST controller with `POST /functions/{id}/execute` |
+| `web/GlobalExceptionHandler.java` | Maps exceptions to HTTP responses |
+| `config/JacksonConfiguration.java` | ObjectMapper bean configuration |
 
-**Test WASM files** created in `services/api/src/test/resources/wasm/`:
-- `echo.wasm`, `add.wasm`, `greet.wasm` - Success scenarios
-- `trap.wasm`, `no-handle.wasm`, `infinite-loop.wasm` - Error scenarios
+**Test coverage**: 11 integration tests using Testcontainers (PostgreSQL):
+- Success scenarios: echo, add, greet functions, null input handling
+- Error scenarios: 404 for missing function, 400 for PENDING/COMPILING/FAILED status
+- Runtime failures: WASM trap returns 200 with FAILED status
+- Persistence: execution records are saved on success and failure
 
-**Documentation updated**:
-- `docs/wasm-runtime.md` - Full implementation documentation
-- `docs/design-api-service.md` - Added runtime components, completed missing sections
-- `scope/contracts.md` - Added AssemblyScript-specific ABI details
+**Configuration updates**:
+- `application.yaml` - Added datasource, JPA, Liquibase configuration
+- `Execution.java` - Added `@JdbcTypeCode(SqlTypes.JSON)` for jsonb columns
+- `ExecutionRequest.java` - Changed `input` from `String` to `Object`
+- `ApiApplication.java` - Fixed `@EnableJpaRepositories` path
 
 ---
 
@@ -49,11 +54,13 @@ Implemented the WASM runtime for executing compiled AssemblyScript functions:
 | Web DTOs | Done | `FunctionRequest`, `FunctionResponse`, etc. |
 | WASM Runtime | Done | Chicory-based, with timeout and ABI validation |
 | Health endpoint | Done | `GET /health` |
-| Repositories | Not started | Need `FunctionRepository`, `ExecutionRepository` |
-| Services | Not started | Need `FunctionService`, `ExecutionService` |
-| Controllers | Not started | Need `FunctionController`, execution endpoints |
+| Database config | Done | Datasource, JPA, Liquibase in `application.yaml` |
+| Repositories | Done | `FunctionRepository`, `ExecutionRepository` |
+| FunctionService | Done | `findById()`, `findReadyById()` |
+| ExecutionService | Done | Orchestrates WASM execution and persistence |
+| FunctionController | Partial | Only `POST /functions/{id}/execute` |
+| GlobalExceptionHandler | Done | 404, 400, 500 error handling |
 | Queue integration | Not started | Need `MessagePublisher`, `CompilationPoller` |
-| Database config | Not started | No datasource in `application.yaml` |
 
 ### Compiler Service
 
@@ -77,46 +84,42 @@ Implemented the WASM runtime for executing compiled AssemblyScript functions:
 
 ## 3. Open Issues (Phase 0)
 
-### Unblocked
+### Completed
 
 | Issue | Title | Notes |
 |-------|-------|-------|
-| #29 | Execute a Function | Unblocked by WASM runtime (#37) |
+| #29 | Execute a Function | Done - `POST /functions/{id}/execute` |
 
-### Blocked (Need Foundation First)
+### Unblocked (Foundation Now Ready)
 
-| Issue | Title | Blocked By |
-|-------|-------|------------|
-| #24 | Register a Function | Database config, repositories, services |
-| #25 | List Available Functions | #24 |
-| #26 | Get Function Details | #24 |
-| #27 | Update a Function | #24 |
-| #28 | Delete a Function | #24 |
-| #30 | Get Execution Details | #24, #29 |
-| #31 | List Executions for a Function | #24, #29 |
-| #53 | API: Consume pgmq compilation results | #24 |
-| #54 | API: Publish pgmq compilation jobs | #24 |
-| #55 | API: Enforce canonical DTOs | #24 |
+| Issue | Title | Notes |
+|-------|-------|-------|
+| #24 | Register a Function | Repositories/services ready, need CRUD controller |
+| #25 | List Available Functions | Depends on #24 |
+| #26 | Get Function Details | Depends on #24 |
+| #27 | Update a Function | Depends on #24 |
+| #28 | Delete a Function | Depends on #24 |
+| #30 | Get Execution Details | ExecutionService ready, need endpoint |
+| #31 | List Executions for a Function | ExecutionRepository ready, need endpoint |
+| #53 | API: Consume pgmq compilation results | Need CompilationPoller |
+| #54 | API: Publish pgmq compilation jobs | Need MessagePublisher |
+| #55 | API: Enforce canonical DTOs | Ongoing |
 
 ---
 
 ## 4. Recommended Next Steps
 
-### Option A: Build Foundation First (Recommended)
+1. **Function CRUD endpoints** (#24, #25, #26, #27, #28)
+   - Add create/update/delete methods to FunctionService
+   - Add remaining endpoints to FunctionController
+   
+2. **Execution query endpoints** (#30, #31)
+   - Add `GET /executions/{id}` endpoint
+   - Add `GET /functions/{id}/executions` endpoint
 
-1. **Add database configuration** to `application.yaml`
-2. **Create repositories**: `FunctionRepository`, `ExecutionRepository`
-3. **Create FunctionService** with CRUD operations
-4. **Create FunctionController** with REST endpoints
-5. **Implement Execute endpoint** using existing WASM runtime
-6. **Add queue integration** for async compilation
-
-### Option B: Execute Endpoint First (Faster Demo)
-
-1. **Create minimal repository** for functions
-2. **Create ExecutionService** wiring WASM runtime
-3. **Create execution endpoint** `POST /functions/{id}/execute`
-4. **Backfill** other CRUD endpoints
+3. **Queue integration** (#53, #54)
+   - Implement `MessagePublisher` for publishing compilation jobs
+   - Implement `CompilationPoller` for consuming results
 
 ---
 
@@ -145,7 +148,7 @@ Implemented the WASM runtime for executing compiled AssemblyScript functions:
 
 | Issue | Severity | Notes |
 |-------|----------|-------|
-| @EnableJpaRepositories path | Low | Points to domain package; may need api-specific path |
+| ~~@EnableJpaRepositories path~~ | ~~Low~~ | Fixed - now points to `api.repository` |
 | FunctionResponse incomplete | Low | Missing fields for detailed view (description, source) |
 
 ---
@@ -209,7 +212,11 @@ gh pr list --state merged --limit 10
 │                      API Service (:8080)                         │
 │  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐  │
 │  │ FunctionController│  │ ExecutionService │  │ WasmRuntime     │  │
-│  │ (not implemented) │  │ (not implemented)│  │ (DONE)          │  │
+│  │ (execute: DONE)  │  │ (DONE)           │  │ (DONE)          │  │
+│  └─────────────────┘  └─────────────────┘  └─────────────────┘  │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐  │
+│  │ FunctionService  │  │ FunctionRepo    │  │ ExecutionRepo   │  │
+│  │ (DONE)           │  │ (DONE)          │  │ (DONE)          │  │
 │  └─────────────────┘  └─────────────────┘  └─────────────────┘  │
 └─────────────────────────────────────────────────────────────────┘
         │                       │
@@ -239,18 +246,19 @@ gh pr list --state merged --limit 10
 All tests passing as of session end:
 
 ```
-:common:test - PASSED
-:services:api:test - PASSED (13 runtime tests)
-:services:compiler:test - PASSED
+:common:test - PASSED (6 tests)
+:services:api:test - PASSED (24 tests: 13 runtime + 11 controller)
+:services:compiler:test - PASSED (10 tests)
 ```
+
+**Note**: API controller tests require Testcontainers with PostgreSQL. Set `DOCKER_HOST` environment variable for Podman.
 
 ---
 
 ## 10. Session Notes
 
-- The WASM runtime implementation is complete and well-tested
-- Chicory 1.6.1 is used as the WASM engine (pure Java, no native dependencies)
-- AssemblyScript string handling uses UTF-16LE encoding with GC pinning
-- Timeout enforcement works via `ExecutorService` and thread interrupts
-- The runtime is language-agnostic via the `WasmStringCodec` abstraction
-- Next major milestone is getting a full end-to-end flow working (register function -> compile -> execute)
+- Issue #29 (Execute a Function) is now complete with full test coverage
+- The execute endpoint follows the canonical flow from `scope/flows.md` (Flow 3)
+- Error semantics match `scope/practices.md`: user errors return 200 with FAILED status
+- The foundation (repositories, services, exception handling) is ready for CRUD endpoints
+- Next major milestone: Function CRUD endpoints (#24-#28) and queue integration (#53-#54)
