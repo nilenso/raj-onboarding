@@ -14,6 +14,7 @@ Towards a pedagogical CRUD to pick up on tooling and best practices.
 | [docs/api.md](./docs/api.md) | HTTP API reference (points to canonical contracts) |
 | [docs/stack.md](./docs/stack.md) | Technology stack versions and rationale |
 | [docs/design-api-service.md](./docs/design-api-service.md) | API service blueprint (references canonical scope) |
+| **Note** | `scope/` is the canonical specification. Docs under `docs/` summarize or add ops context. |
 
 ### External Resources
 

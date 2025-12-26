@@ -2,6 +2,8 @@
 
 A Function as a Service (FaaS) platform. Users submit source code, it compiles to WebAssembly, and executes on demand in a sandboxed environment.
 
+> **Note:** `projectNIL/scope/` is the canonical specification. This doc summarizes the system and focuses on operational context.
+
 ## Architecture
 
 Canonical, end-to-end architecture lives in `projectNIL/scope/architecture.md`.

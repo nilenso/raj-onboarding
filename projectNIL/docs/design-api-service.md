@@ -21,8 +21,8 @@ Canonical end-to-end spec lives under `projectNIL/scope/`.
 ### `Execution`
 - `UUID id`
 - `UUID functionId` (FK)
-- `String input` (JSON string)
-- `String output` (JSON string)
+- `String input` (JSON serialized from the HTTP object)
+- `String output` (JSON serialized response)
 - `ExecutionStatus status` (PENDING, RUNNING, COMPLETED, FAILED)
 - `String errorMessage`
 - `LocalDateTime startedAt/completedAt`
