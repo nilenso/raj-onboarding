@@ -24,6 +24,11 @@ import org.springframework.jdbc.core.JdbcTemplate;
 public class CompilerMessagingConfiguration {
 
     @Bean
+    public ObjectMapper objectMapper() {
+        return new ObjectMapper();
+    }
+
+    @Bean
     public PgmqClient pgmqClient(
         JdbcTemplate jdbcTemplate,
         CompilerProperties compilerProperties,
@@ -67,7 +72,8 @@ public class CompilerMessagingConfiguration {
     }
 
     @EventListener(ApplicationReadyEvent.class)
-    public void startCompilerRunner(CompilerRunner compilerRunner) {
-        compilerRunner.start();
+    public void startCompilerRunner(ApplicationReadyEvent event) {
+        CompilerRunner runner = event.getApplicationContext().getBean(CompilerRunner.class);
+        runner.start();
     }
 }

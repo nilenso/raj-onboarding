@@ -11,9 +11,9 @@ WORKDIR /app
 COPY gradlew settings.gradle.kts build.gradle.kts gradle.properties ./
 COPY gradle/ gradle/
 
-# Copy source code
+# Copy source code (api needed for Gradle multi-project structure)
 COPY common/ common/
-COPY services/compiler/ services/compiler/
+COPY services/ services/
 
 # Build the compiler service
 RUN ./gradlew :services:compiler:bootJar --no-daemon
@@ -28,8 +28,9 @@ RUN apk add --no-cache nodejs npm && \
 
 WORKDIR /app
 
-# Copy the built JAR from builder stage
-COPY --from=builder /app/services/compiler/build/libs/*.jar app.jar
+# Copy the boot JAR from builder stage
+# Note: bootJar produces compiler-VERSION.jar, plain jar is compiler-VERSION-plain.jar
+COPY --from=builder /app/services/compiler/build/libs/compiler-0.0.1-SNAPSHOT.jar app.jar
 
 # Create workspace directory for compilation artifacts
 RUN mkdir -p /app/tmp/compiler

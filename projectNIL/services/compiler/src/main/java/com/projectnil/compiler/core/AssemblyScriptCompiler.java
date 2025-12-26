@@ -71,10 +71,9 @@ public class AssemblyScriptCompiler implements LanguageCompiler {
         List<String> command = new ArrayList<>();
         command.add(ascBinary);
         command.add(sourceFile.toString());
-        command.add("--binaryFile");
+        command.add("--outFile");
         command.add(wasmFile.toString());
         command.add("--optimize");
-        command.add("--measure");
         return command;
     }
 }

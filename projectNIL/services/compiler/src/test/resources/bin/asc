@@ -3,11 +3,11 @@ SOURCE=""
 OUTPUT="module.wasm"
 while [ $# -gt 0 ]; do
   case "$1" in
-    --binaryFile)
+    --outFile|-o)
       shift
       OUTPUT="$1"
       ;;
-    --measure|--optimize)
+    --optimize)
       ;;
     *)
       if [ -z "$SOURCE" ]; then
