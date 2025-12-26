@@ -51,7 +51,7 @@ This doc defines the **service boundaries** and responsibilities end-to-end.
 ## Deployment View (Logical)
 
 ```mermaid
-flowchart LR
+flowchart TB
   Client[Client] -->|HTTP JSON| API[API Service]
 
   subgraph DB[PostgreSQL]
@@ -63,12 +63,11 @@ flowchart LR
   API -->|JPA| Tables
   API -->|pgmq send| Jobs
 
-  Compiler[Compiler Service
-(assemblyscript, future langs)] -->|pgmq read| Jobs
+  Compiler[Compiler Service] -->|pgmq read| Jobs
   Compiler -->|pgmq send| Results
 
   API -->|pgmq read| Results
-  API -->|execute WASM| Wasm[WASM Runtime (Chicory)]
+  API -->|execute WASM| Wasm[WASM Runtime]
 ```
 
 ## Key Cross-Cutting Requirements (Canonical)
