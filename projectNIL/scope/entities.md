@@ -24,26 +24,21 @@ Represents user-submitted source code and its compiled WASM artifact.
 - WASM storage: `wasm_binary` (`BYTEA`)
 
 ### Status: `FunctionStatus`
-- `PENDING`: accepted by API, job not yet processed.
-- `COMPILING`: compilation started (optional intermediate; may be omitted in minimal impl).
-- `READY`: compiled successfully, `wasmBinary` present.
-- `FAILED`: compilation failed, `compileError` present.
+- `PENDING`: accepted by the API, awaiting basic validation (language support, quota) and job publication.
+- `COMPILING`: static checks passed, job published to `compilation_jobs`, awaiting compiler result.
+- `READY`: compilation succeeded, `wasmBinary` persisted, `compileError` cleared.
+- `FAILED`: compilation failed, `compileError` populated.
 
 ### Function State Machine
 
 ```mermaid
 stateDiagram-v2
   [*] --> PENDING
-  PENDING --> COMPILING: publish job
+  PENDING --> COMPILING: static validation + publish job
   COMPILING --> READY: compilation success
   COMPILING --> FAILED: compilation failure
-
-  %% minimal implementation may skip COMPILING
-  PENDING --> READY: compilation success
-  PENDING --> FAILED: compilation failure
-
-  READY --> PENDING: update source (recompile)
-  FAILED --> PENDING: update source (recompile)
+  READY --> PENDING: source updated (recompile)
+  FAILED --> PENDING: source updated (retry)
 ```
 
 ### Invariants
