@@ -32,9 +32,11 @@ flowchart LR
 
 | Service | Tech | Port | Purpose |
 |---------|------|------|---------|
-| api-service | Spring Boot 4.x / Java 25 | 8080 | REST API, DB, WASM execution |
-| compiler | Java 25 / CLI tooling | - | Compile AS → WASM (see docs/compiler.md) |
+| api | Spring Boot 4.x / Java 25 | 8080 | REST API, DB, WASM execution |
+| compiler | Java 25 / Node.js | 8081 | Compile AS → WASM (see [compiler.md](./compiler.md)) |
 | postgres | PostgreSQL 18 + pgmq | 5432 | Persistence + message queue |
+
+See [infrastructure.md](./infrastructure.md) for deployment details.
 
 ## Local Development
 
@@ -300,6 +302,10 @@ projectNIL/
 ## Related Docs
 
 - [API Reference](./api.md)
+- [Infrastructure](./infrastructure.md)
+- [Compiler Service](./compiler.md)
+- [WASM Runtime](./wasm-runtime.md)
+- [Session Handoff](./session-handoff.md)
 - [Roadmap](./roadmap.md)
 - [Tech Stack](./stack.md)
 - [ADR-001: WASM Runtime](./decisions/001-wasm-runtime.md)

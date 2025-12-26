@@ -28,7 +28,7 @@ jobs:
           outputs: type=docker,dest=api-image.tar
           tags: projectnil-api:latest
 
-      - name: Build Sentinel Compiler Image
+      - name: Build Compiler Image
         uses: docker/build-push-action@v5
         with:
           context: projectNIL
@@ -62,19 +62,69 @@ jobs:
           username: ${{ secrets.DROPLET_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            # Check files 
-            ls -R /opt/projectnil
+            set -e
+            
+            echo "=== Loading container images ==="
             podman load -i /opt/projectnil/api-image.tar
             podman load -i /opt/projectnil/compiler-image.tar
+            
+            echo "=== Starting services ==="
             cd /opt/projectnil/infra
-            # Podman-compose might need specific help to avoid building
+            
+            # Stop existing services gracefully
+            podman-compose -f prod.compose.yml down --timeout 30 || true
+            
+            # Start services
             if ! podman-compose -f prod.compose.yml up -d; then
               echo "Deployment failed"
               echo "--- DB LOGS ---"
-              podman logs projectnil-db
+              podman logs projectnil-db 2>&1 || true
               echo "--- MIGRATION LOGS ---"
-              podman logs projectnil-migrations
+              podman logs projectnil-migrations 2>&1 || true
+              echo "--- API LOGS ---"
+              podman logs projectnil-api 2>&1 || true
+              echo "--- COMPILER LOGS ---"
+              podman logs projectnil-compiler 2>&1 || true
               exit 1
             fi
-            rm /opt/projectnil/*.tar
+            
+            # Wait for services to be healthy
+            echo "=== Waiting for services to be healthy ==="
+            sleep 10
+            
+            # Check API health
+            for i in {1..12}; do
+              if curl -sf http://localhost:8080/health > /dev/null 2>&1; then
+                echo "API service is healthy"
+                break
+              fi
+              if [ $i -eq 12 ]; then
+                echo "API health check failed after 60s"
+                podman logs projectnil-api
+                exit 1
+              fi
+              echo "Waiting for API... (attempt $i/12)"
+              sleep 5
+            done
+            
+            # Check Compiler health
+            for i in {1..12}; do
+              if curl -sf http://localhost:8081/health > /dev/null 2>&1; then
+                echo "Compiler service is healthy"
+                break
+              fi
+              if [ $i -eq 12 ]; then
+                echo "Compiler health check failed after 60s"
+                podman logs projectnil-compiler
+                exit 1
+              fi
+              echo "Waiting for Compiler... (attempt $i/12)"
+              sleep 5
+            done
+            
+            echo "=== Deployment successful ==="
+            podman ps
+            
+            # Cleanup image tarballs
+            rm -f /opt/projectnil/*.tar
 

@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: projectnil-api-test
+
+  # Datasource is configured dynamically via @DynamicPropertySource for Testcontainers
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    open-in-view: false
+
+  liquibase:
+    enabled: false
+
+# WASM Runtime Configuration
+projectnil:
+  wasm:
+    timeout: 10s
