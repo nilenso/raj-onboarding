@@ -75,7 +75,7 @@ Developers must ensure tests pass locally before pushing:
 - Add serialization/DTO contract tests when API changes threaten backwards compatibility.
 
 ### End-to-End Flow
-- Define happy-path smoke tests that run the API service, Postgres/pgmq, and either a stubbed compiler or the real Node compiler inside a Podman Compose profile.
+- Define happy-path smoke tests that run the API service, Postgres/pgmq, and either a stubbed compiler or the real JVM compiler inside a Podman Compose profile.
 - Validate the full lifecycle: register function, poll queue, compile result, mark READY, execute with expected input/output.
 - Use the documented API (see `docs/api.md`) as a reference for request and response shapes.
 

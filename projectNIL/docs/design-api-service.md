@@ -103,7 +103,7 @@ public class CompilationPoller {
    - Saves `Function` with status `PENDING`.
    - Maps `Function` to `CompilationJob`.
    - Calls `MessagePublisher.publish("compilation_jobs", job)`.
-3. **Compiler Service** (External Node.js):
+3. **Compiler Service** (External JVM worker):
    - Pulls from `compilation_jobs`.
    - Compiles and creates binary.
 ---

@@ -41,21 +41,22 @@ Message payloads must remain JSON-compatible with the DTOs so the API can deseri
 
 ## 4. Project Structure
 ```
-services/compiler-assemblyscript/
-├── package.json
-├── package-lock.json
-├── src/
-│   ├── index.js         # bootstraps config + messaging
-│   ├── compiler.js      # wraps AssemblyScript compiler invocation
-│   └── messaging.js     # pgmq client helpers
-├── Dockerfile
+services/compiler/
+├── build.gradle.kts
+├── src/main/java/
+│   └── com/projectnil/compiler/
+│       ├── Application.java     # bootstraps config + messaging
+│       ├── CompilerService.java # wraps AssemblyScript compilation via shell
+│       └── PgmqClient.java      # queue helpers
+├── src/main/resources/
+│   └── application.yaml
 └── README.md            # service-specific instructions
 ```
 
 ### Entry Points
-- `index.js`: loads env vars, creates messaging client, wires consumer callbacks.
-- `messaging.js`: exports `connect()`, `consumeJobs(onJob)` and `publishResult(result)` utilities, encapsulating queue names and serialization.
-- `compiler.js`: exposes `compile(source)` returning `{ success, wasmBinary?, error? }` and hides temp-file orchestration.
+- `Application.java`: loads env vars/config, wires messaging client, manages retries.
+- `PgmqClient.java`: encapsulates queue connectivity, polling, and publishing.
+- `CompilerService.java`: exposes `compile(source)` returning `{ success, wasmBinary?, error? }` and shells out to `asc`.
 
 ## 5. Configuration
 | Variable | Description | Default |
@@ -75,16 +76,16 @@ Use `dotenv` only for local development; production will inject environment vari
 - Use pgmq’s `read`/`delete`/`archive` semantics to control visibility and avoid message loss. Requeue (via visibility timeout) on transient infrastructure errors; drop on irrecoverable syntax errors after publishing failure results.
 
 ## 7. Docker & Compose
-- Base image: `node:20-alpine`.
-- Install dependencies via `npm install --production` in Dockerfile.
-- Copy only necessary files (`package*.json`, `src/`).
-- Default command: `node src/index.js`.
+- Base image: `eclipse-temurin:25-jdk-alpine` (or equivalent JDK 25 image).
+- Use Gradle to build the compiler module inside the container.
+- Copy only necessary jars and resources into the final runtime stage.
+- Default command: `java -jar compiler.jar`.
 - Update `infra/compose.yml` to add the new service, wiring it to the existing pgmq/Postgres container network.
 
 ## 8. Testing Strategy for the Compiler Service
-- **Unit**: Mock `assemblyscript` calls to verify compiler wrapper logic (temp file handling, error propagation).
-- **Integration**: Use a local Postgres/pgmq container to assert end-to-end flow (job → compilation → result). These tests can run via `npm test` or a `pnpm vitest` setup.
-- **Smoke**: Compose profile that brings up Postgres + API + compiler to confirm the entire pipeline compiles a sample function.
+- **Unit**: Mock `ProcessBuilder` interactions to verify compiler wrapper logic (temp file handling, error propagation).
+- **Integration**: Use Testcontainers with Postgres/pgmq to assert end-to-end flow (job → compilation → result) via JUnit.
+- **Smoke**: Compose profile that brings up Postgres + API + compiler JVM service to confirm the full pipeline.
 
 ## 9. Adding Additional Compilers
 1. Copy the scaffold into a new folder (e.g., `services/compiler-rust`).
@@ -121,12 +122,12 @@ export interface LanguageCompiler {
 }
 ```
 
-All language services implement `LanguageCompiler` and register it with a common runner:
-```ts
-import { createRunner } from "@projectnil/compiler-runner";
-import { AssemblyScriptCompiler } from "./compiler.js";
-
-createRunner(new AssemblyScriptCompiler()).start();
+All language services implement `LanguageCompiler` and register it with a common runner (exposed as a shared Java library in the future):
+```java
+public static void main(String[] args) {
+    var runner = CompilerRunner.create(new AssemblyScriptCompiler());
+    runner.start();
+}
 ```
 The runner handles pgmq polling, base64 encoding, and result publishing, while the compiler focuses on turning `source` into a WASM binary.
 
@@ -140,4 +141,4 @@ The runner handles pgmq polling, base64 encoding, and result publishing, while t
 
 This separation keeps the AssemblyScript implementation clean today and sets us up to onboard Rust/Go compilers quickly.
 
-This document serves as the blueprint for implementing issue #36 before writing any Node.js code.
+This document serves as the blueprint for implementing issue #36 using the JVM-based compiler service.
