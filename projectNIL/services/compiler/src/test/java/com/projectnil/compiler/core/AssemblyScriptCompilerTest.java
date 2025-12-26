@@ -48,7 +48,7 @@ class AssemblyScriptCompilerTest {
         when(workspaceManager.writeSource(workspace, job.source())).thenReturn(sourceFile);
         when(workspaceManager.wasmFile(workspace)).thenReturn(wasmFile);
         when(processExecutor.execute(
-            List.of("asc", sourceFile.toString(), "--binaryFile", wasmFile.toString(), "--optimize", "--measure"),
+            List.of("asc", sourceFile.toString(), "--outFile", wasmFile.toString(), "--optimize"),
             Duration.ofSeconds(1)
         )).thenReturn(new ProcessExecutor.ProcessResult(0, "", ""));
 
@@ -70,7 +70,7 @@ class AssemblyScriptCompilerTest {
         when(workspaceManager.writeSource(workspace, job.source())).thenReturn(sourceFile);
         when(workspaceManager.wasmFile(workspace)).thenReturn(wasmFile);
         when(processExecutor.execute(
-            List.of("asc", sourceFile.toString(), "--binaryFile", wasmFile.toString(), "--optimize", "--measure"),
+            List.of("asc", sourceFile.toString(), "--outFile", wasmFile.toString(), "--optimize"),
             Duration.ofSeconds(1)
         )).thenReturn(new ProcessExecutor.ProcessResult(1, "", "compile error"));
 
