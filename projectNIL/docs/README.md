@@ -1,6 +1,16 @@
 # ProjectNIL
 
+[![CI](https://github.com/nilenso/raj-onboarding/actions/workflows/integrations.yml/badge.svg?branch=dev)](https://github.com/nilenso/raj-onboarding/actions/workflows/integrations.yml)
+[![Deployment](https://github.com/nilenso/raj-onboarding/actions/workflows/deployment.yml/badge.svg)](https://github.com/nilenso/raj-onboarding/actions/workflows/deployment.yml)
+
 A Function as a Service (FaaS) platform. Users submit source code, it compiles to WebAssembly, and executes on demand in a sandboxed environment.
+
+| Metric | Status |
+|--------|--------|
+| **Phase** | Phase 0 Complete |
+| **Tests** | 64 passing (6 common, 48 API, 10 compiler) |
+| **API Endpoints** | 9 implemented |
+| **Languages** | AssemblyScript |
 
 > **Note:** `projectNIL/scope/` is the canonical specification. This doc summarizes the system and focuses on operational context.
 
@@ -9,7 +19,7 @@ A Function as a Service (FaaS) platform. Users submit source code, it compiles t
 - **[Getting Started Guide](./guides/getting-started.md)** - Set up and run your first function
 - **[Writing Functions Guide](./guides/writing-functions.md)** - Learn how to write AssemblyScript functions
 - **[API Reference](./api.md)** - Complete endpoint documentation
-- **[Canonical Contracts](../scope/contracts.md)** - Authoritative API and queue contracts
+- **[Canonical Contracts](https://github.com/nilenso/raj-onboarding/blob/main/projectNIL/scope/contracts.md)** - Authoritative API and queue contracts
 
 ## Architecture
 
@@ -33,7 +43,7 @@ flowchart LR
   API -->|execute WASM| Wasm[WASM Runtime]
 ```
 
-See [scope/architecture.md](../scope/architecture.md) for the canonical architecture specification.
+See the [scope/architecture.md](https://github.com/nilenso/raj-onboarding/blob/main/projectNIL/scope/architecture.md) for the canonical architecture specification.
 
 ## Services
 
@@ -118,7 +128,7 @@ podman exec -it projectnil-db psql -U projectnil -d projectnil
 | Compiler | AssemblyScript | Latest |
 | Containers | Podman Compose | - |
 
-See [stack.md](./stack.md) for rationale and [decisions/](./decisions/) for ADRs.
+See [stack.md](./stack.md) for rationale.
 
 ## Project Structure
 
@@ -171,16 +181,16 @@ projectNIL/
 - [Compiler Service](./compiler.md) - Compilation pipeline
 - [Infrastructure](./infrastructure.md) - Deployment and ops
 
-### Specifications
-- [Canonical Contracts](../scope/contracts.md) - Source of truth for APIs
-- [Domain Entities](../scope/entities.md) - Entity definitions and state machines
-- [System Flows](../scope/flows.md) - End-to-end sequences
+### Specifications (GitHub)
+- [Canonical Contracts](https://github.com/nilenso/raj-onboarding/blob/main/projectNIL/scope/contracts.md) - Source of truth for APIs
+- [Domain Entities](https://github.com/nilenso/raj-onboarding/blob/main/projectNIL/scope/entities.md) - Entity definitions and state machines
+- [System Flows](https://github.com/nilenso/raj-onboarding/blob/main/projectNIL/scope/flows.md) - End-to-end sequences
+- [AGENTS.md](https://github.com/nilenso/raj-onboarding/blob/main/projectNIL/AGENTS.md) - Coding conventions
 
 ### Project
 - [Roadmap](./roadmap.md) - Phase 0/1/2 plans
 - [Session Handoff](./session-handoff.md) - Current implementation status
 - [Design: API Service](./design-api-service.md) - Implementation blueprint
-- [AGENTS.md](../AGENTS.md) - Coding conventions
 
 ### Architecture Decisions
 - [ADR-001: WASM Runtime](./decisions/001-wasm-runtime.md) - Why Chicory
