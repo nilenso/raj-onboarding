@@ -123,6 +123,30 @@ public class FunctionController {
     }
 
     /**
+     * List executions for a function.
+     *
+     * <p>Per scope/contracts.md and issue #31:
+     * <ul>
+     *   <li>Returns lightweight execution summaries (excludes input/output)</li>
+     *   <li>Ordered by startedAt DESC</li>
+     *   <li>Returns 404 if function does not exist</li>
+     *   <li>Returns empty list if no executions exist</li>
+     * </ul>
+     *
+     * @param functionId the function ID
+     * @return list of execution summaries
+     */
+    @GetMapping("/{functionId}/executions")
+    public ResponseEntity<List<ExecutionSummaryResponse>> listExecutions(
+            @PathVariable UUID functionId) {
+        LOG.debug("Received list executions request: functionId={}", functionId);
+
+        List<ExecutionSummaryResponse> executions = executionService.findByFunctionId(functionId);
+
+        return ResponseEntity.ok(executions);
+    }
+
+    /**
      * Execute a function with the given input.
      *
      * <p>Per scope/contracts.md and scope/practices.md:

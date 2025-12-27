@@ -233,8 +233,8 @@ All Web and Queue DTOs are implemented as Java `records`. This enforces immutabi
 | PUT | `/functions/{id}` | #27 | **Done** |
 | DELETE | `/functions/{id}` | #28 | **Done** (#54) |
 | POST | `/functions/{id}/execute` | #29 | **Done** |
-| GET | `/functions/{id}/executions` | #30 | Not started |
-| GET | `/executions/{id}` | #31 | Not started |
+| GET | `/functions/{id}/executions` | #31 | **Done** |
+| GET | `/executions/{id}` | #30 | **Done** |
 
 ---
 
@@ -479,13 +479,109 @@ Per `scope/contracts.md`, update returns expanded view:
 
 ---
 
-## 11. Next Steps (Recommended Order)
+## 11. Executions API (#30, #31)
+
+This section details the implementation for execution query endpoints.
+
+### 11.1 GET /executions/{id} (#30)
+
+Returns detailed execution record for debugging and inspection.
+
+**Flow**:
+```
+GET /executions/{id}
+    │
+    ├─ Find execution by ID (404 if not found)
+    ├─ Build ExecutionDetailResponse with all fields
+    │   ├─ id, functionId, status
+    │   ├─ input, output (JSON strings)
+    │   ├─ errorMessage (only if FAILED)
+    │   ├─ startedAt, completedAt, createdAt
+    └─ Return 200 ExecutionDetailResponse
+```
+
+**Response DTO**: `ExecutionDetailResponse`
+```json
+{
+  "id": "...",
+  "functionId": "...",
+  "status": "COMPLETED",
+  "input": "{\"a\": 5, \"b\": 3}",
+  "output": "{\"result\": 8}",
+  "errorMessage": null,
+  "startedAt": "2025-12-27T10:00:00Z",
+  "completedAt": "2025-12-27T10:00:01Z",
+  "createdAt": "2025-12-27T10:00:00Z"
+}
+```
+
+### 11.2 GET /functions/{id}/executions (#31)
+
+Returns lightweight execution history for a function.
+
+**Flow**:
+```
+GET /functions/{id}/executions
+    │
+    ├─ Validate function exists (404 if not found)
+    ├─ Query executions by functionId, ordered by startedAt DESC
+    ├─ Map to ExecutionSummaryResponse (excludes input/output)
+    └─ Return 200 List<ExecutionSummaryResponse>
+```
+
+**Response DTO**: `ExecutionSummaryResponse` (lightweight)
+```json
+{
+  "id": "...",
+  "status": "COMPLETED",
+  "startedAt": "2025-12-27T10:00:00Z",
+  "completedAt": "2025-12-27T10:00:01Z"
+}
+```
+
+Per issue #31, heavy fields (`input`, `output`) are excluded from list response.
+
+### 11.3 Implementation
+
+**ExecutionController** (new):
+```java
+@RestController
+@RequestMapping("/executions")
+public class ExecutionController {
+    
+    @GetMapping("/{executionId}")
+    public ResponseEntity<ExecutionDetailResponse> get(@PathVariable UUID executionId) {
+        return ResponseEntity.ok(executionService.findById(executionId));
+    }
+}
+```
+
+**FunctionController** (addition):
+```java
+@GetMapping("/{functionId}/executions")
+public ResponseEntity<List<ExecutionSummaryResponse>> listExecutions(
+        @PathVariable UUID functionId) {
+    return ResponseEntity.ok(executionService.findByFunctionId(functionId));
+}
+```
+
+### 11.4 Error Handling
+
+| Scenario | HTTP Response |
+|----------|---------------|
+| Execution not found | 404 Not Found |
+| Function not found | 404 Not Found |
+| Empty execution list | 200 with `[]` |
+
+---
+
+## 12. Next Steps (Recommended Order)
 
 1. ~~**Database configuration** - Add datasource config to `application.yaml`~~ Done
 2. ~~**Repositories** - Create `FunctionRepository` and `ExecutionRepository`~~ Done
 3. ~~**Queue Integration** (#54, #53) - PGMQ publisher and poller~~ Done
 4. ~~**FunctionService CRUD** - Add create, update, delete operations~~ Done
-5. ~~**FunctionController CRUD** - REST endpoints for function management~~ Partial (PUT not done)
+5. ~~**FunctionController CRUD** - REST endpoints for function management~~ Done
 6. ~~**PUT /functions/{id}** - Update function and recompile~~ Done (#27)
-7. **Execution queries** - `GET /executions/{id}` and `GET /functions/{id}/executions`
+7. ~~**Execution queries** - `GET /executions/{id}` and `GET /functions/{id}/executions`~~ Done (#30, #31)
 
