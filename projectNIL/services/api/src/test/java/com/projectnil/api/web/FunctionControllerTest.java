@@ -43,6 +43,8 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.hasSize;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -581,6 +583,163 @@ class FunctionControllerTest {
                     .andExpect(jsonPath("$.status", notNullValue()))
                     .andExpect(jsonPath("$.createdAt", notNullValue()))
                     .andExpect(jsonPath("$.updatedAt", notNullValue()));
+        }
+    }
+
+    /**
+     * Tests for GET /executions/{id} - Get Execution Details (#30).
+     *
+     * <p>Per issue #30 acceptance criteria:
+     * <ul>
+     *   <li>Returns execution record with all fields</li>
+     *   <li>Returns 404 if execution does not exist</li>
+     *   <li>errorMessage included for FAILED, hidden otherwise</li>
+     * </ul>
+     */
+    @Nested
+    @DisplayName("GET /executions/{id} - Get Execution Details")
+    class GetExecutionDetailsTests {
+
+        @Test
+        @DisplayName("returns execution details for completed execution")
+        void getCompletedExecutionReturnsDetails() throws Exception {
+            Function function = createReadyFunction("get-exec-test", loadWasm("echo"));
+            Map<String, Object> input = Map.of("message", "hello");
+
+            // First execute the function
+            var result = mockMvc.perform(post("/functions/{id}/execute", function.getId())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(new ExecutionRequest(input))))
+                    .andExpect(status().isOk())
+                    .andReturn();
+
+            String responseJson = result.getResponse().getContentAsString();
+            String executionId = objectMapper.readTree(responseJson).get("id").asText();
+
+            // Now get the execution details
+            mockMvc.perform(get("/executions/{id}", executionId))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.id", is(executionId)))
+                    .andExpect(jsonPath("$.functionId", is(function.getId().toString())))
+                    .andExpect(jsonPath("$.status", is("COMPLETED")))
+                    .andExpect(jsonPath("$.input", notNullValue()))
+                    .andExpect(jsonPath("$.output", notNullValue()))
+                    .andExpect(jsonPath("$.errorMessage", nullValue()))
+                    .andExpect(jsonPath("$.startedAt", notNullValue()))
+                    .andExpect(jsonPath("$.completedAt", notNullValue()))
+                    .andExpect(jsonPath("$.createdAt", notNullValue()));
+        }
+
+        @Test
+        @DisplayName("returns execution details with errorMessage for failed execution")
+        void getFailedExecutionReturnsErrorMessage() throws Exception {
+            Function function = createReadyFunction("get-failed-exec", loadWasm("trap"));
+
+            var result = mockMvc.perform(post("/functions/{id}/execute", function.getId())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(new ExecutionRequest(Map.of()))))
+                    .andExpect(status().isOk())
+                    .andReturn();
+
+            String responseJson = result.getResponse().getContentAsString();
+            String executionId = objectMapper.readTree(responseJson).get("id").asText();
+
+            mockMvc.perform(get("/executions/{id}", executionId))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.status", is("FAILED")))
+                    .andExpect(jsonPath("$.errorMessage", notNullValue()))
+                    .andExpect(jsonPath("$.output", nullValue()));
+        }
+
+        @Test
+        @DisplayName("returns 404 for non-existent execution")
+        void getNonExistentExecutionReturns404() throws Exception {
+            UUID nonExistentId = UUID.randomUUID();
+
+            mockMvc.perform(get("/executions/{id}", nonExistentId))
+                    .andExpect(status().isNotFound())
+                    .andExpect(jsonPath("$.message", containsString("not found")));
+        }
+    }
+
+    /**
+     * Tests for GET /functions/{id}/executions - List Executions (#31).
+     *
+     * <p>Per issue #31 acceptance criteria:
+     * <ul>
+     *   <li>Returns executions ordered by startedAt DESC</li>
+     *   <li>Response excludes heavy fields (input, output)</li>
+     *   <li>Returns 404 if function does not exist</li>
+     *   <li>Returns empty list when no executions exist</li>
+     * </ul>
+     */
+    @Nested
+    @DisplayName("GET /functions/{id}/executions - List Executions")
+    class ListExecutionsTests {
+
+        @Test
+        @DisplayName("returns empty list when no executions exist")
+        void listExecutionsReturnsEmptyList() throws Exception {
+            Function function = createReadyFunction("no-executions", loadWasm("echo"));
+
+            mockMvc.perform(get("/functions/{id}/executions", function.getId()))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$", hasSize(0)));
+        }
+
+        @Test
+        @DisplayName("returns executions for function")
+        void listExecutionsReturnsExecutions() throws Exception {
+            Function function = createReadyFunction("with-executions", loadWasm("echo"));
+
+            // Execute twice
+            mockMvc.perform(post("/functions/{id}/execute", function.getId())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(new ExecutionRequest(Map.of("a", 1)))))
+                    .andExpect(status().isOk());
+
+            mockMvc.perform(post("/functions/{id}/execute", function.getId())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(new ExecutionRequest(Map.of("b", 2)))))
+                    .andExpect(status().isOk());
+
+            mockMvc.perform(get("/functions/{id}/executions", function.getId()))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$", hasSize(2)))
+                    .andExpect(jsonPath("$[0].id", notNullValue()))
+                    .andExpect(jsonPath("$[0].status", is("COMPLETED")))
+                    .andExpect(jsonPath("$[0].startedAt", notNullValue()))
+                    .andExpect(jsonPath("$[0].completedAt", notNullValue()));
+        }
+
+        @Test
+        @DisplayName("excludes heavy fields from list response")
+        void listExecutionsExcludesHeavyFields() throws Exception {
+            Function function = createReadyFunction("lightweight-list", loadWasm("echo"));
+
+            mockMvc.perform(post("/functions/{id}/execute", function.getId())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(new ExecutionRequest(Map.of("data", "test")))))
+                    .andExpect(status().isOk());
+
+            mockMvc.perform(get("/functions/{id}/executions", function.getId()))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$", hasSize(1)))
+                    // These fields should NOT be present in summary response
+                    .andExpect(jsonPath("$[0].input").doesNotExist())
+                    .andExpect(jsonPath("$[0].output").doesNotExist())
+                    .andExpect(jsonPath("$[0].functionId").doesNotExist())
+                    .andExpect(jsonPath("$[0].errorMessage").doesNotExist());
+        }
+
+        @Test
+        @DisplayName("returns 404 for non-existent function")
+        void listExecutionsForNonExistentFunctionReturns404() throws Exception {
+            UUID nonExistentId = UUID.randomUUID();
+
+            mockMvc.perform(get("/functions/{id}/executions", nonExistentId))
+                    .andExpect(status().isNotFound())
+                    .andExpect(jsonPath("$.message", containsString("not found")));
         }
     }
 }
