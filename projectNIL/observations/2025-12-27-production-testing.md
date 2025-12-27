@@ -14,12 +14,12 @@ The primary workflow (register → compile → execute) is completely blocked be
 
 ### Priority Bugs
 
-| Priority | Bug | Impact |
-|----------|-----|--------|
-| **P0** | POST /functions returns 500 | Core functionality broken |
-| **P1** | Framework exceptions return 500 | Poor DX, hard to debug |
-| **P2** | Invalid UUID returns 500 | Should be 400 |
-| **P3** | Invalid JSON/empty body returns 500 | Should be 400 |
+| Priority | Bug | Impact | Issue |
+|----------|-----|--------|-------|
+| **P0** | POST /functions returns 500 | Core functionality broken | [#70](https://github.com/nilenso/raj-onboarding/issues/70) |
+| **P1** | Framework exceptions return 500 | Poor DX, hard to debug | [#71](https://github.com/nilenso/raj-onboarding/issues/71) |
+| **P2** | Invalid UUID returns 500 | Should be 400 | [#72](https://github.com/nilenso/raj-onboarding/issues/72) |
+| **P3** | Invalid JSON/empty body returns 500 | Should be 400 | [#73](https://github.com/nilenso/raj-onboarding/issues/73) |
 
 ### Immediate Actions Required
 
