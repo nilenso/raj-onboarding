@@ -575,7 +575,60 @@ public ResponseEntity<List<ExecutionSummaryResponse>> listExecutions(
 
 ---
 
-## 12. Next Steps (Recommended Order)
+## 12. Canonical DTO Alignment (#55)
+
+Per `scope/contracts.md`, this section details DTO serialization alignment.
+
+### 12.1 Changes
+
+| DTO | Field | Before | After |
+|-----|-------|--------|-------|
+| `ExecutionResponse` | `output` | `String` | `Object` (parsed JSON) |
+| `ExecutionDetailResponse` | `input` | `String` | `Object` (parsed JSON) |
+| `ExecutionDetailResponse` | `output` | `String` | `Object` (parsed JSON) |
+| `ExecutionRequest` | `input` | `Object` (any) | `Object` (validated as Map) |
+
+### 12.2 Input Validation
+
+Per `scope/contracts.md`, `ExecutionRequest.input` must be a JSON object:
+
+```java
+private String serializeInput(Object input) {
+    if (input == null) {
+        return "{}";
+    }
+    if (!(input instanceof java.util.Map)) {
+        throw new InvalidInputException(
+                "Input must be a JSON object, got: " + input.getClass().getSimpleName());
+    }
+    return objectMapper.writeValueAsString(input);
+}
+```
+
+### 12.3 Output Parsing
+
+Output is parsed from JSON string to Object for response:
+
+```java
+private Object parseOutput(String outputJson) {
+    if (outputJson == null || outputJson.isBlank()) {
+        return null;
+    }
+    return objectMapper.readValue(outputJson, Object.class);
+}
+```
+
+### 12.4 Error Handling
+
+| Scenario | HTTP Response |
+|----------|---------------|
+| Input is primitive (string/number) | 400 Bad Request |
+| Input is array | 400 Bad Request |
+| Input is null | Treated as `{}` |
+
+---
+
+## 13. Next Steps (Recommended Order)
 
 1. ~~**Database configuration** - Add datasource config to `application.yaml`~~ Done
 2. ~~**Repositories** - Create `FunctionRepository` and `ExecutionRepository`~~ Done
@@ -584,4 +637,5 @@ public ResponseEntity<List<ExecutionSummaryResponse>> listExecutions(
 5. ~~**FunctionController CRUD** - REST endpoints for function management~~ Done
 6. ~~**PUT /functions/{id}** - Update function and recompile~~ Done (#27)
 7. ~~**Execution queries** - `GET /executions/{id}` and `GET /functions/{id}/executions`~~ Done (#30, #31)
+8. ~~**DTO Alignment** - Canonical serialization per scope/contracts.md~~ Done (#55)
 

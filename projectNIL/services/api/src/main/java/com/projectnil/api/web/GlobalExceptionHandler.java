@@ -4,6 +4,7 @@ import com.projectnil.api.runtime.WasmAbiException;
 import com.projectnil.api.service.ExecutionNotFoundException;
 import com.projectnil.api.service.FunctionNotFoundException;
 import com.projectnil.api.service.FunctionNotReadyException;
+import com.projectnil.api.service.InvalidInputException;
 import com.projectnil.api.service.UnsupportedLanguageException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,6 +57,13 @@ public class GlobalExceptionHandler {
         LOG.warn("Unsupported language: {}", ex.getRequestedLanguage());
         return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
                 .body(errorBody(HttpStatus.UNSUPPORTED_MEDIA_TYPE, ex.getMessage()));
+    }
+
+    @ExceptionHandler(InvalidInputException.class)
+    public ResponseEntity<Map<String, Object>> handleInvalidInput(InvalidInputException ex) {
+        LOG.warn("Invalid input: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(errorBody(HttpStatus.BAD_REQUEST, ex.getMessage()));
     }
 
     @ExceptionHandler(WasmAbiException.class)

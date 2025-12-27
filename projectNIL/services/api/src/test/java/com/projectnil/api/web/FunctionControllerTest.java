@@ -228,7 +228,7 @@ class FunctionControllerTest {
                     .andExpect(jsonPath("$.id", notNullValue()))
                     .andExpect(jsonPath("$.functionId", is(function.getId().toString())))
                     .andExpect(jsonPath("$.status", is("COMPLETED")))
-                    .andExpect(jsonPath("$.output", containsString("message")))
+                    .andExpect(jsonPath("$.output.message", is("hello")))
                     .andExpect(jsonPath("$.errorMessage", nullValue()));
         }
 
@@ -243,7 +243,7 @@ class FunctionControllerTest {
                             .content(objectMapper.writeValueAsString(new ExecutionRequest(input))))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.status", is("COMPLETED")))
-                    .andExpect(jsonPath("$.output", containsString("15")));
+                    .andExpect(jsonPath("$.output.sum", is(15)));
         }
 
         @Test
@@ -257,7 +257,7 @@ class FunctionControllerTest {
                             .content(objectMapper.writeValueAsString(new ExecutionRequest(input))))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.status", is("COMPLETED")))
-                    .andExpect(jsonPath("$.output", containsString("Hello, World!")));
+                    .andExpect(jsonPath("$.output.greeting", is("Hello, World!")));
         }
 
         @Test
@@ -270,7 +270,8 @@ class FunctionControllerTest {
                             .content(objectMapper.writeValueAsString(new ExecutionRequest(null))))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.status", is("COMPLETED")))
-                    .andExpect(jsonPath("$.output", is("{}")));
+                    .andExpect(jsonPath("$.output").isMap())
+                    .andExpect(jsonPath("$.output").isEmpty());
         }
     }
 
@@ -740,6 +741,97 @@ class FunctionControllerTest {
             mockMvc.perform(get("/functions/{id}/executions", nonExistentId))
                     .andExpect(status().isNotFound())
                     .andExpect(jsonPath("$.message", containsString("not found")));
+        }
+    }
+
+    /**
+     * Tests for DTO serialization alignment (#55).
+     *
+     * <p>Per scope/contracts.md and issue #55:
+     * <ul>
+     *   <li>ExecutionRequest.input must be a JSON object</li>
+     *   <li>ExecutionResponse.output is returned as parsed JSON object</li>
+     *   <li>Error responses follow canonical HTTP codes</li>
+     * </ul>
+     */
+    @Nested
+    @DisplayName("DTO Serialization - Canonical Alignment (#55)")
+    class DtoSerializationTests {
+
+        @Test
+        @DisplayName("output is returned as parsed JSON object, not string")
+        void outputReturnedAsParsedJsonObject() throws Exception {
+            Function function = createReadyFunction("json-output", loadWasm("add"));
+            Map<String, Object> input = Map.of("a", 5, "b", 3);
+
+            mockMvc.perform(post("/functions/{id}/execute", function.getId())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(new ExecutionRequest(input))))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.output").isMap())
+                    .andExpect(jsonPath("$.output.sum", is(8)));
+        }
+
+        @Test
+        @DisplayName("rejects primitive input (not JSON object)")
+        void rejectsPrimitiveInput() throws Exception {
+            Function function = createReadyFunction("primitive-input", loadWasm("echo"));
+
+            // Send primitive string instead of object
+            mockMvc.perform(post("/functions/{id}/execute", function.getId())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("{\"input\": \"just a string\"}"))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.message", containsString("must be a JSON object")));
+        }
+
+        @Test
+        @DisplayName("rejects array input (not JSON object)")
+        void rejectsArrayInput() throws Exception {
+            Function function = createReadyFunction("array-input", loadWasm("echo"));
+
+            // Send array instead of object
+            mockMvc.perform(post("/functions/{id}/execute", function.getId())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("{\"input\": [1, 2, 3]}"))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.message", containsString("must be a JSON object")));
+        }
+
+        @Test
+        @DisplayName("accepts null input as empty object")
+        void acceptsNullInputAsEmptyObject() throws Exception {
+            Function function = createReadyFunction("null-input", loadWasm("echo"));
+
+            mockMvc.perform(post("/functions/{id}/execute", function.getId())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("{\"input\": null}"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.status", is("COMPLETED")));
+        }
+
+        @Test
+        @DisplayName("detailed execution returns input and output as parsed JSON")
+        void detailedExecutionReturnsJsonObjects() throws Exception {
+            Function function = createReadyFunction("detail-json", loadWasm("add"));
+            Map<String, Object> input = Map.of("a", 10, "b", 5);
+
+            var result = mockMvc.perform(post("/functions/{id}/execute", function.getId())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(new ExecutionRequest(input))))
+                    .andExpect(status().isOk())
+                    .andReturn();
+
+            String executionId = objectMapper.readTree(
+                    result.getResponse().getContentAsString()).get("id").asText();
+
+            mockMvc.perform(get("/executions/{id}", executionId))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.input").isMap())
+                    .andExpect(jsonPath("$.input.a", is(10)))
+                    .andExpect(jsonPath("$.input.b", is(5)))
+                    .andExpect(jsonPath("$.output").isMap())
+                    .andExpect(jsonPath("$.output.sum", is(15)));
         }
     }
 }
