@@ -4,12 +4,28 @@ Use this file as a scratchpad while converging on finalized scope docs.
 
 ## Notes
 - Canonical docs live in this `projectNIL/scope/` directory.
-- Keep statements here “tentative”; promote to other files only when stable.
+- Keep statements here "tentative"; promote to other files only when stable.
 
-## Open Questions
-- What is the long-term direction for the compiler layer: JVM “compiler-engine” module vs per-language microservices (Node/Rust/etc.)?
-- Should function execution be synchronous-only in Phase 0, or do we want async execution + polling?
-- Do we want a single exported WASM ABI contract (e.g. `handle(input: string): string`) for all languages?
+## Resolved Questions (Phase 0)
 
-## Draft Decisions (Not Yet Final)
-- Treat `projectNIL/scope/*` as the canonical spec; `projectNIL/docs/*` as historical/working notes.
+These questions from earlier planning have been resolved:
+
+| Question | Resolution |
+|----------|------------|
+| Compiler direction: JVM module vs per-language microservices? | **Per-language microservices**. Current: Node.js-based AssemblyScript compiler. Future languages will have separate services. |
+| Sync vs async execution in Phase 0? | **Synchronous only**. Execution blocks until WASM returns. Async execution is a Phase 2+ consideration. |
+| Single WASM ABI contract for all languages? | **Yes**. All functions export `handle(input: string): string`. See `scope/contracts.md` Section 4. |
+
+## Open Questions (Phase 1+)
+
+- Authentication: JWT vs session tokens?
+- API key rotation and revocation policy?
+- Function versioning: how to track and rollback?
+- Execution table partitioning/archival strategy?
+- Rate limiting: per-user, per-function, or both?
+
+## Draft Ideas (Not Yet Final)
+
+- Consider adding correlation IDs to execution responses for observability
+- May want to add `durationMs` to execution responses
+- Could add `GET /functions/{id}/stats` for execution statistics
