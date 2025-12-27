@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -82,6 +83,31 @@ public class FunctionController {
                 function.getStatus(),
                 function.getCreatedAt()
         ));
+    }
+
+    /**
+     * Update a function.
+     *
+     * <p>Per scope/contracts.md and issue #27:
+     * <ul>
+     *   <li>Updates name, description, language, source</li>
+     *   <li>If source or language changes, triggers recompilation</li>
+     *   <li>Returns expanded view with all fields</li>
+     * </ul>
+     *
+     * @param functionId the function ID
+     * @param request the update request
+     * @return the updated function (expanded view)
+     */
+    @PutMapping("/{functionId}")
+    public ResponseEntity<FunctionDetailResponse> update(
+            @PathVariable UUID functionId,
+            @RequestBody FunctionRequest request) {
+        LOG.debug("Received update function request: id={}", functionId);
+
+        FunctionDetailResponse response = functionService.update(functionId, request);
+
+        return ResponseEntity.ok(response);
     }
 
     /**

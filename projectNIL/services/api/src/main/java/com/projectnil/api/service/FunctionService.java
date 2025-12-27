@@ -2,6 +2,7 @@ package com.projectnil.api.service;
 
 import com.projectnil.api.messaging.PgmqClient;
 import com.projectnil.api.repository.FunctionRepository;
+import com.projectnil.api.web.FunctionDetailResponse;
 import com.projectnil.api.web.FunctionRequest;
 import com.projectnil.api.web.FunctionResponse;
 import com.projectnil.common.domain.Function;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
@@ -124,6 +126,56 @@ public class FunctionService {
     }
 
     /**
+     * Update a function.
+     *
+     * <p>Per scope/contracts.md and issue #27:
+     * <ul>
+     *   <li>Updates name, description, language, source</li>
+     *   <li>If source or language changes, triggers recompilation</li>
+     *   <li>Recompilation: reset status to PENDING, clear wasmBinary/compileError, publish job</li>
+     *   <li>Returns expanded view with all fields</li>
+     * </ul>
+     *
+     * @param id the function ID
+     * @param request the update request
+     * @return the updated function (expanded view)
+     * @throws FunctionNotFoundException if the function is not found
+     * @throws UnsupportedLanguageException if language is not supported
+     */
+    @Transactional
+    public FunctionDetailResponse update(UUID id, FunctionRequest request) {
+        Function function = findById(id);
+        validateLanguage(request.language());
+
+        boolean needsRecompile = !Objects.equals(function.getSource(), request.source())
+                || !Objects.equals(function.getLanguage(), request.language());
+
+        function.setName(request.name());
+        function.setDescription(request.description());
+        function.setLanguage(request.language());
+        function.setSource(request.source());
+
+        if (needsRecompile) {
+            function.setStatus(FunctionStatus.PENDING);
+            function.setWasmBinary(null);
+            function.setCompileError(null);
+
+            CompilationJob job = new CompilationJob(
+                    function.getId(),
+                    function.getLanguage(),
+                    function.getSource()
+            );
+            pgmqClient.publishJob(job);
+            LOG.info("function.recompilation.triggered id={}", id);
+        }
+
+        function = functionRepository.save(function);
+        LOG.info("function.updated id={} needsRecompile={}", id, needsRecompile);
+
+        return toDetailResponse(function);
+    }
+
+    /**
      * Delete a function by ID.
      *
      * @param id the function ID
@@ -150,6 +202,20 @@ public class FunctionService {
                 function.getName(),
                 function.getStatus(),
                 function.getCreatedAt()
+        );
+    }
+
+    private FunctionDetailResponse toDetailResponse(Function function) {
+        return new FunctionDetailResponse(
+                function.getId(),
+                function.getName(),
+                function.getDescription(),
+                function.getLanguage(),
+                function.getSource(),
+                function.getStatus(),
+                function.getCompileError(),
+                function.getCreatedAt(),
+                function.getUpdatedAt()
         );
     }
 }
