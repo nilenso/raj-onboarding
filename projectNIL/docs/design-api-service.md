@@ -230,7 +230,7 @@ All Web and Queue DTOs are implemented as Java `records`. This enforces immutabi
 | POST | `/functions` | #24 | **Done** (#54) |
 | GET | `/functions` | #25 | **Done** (#54) |
 | GET | `/functions/{id}` | #26 | **Done** (#54) |
-| PUT | `/functions/{id}` | #27 | Not started |
+| PUT | `/functions/{id}` | #27 | **Done** |
 | DELETE | `/functions/{id}` | #28 | **Done** (#54) |
 | POST | `/functions/{id}/execute` | #29 | **Done** |
 | GET | `/functions/{id}/executions` | #30 | Not started |
@@ -366,13 +366,126 @@ projectnil:
 
 ---
 
-## 10. Next Steps (Recommended Order)
+## 10. Update Function (#27)
+
+This section details the implementation for `PUT /functions/{id}`.
+
+### 10.1 Flow
+
+Per `scope/contracts.md` and issue #27 acceptance criteria:
+
+```
+PUT /functions/{id}
+    │
+    ├─ Find function by ID (404 if not found)
+    ├─ Validate FunctionRequest (name, language, source)
+    ├─ Validate language in SUPPORTED_LANGUAGES
+    ├─ Check if recompilation is needed:
+    │   └─ If source OR language changed:
+    │       ├─ Reset status to PENDING
+    │       ├─ Clear wasmBinary and compileError
+    │       ├─ Publish CompilationJob to queue
+    │       └─ Log "function.recompilation.triggered"
+    ├─ Update fields (name, description, language, source)
+    ├─ updatedAt refreshed automatically by JPA
+    ├─ Save to database
+    └─ Return 200 FunctionResponse (expanded view)
+```
+
+### 10.2 Recompilation Logic
+
+| Old State | source changed | language changed | Action |
+|-----------|----------------|------------------|--------|
+| READY     | Yes            | -                | Reset to PENDING, clear wasm, publish job |
+| READY     | -              | Yes              | Reset to PENDING, clear wasm, publish job |
+| PENDING   | Yes            | -                | Reset to PENDING, publish new job |
+| COMPILING | Yes            | -                | Reset to PENDING, publish new job (supersedes) |
+| FAILED    | Yes            | -                | Reset to PENDING, clear error, publish job |
+| Any       | No             | No               | Just update name/description |
+
+### 10.3 Implementation
+
+**FunctionService.update()**:
+```java
+@Transactional
+public FunctionResponse update(UUID id, FunctionRequest request) {
+    Function function = findById(id);
+    validateLanguage(request.language());
+    
+    boolean needsRecompile = !Objects.equals(function.getSource(), request.source())
+            || !Objects.equals(function.getLanguage(), request.language());
+    
+    function.setName(request.name());
+    function.setDescription(request.description());
+    function.setLanguage(request.language());
+    function.setSource(request.source());
+    
+    if (needsRecompile) {
+        function.setStatus(FunctionStatus.PENDING);
+        function.setWasmBinary(null);
+        function.setCompileError(null);
+        
+        CompilationJob job = new CompilationJob(
+                function.getId(),
+                function.getLanguage(),
+                function.getSource()
+        );
+        pgmqClient.publishJob(job);
+        LOG.info("function.recompilation.triggered id={}", id);
+    }
+    
+    function = functionRepository.save(function);
+    LOG.info("function.updated id={} needsRecompile={}", id, needsRecompile);
+    
+    return toExpandedResponse(function);
+}
+```
+
+**FunctionController.update()**:
+```java
+@PutMapping("/{functionId}")
+public ResponseEntity<FunctionResponse> update(
+        @PathVariable UUID functionId,
+        @RequestBody FunctionRequest request) {
+    FunctionResponse response = functionService.update(functionId, request);
+    return ResponseEntity.ok(response);
+}
+```
+
+### 10.4 Response Format
+
+Per `scope/contracts.md`, update returns expanded view:
+```json
+{
+  "id": "...",
+  "name": "add",
+  "description": "Adds two numbers",
+  "language": "assemblyscript",
+  "source": "...",
+  "status": "PENDING",
+  "compileError": null,
+  "createdAt": "2025-12-18T10:00:00Z",
+  "updatedAt": "2025-12-27T10:00:00Z"
+}
+```
+
+### 10.5 Error Handling
+
+| Scenario | HTTP Response |
+|----------|---------------|
+| Function not found | 404 Not Found |
+| Unsupported language | 415 Unsupported Media Type |
+| Invalid request body | 400 Bad Request |
+
+---
+
+## 11. Next Steps (Recommended Order)
 
 1. ~~**Database configuration** - Add datasource config to `application.yaml`~~ Done
 2. ~~**Repositories** - Create `FunctionRepository` and `ExecutionRepository`~~ Done
 3. ~~**Queue Integration** (#54, #53) - PGMQ publisher and poller~~ Done
 4. ~~**FunctionService CRUD** - Add create, update, delete operations~~ Done
 5. ~~**FunctionController CRUD** - REST endpoints for function management~~ Partial (PUT not done)
-6. **Execution queries** - `GET /executions/{id}` and `GET /functions/{id}/executions`
-7. **PUT /functions/{id}** - Update function and recompile
+6. ~~**PUT /functions/{id}** - Update function and recompile~~ Done (#27)
+7. **Execution queries** - `GET /executions/{id}` and `GET /functions/{id}/executions`
 
