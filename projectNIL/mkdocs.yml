@@ -67,6 +67,7 @@ nav:
   - Operations:
     - Infrastructure: infrastructure.md
     - Testing Strategy: testing-strategy.md
+    - E2E Test Plan: testing/e2e-test-plan.md
     - Deployment Roadmap: deployment-roadmap.md
   - Architecture:
     - Design: design-api-service.md
