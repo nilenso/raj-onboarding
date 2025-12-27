@@ -10,9 +10,16 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import com.projectnil.api.messaging.PgmqClient;
+import com.projectnil.api.messaging.PgmqClient.QueuedCompilationResult;
+import com.projectnil.common.domain.queue.CompilationJob;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -29,6 +36,7 @@ import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.hamcrest.Matchers.containsString;
@@ -36,6 +44,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -52,7 +61,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  *   <li>Returns 404 when function does not exist</li>
  * </ul>
  */
-@SpringBootTest
+@SpringBootTest(classes = {
+        com.projectnil.api.ApiApplication.class,
+        FunctionControllerTest.TestConfig.class
+})
 @AutoConfigureMockMvc
 @Testcontainers
 @ActiveProfiles("test")
@@ -128,6 +140,35 @@ class FunctionControllerTest {
 
     @Autowired
     private ExecutionRepository executionRepository;
+
+    /**
+     * Test configuration that provides a no-op PGMQ client.
+     * This avoids needing the PGMQ extension in the test database.
+     */
+    @TestConfiguration
+    static class TestConfig {
+        @Bean
+        @Primary
+        PgmqClient testPgmqClient() {
+            return new PgmqClient() {
+                @Override
+                public long publishJob(CompilationJob job) {
+                    // No-op for tests, return fake message ID
+                    return 1L;
+                }
+
+                @Override
+                public Optional<QueuedCompilationResult> readResult(int visibilityTimeoutSeconds) {
+                    return Optional.empty();
+                }
+
+                @Override
+                public void deleteResult(long messageId) {
+                    // No-op for tests
+                }
+            };
+        }
+    }
 
     @BeforeEach
     void setUp() {
@@ -362,6 +403,184 @@ class FunctionControllerTest {
             org.junit.jupiter.api.Assertions.assertEquals(1, executions.size());
             org.junit.jupiter.api.Assertions.assertEquals(ExecutionStatus.FAILED, executions.get(0).getStatus());
             org.junit.jupiter.api.Assertions.assertNotNull(executions.get(0).getErrorMessage());
+        }
+    }
+
+    /**
+     * Tests for PUT /functions/{id} - Update Function (#27).
+     *
+     * <p>Per issue #27 acceptance criteria:
+     * <ul>
+     *   <li>PUT /functions/{id} accepts FunctionRequest fields</li>
+     *   <li>When source or language changes, reset status to PENDING, clear wasmBinary/compileError</li>
+     *   <li>Returns updated function (expanded view)</li>
+     *   <li>Returns 404 if function does not exist</li>
+     *   <li>updatedAt is refreshed automatically</li>
+     * </ul>
+     */
+    @Nested
+    @DisplayName("PUT /functions/{id} - Update Function")
+    class UpdateFunctionTests {
+
+        @Test
+        @DisplayName("updates function name and description without triggering recompilation")
+        void updateNameAndDescriptionOnly() throws Exception {
+            Function function = createReadyFunction("original-name", loadWasm("echo"));
+            FunctionRequest updateRequest = new FunctionRequest(
+                    "updated-name",
+                    "Updated description",
+                    "assemblyscript",
+                    function.getSource()
+            );
+
+            mockMvc.perform(put("/functions/{id}", function.getId())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(updateRequest)))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.id", is(function.getId().toString())))
+                    .andExpect(jsonPath("$.name", is("updated-name")))
+                    .andExpect(jsonPath("$.description", is("Updated description")))
+                    .andExpect(jsonPath("$.status", is("READY")))
+                    .andExpect(jsonPath("$.updatedAt", notNullValue()));
+
+            // Verify WASM binary is preserved
+            Function updated = functionRepository.findById(function.getId()).orElseThrow();
+            org.junit.jupiter.api.Assertions.assertNotNull(updated.getWasmBinary());
+            org.junit.jupiter.api.Assertions.assertEquals(FunctionStatus.READY, updated.getStatus());
+        }
+
+        @Test
+        @DisplayName("triggers recompilation when source changes")
+        void updateSourceTriggersRecompilation() throws Exception {
+            Function function = createReadyFunction("recompile-source", loadWasm("echo"));
+            String newSource = "// new source code";
+            FunctionRequest updateRequest = new FunctionRequest(
+                    function.getName(),
+                    function.getDescription(),
+                    "assemblyscript",
+                    newSource
+            );
+
+            mockMvc.perform(put("/functions/{id}", function.getId())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(updateRequest)))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.status", is("PENDING")))
+                    .andExpect(jsonPath("$.source", is(newSource)))
+                    .andExpect(jsonPath("$.compileError", nullValue()));
+
+            // Verify WASM binary is cleared
+            Function updated = functionRepository.findById(function.getId()).orElseThrow();
+            org.junit.jupiter.api.Assertions.assertNull(updated.getWasmBinary());
+            org.junit.jupiter.api.Assertions.assertEquals(FunctionStatus.PENDING, updated.getStatus());
+        }
+
+        @Test
+        @DisplayName("triggers recompilation when language changes")
+        void updateLanguageTriggersRecompilation() throws Exception {
+            // Note: Only assemblyscript is supported in Phase 0, but the logic should still reset
+            Function function = createReadyFunction("recompile-lang", loadWasm("echo"));
+            FunctionRequest updateRequest = new FunctionRequest(
+                    function.getName(),
+                    function.getDescription(),
+                    "assemblyscript", // Same language (only one supported)
+                    "// different source to trigger recompile"
+            );
+
+            mockMvc.perform(put("/functions/{id}", function.getId())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(updateRequest)))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.status", is("PENDING")));
+        }
+
+        @Test
+        @DisplayName("clears compile error when source changes on FAILED function")
+        void updateClearsCompileErrorOnFailedFunction() throws Exception {
+            Function function = Function.builder()
+                    .name("failed-func")
+                    .description("Test")
+                    .language("assemblyscript")
+                    .source("// bad source")
+                    .status(FunctionStatus.FAILED)
+                    .compileError("Syntax error at line 1")
+                    .build();
+            function = functionRepository.save(function);
+
+            FunctionRequest updateRequest = new FunctionRequest(
+                    function.getName(),
+                    function.getDescription(),
+                    "assemblyscript",
+                    "// fixed source"
+            );
+
+            mockMvc.perform(put("/functions/{id}", function.getId())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(updateRequest)))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.status", is("PENDING")))
+                    .andExpect(jsonPath("$.compileError", nullValue()));
+        }
+
+        @Test
+        @DisplayName("returns 404 when function does not exist")
+        void updateNonExistentFunctionReturns404() throws Exception {
+            UUID nonExistentId = UUID.randomUUID();
+            FunctionRequest updateRequest = new FunctionRequest(
+                    "name",
+                    "desc",
+                    "assemblyscript",
+                    "// source"
+            );
+
+            mockMvc.perform(put("/functions/{id}", nonExistentId)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(updateRequest)))
+                    .andExpect(status().isNotFound())
+                    .andExpect(jsonPath("$.message", containsString("not found")));
+        }
+
+        @Test
+        @DisplayName("returns 415 for unsupported language")
+        void updateWithUnsupportedLanguageReturns415() throws Exception {
+            Function function = createReadyFunction("unsupported-lang", loadWasm("echo"));
+            FunctionRequest updateRequest = new FunctionRequest(
+                    function.getName(),
+                    function.getDescription(),
+                    "rust",
+                    "// source"
+            );
+
+            mockMvc.perform(put("/functions/{id}", function.getId())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(updateRequest)))
+                    .andExpect(status().isUnsupportedMediaType())
+                    .andExpect(jsonPath("$.message", containsString("Unsupported language")));
+        }
+
+        @Test
+        @DisplayName("returns expanded view with all fields")
+        void updateReturnsExpandedView() throws Exception {
+            Function function = createReadyFunction("expanded-view", loadWasm("echo"));
+            FunctionRequest updateRequest = new FunctionRequest(
+                    "new-name",
+                    "new-description",
+                    "assemblyscript",
+                    function.getSource()
+            );
+
+            mockMvc.perform(put("/functions/{id}", function.getId())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(updateRequest)))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.id", notNullValue()))
+                    .andExpect(jsonPath("$.name", is("new-name")))
+                    .andExpect(jsonPath("$.description", is("new-description")))
+                    .andExpect(jsonPath("$.language", is("assemblyscript")))
+                    .andExpect(jsonPath("$.source", notNullValue()))
+                    .andExpect(jsonPath("$.status", notNullValue()))
+                    .andExpect(jsonPath("$.createdAt", notNullValue()))
+                    .andExpect(jsonPath("$.updatedAt", notNullValue()));
         }
     }
 }
