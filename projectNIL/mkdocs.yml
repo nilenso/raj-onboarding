@@ -1,0 +1,83 @@
+site_name: ProjectNIL
+site_description: Function as a Service Platform
+site_url: https://nilenso.github.io/raj-onboarding/
+repo_url: https://github.com/nilenso/raj-onboarding
+repo_name: nilenso/raj-onboarding
+
+docs_dir: docs
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.highlight
+    - search.suggest
+    - content.code.copy
+    - content.code.annotate
+
+markdown_extensions:
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: "!!python/name:pymdownx.superfences.fence_code_format"
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.tabbed:
+      alternate_style: true
+  - tables
+  - admonition
+  - pymdownx.details
+  - attr_list
+  - md_in_html
+  - toc:
+      permalink: true
+
+plugins:
+  - search
+
+nav:
+  - Home: README.md
+  - User Guides:
+    - Getting Started: guides/getting-started.md
+    - Writing Functions: guides/writing-functions.md
+  - Reference:
+    - API Reference: api.md
+    - WASM Runtime: wasm-runtime.md
+    - Compiler Service: compiler.md
+  - Operations:
+    - Infrastructure: infrastructure.md
+    - Testing Strategy: testing-strategy.md
+    - Deployment Roadmap: deployment-roadmap.md
+  - Architecture:
+    - Design: design-api-service.md
+    - Tech Stack: stack.md
+    - Roadmap: roadmap.md
+  - Decisions:
+    - ADR-001 WASM Runtime: decisions/001-wasm-runtime.md
+    - ADR-002 Message Queue: decisions/002-message-queue-pgmq.md
+  - Session Handoff: session-handoff.md
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/nilenso/raj-onboarding

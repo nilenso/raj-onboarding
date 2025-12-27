@@ -2,7 +2,14 @@
 
 Canonical API contracts live in `projectNIL/scope/contracts.md`.
 
-Base URL: `http://localhost:8080`
+## Base URL
+
+| Environment | URL |
+|-------------|-----|
+| **Production** | `{{ PRODUCTION_API_URL }}` |
+| **Local** | `http://localhost:8080` |
+
+> Set `API_URL` environment variable to your target environment before running examples.
 
 ---
 
