@@ -176,14 +176,24 @@ public class ExecutionService {
                 .toList();
     }
 
+    /**
+     * Validate and serialize input to JSON string.
+     *
+     * <p>Per scope/contracts.md, input must be a JSON object (not primitive, array, or null).
+     */
     private String serializeInput(Object input) {
         if (input == null) {
             return "{}";
         }
+        // Validate input is a JSON object (Map), not primitive or array
+        if (!(input instanceof java.util.Map)) {
+            throw new InvalidInputException(
+                    "Input must be a JSON object, got: " + input.getClass().getSimpleName());
+        }
         try {
             return objectMapper.writeValueAsString(input);
         } catch (JsonProcessingException e) {
-            throw new IllegalArgumentException("Failed to serialize input to JSON", e);
+            throw new InvalidInputException("Failed to serialize input to JSON: " + e.getMessage());
         }
     }
 
@@ -192,10 +202,27 @@ public class ExecutionService {
                 execution.getId(),
                 execution.getFunctionId(),
                 execution.getStatus(),
-                execution.getOutput(),
+                parseOutput(execution.getOutput()),
                 execution.getErrorMessage(),
                 execution.getCreatedAt()
         );
+    }
+
+    /**
+     * Parse output JSON string into an Object for response serialization.
+     * Per scope/contracts.md, output should be returned as parsed JSON object.
+     */
+    private Object parseOutput(String outputJson) {
+        if (outputJson == null || outputJson.isBlank()) {
+            return null;
+        }
+        try {
+            return objectMapper.readValue(outputJson, Object.class);
+        } catch (JsonProcessingException e) {
+            // If parsing fails, return as raw string (graceful degradation)
+            LOG.warn("Failed to parse output JSON, returning as string: {}", e.getMessage());
+            return outputJson;
+        }
     }
 
     private ExecutionDetailResponse toDetailResponse(Execution execution) {
@@ -203,8 +230,8 @@ public class ExecutionService {
                 execution.getId(),
                 execution.getFunctionId(),
                 execution.getStatus(),
-                execution.getInput(),
-                execution.getOutput(),
+                parseOutput(execution.getInput()),
+                parseOutput(execution.getOutput()),
                 execution.getErrorMessage(),
                 execution.getStartedAt(),
                 execution.getCompletedAt(),
