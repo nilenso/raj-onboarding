@@ -4,9 +4,14 @@ A Function as a Service (FaaS) platform. Users submit source code, it compiles t
 
 > **Note:** `projectNIL/scope/` is the canonical specification. This doc summarizes the system and focuses on operational context.
 
-## Architecture
+## Quick Links
 
-Canonical, end-to-end architecture lives in `projectNIL/scope/architecture.md`.
+- **[Getting Started Guide](./guides/getting-started.md)** - Set up and run your first function
+- **[Writing Functions Guide](./guides/writing-functions.md)** - Learn how to write AssemblyScript functions
+- **[API Reference](./api.md)** - Complete endpoint documentation
+- **[Canonical Contracts](../scope/contracts.md)** - Authoritative API and queue contracts
+
+## Architecture
 
 ```mermaid
 flowchart LR
@@ -21,22 +26,22 @@ flowchart LR
   API -->|JPA| Tables
   API -->|pgmq send| Jobs
 
-  Compiler[Compiler Service\n(assemblyscript, future langs)] -->|pgmq read| Jobs
+  Compiler[Compiler Service] -->|pgmq read| Jobs
   Compiler -->|pgmq send| Results
 
   API -->|pgmq read| Results
-  API -->|execute WASM| Wasm[WASM Runtime (Chicory)]
+  API -->|execute WASM| Wasm[WASM Runtime]
 ```
+
+See [scope/architecture.md](../scope/architecture.md) for the canonical architecture specification.
 
 ## Services
 
 | Service | Tech | Port | Purpose |
 |---------|------|------|---------|
-| api | Spring Boot 4.x / Java 25 | 8080 | REST API, DB, WASM execution |
-| compiler | Java 25 / Node.js | 8081 | Compile AS → WASM (see [compiler.md](./compiler.md)) |
+| api | Spring Boot 4.0 / Java 25 | 8080 | REST API, DB, WASM execution |
+| compiler | Java 25 / Node.js | 8081 | Compile AssemblyScript to WASM |
 | postgres | PostgreSQL 18 + pgmq | 5432 | Persistence + message queue |
-
-See [infrastructure.md](./infrastructure.md) for deployment details.
 
 ## Local Development
 
@@ -44,6 +49,7 @@ See [infrastructure.md](./infrastructure.md) for deployment details.
 
 - [Podman](https://podman.io/) (or Docker)
 - [Podman Compose](https://github.com/containers/podman-compose) (or Docker Compose)
+- Java 25+ (for running services locally)
 
 ### Quick Start
 
@@ -62,40 +68,19 @@ podman exec projectnil-db psql -U projectnil -d projectnil -c "\dt"
 
 ### Running the Full Stack
 
-To run the complete stack including the compiler service:
-
 ```bash
 cd projectNIL/infra
 
-# Start postgres and run migrations first
+# Start postgres and run migrations
 podman compose up -d postgres
 podman compose --profile migrate up liquibase
 
-# Build and start compiler service (first build takes a few minutes)
+# Build and start compiler service
 podman compose --profile full up -d compiler
 
-# Verify services are running
-podman compose ps
-
-# Check compiler logs
-podman compose logs -f compiler
-```
-
-### Testing Compilation End-to-End
-
-```bash
-# Send a test compilation job
-podman exec projectnil-db psql -U projectnil -d projectnil -c \
-  "SELECT pgmq.send('compilation_jobs', '{
-    \"functionId\": \"12345678-1234-1234-1234-123456789abc\",
-    \"language\": \"assemblyscript\",
-    \"source\": \"export function add(a: i32, b: i32): i32 { return a + b; }\"
-  }'::jsonb);"
-
-# Check for compilation result (wait a few seconds)
-podman exec projectnil-db psql -U projectnil -d projectnil -c \
-  "SELECT message->>'functionId', message->>'success', message->>'error'
-   FROM pgmq.read('compilation_results', 30, 10);"
+# Start API service (from projectNIL root)
+cd ..
+./gradlew :services:api:bootRun
 ```
 
 ### Common Commands
@@ -114,199 +99,89 @@ podman compose --profile full down -v
 # Connect to database
 podman exec -it projectnil-db psql -U projectnil -d projectnil
 
-# Rebuild compiler after code changes
-podman compose --profile full build compiler
-podman compose --profile full up -d compiler
-```
-
-### Manual Setup (Alternative)
-
-If you prefer to run PostgreSQL manually:
-
-```bash
-podman run -d --name pgmq-postgres \
-  -e POSTGRES_PASSWORD=postgres \
-  -p 5432:5432 \
-  ghcr.io/pgmq/pg18-pgmq:v1.8.0
-```
-
-Connect and enable pgmq:
-
-```bash
-psql postgres://postgres:postgres@localhost:5432/postgres
-```
-
-```sql
-CREATE EXTENSION pgmq;
-
--- Create queues
-SELECT pgmq.create('compilation_jobs');
-SELECT pgmq.create('compilation_results');
-```
-
-### pgmq Quick Reference
-
-```sql
--- Send message
-SELECT pgmq.send('compilation_jobs', '{"functionId": "...", "language": "assemblyscript", "source": "..."}');
-
--- Read message (invisible for 30s)
-SELECT * FROM pgmq.read('compilation_jobs', 30, 1);
-
--- Delete after processing
-SELECT pgmq.delete('compilation_jobs', 1);
-
--- Or archive for retention
-SELECT pgmq.archive('compilation_jobs', 1);
+# Run tests
+./gradlew test                    # All tests
+./gradlew :services:api:test      # API tests only
+./gradlew :services:compiler:test # Compiler tests only
 ```
 
 ## Tech Stack
 
-| Component | Technology | Version | ADR / Details |
-|-----------|------------|---------|---------------|
-| Language | Java | 25 | - |
-| Framework | Spring Boot | 4.0.0 (Spring 7) | - |
-| Database | PostgreSQL | 18 | - |
-| Message Queue | pgmq | 1.8.0 | [ADR-002](./decisions/002-message-queue-pgmq.md) |
-| WASM Runtime | Chicory | 0.0.1 | [ADR-001](./decisions/001-wasm-runtime.md) |
-| Migrations | Liquibase | 4.30 | - |
-| Compiler | AssemblyScript | Latest | - |
-| Containers | Podman Compose | - | - |
+| Component | Technology | Version |
+|-----------|------------|---------|
+| Language | Java | 25 |
+| Framework | Spring Boot | 4.0.0 |
+| Database | PostgreSQL | 18 |
+| Message Queue | pgmq | 1.8.0 |
+| WASM Runtime | Chicory | 1.6.1 |
+| Migrations | Liquibase | 4.30 |
+| Compiler | AssemblyScript | Latest |
+| Containers | Podman Compose | - |
 
-See [stack.md](./stack.md) for full rationale and library versions.
-
-## Function Lifecycle
-
-Canonical state machines and flows live in:
-- `projectNIL/scope/entities.md`
-- `projectNIL/scope/flows.md`
-
-```mermaid
-stateDiagram-v2
-  [*] --> PENDING
-  PENDING --> COMPILING
-  COMPILING --> READY
-  COMPILING --> FAILED
-```
-
-## Database Schema
-
-Managed via Liquibase migrations in `infra/migrations/`.
-
-```sql
--- Status enums
-CREATE TYPE function_status AS ENUM ('PENDING', 'COMPILING', 'READY', 'FAILED');
-CREATE TYPE execution_status AS ENUM ('PENDING', 'RUNNING', 'COMPLETED', 'FAILED');
-
-CREATE TABLE functions (
-    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name            VARCHAR(255) NOT NULL,
-    description     TEXT,
-    language        VARCHAR(50) NOT NULL,
-    source          TEXT NOT NULL,
-    wasm_binary     BYTEA,
-    status          function_status NOT NULL DEFAULT 'PENDING',
-    compile_error   TEXT,
-    created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE TABLE executions (
-    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    function_id     UUID REFERENCES functions(id) ON DELETE CASCADE,
-    input           JSONB,
-    output          JSONB,
-    status          execution_status NOT NULL DEFAULT 'PENDING',
-    error_message   TEXT,
-    started_at      TIMESTAMPTZ,
-    completed_at    TIMESTAMPTZ,
-    created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
--- Indexes
-CREATE INDEX idx_functions_name ON functions(name);
-CREATE INDEX idx_functions_status ON functions(status);
-CREATE INDEX idx_executions_function_id ON executions(function_id);
-CREATE INDEX idx_executions_status ON executions(status);
-CREATE INDEX idx_executions_created_at ON executions(created_at DESC);
-```
-
-## Message Formats
-
-Canonical queue and HTTP contracts are captured in `projectNIL/scope/contracts.md`.
-
-**Compilation Request** (API → Compiler):
-```json
-{
-  "functionId": "550e8400-e29b-41d4-a716-446655440000",
-  "language": "assemblyscript",
-  "source": "export function add(a: i32, b: i32): i32 { return a + b; }"
-}
-```
-
-**Compilation Result** (Compiler → API):
-```json
-{
-  "functionId": "550e8400-e29b-41d4-a716-446655440000",
-  "success": true,
-  "wasmBinary": "AGFzbQEAAAA...",
-  "error": null
-}
-```
-
-## CI Operational Notes
-- Gradle caching (`actions/cache@v4`) now persists `~/.gradle/caches` and `~/.gradle/wrapper` during the “CI - dev & feature branches” workflow.
-- Cold run (commit `b0145a7`, cache miss) executed `./gradlew build --build-cache` in ~80 s and uploaded a ~276 MB cache.
-- Warm run (empty commit `ci: trigger cache verification`, SHA `441010f`) restored that cache (log shows `Cache hit` and multiple `FROM-CACHE` tasks) and completed in ~22 s.
-- Use empty commits when you need to validate cache health without changing code.
+See [stack.md](./stack.md) for rationale and [decisions/](./decisions/) for ADRs.
 
 ## Project Structure
 
 ```
 projectNIL/
-├── common/                          # Shared domain objects and queue DTOs
+├── common/                    # Shared domain objects
 │   └── src/main/java/.../domain/
-│       ├── Function.java, Execution.java, ...
-│       └── queue/                   # CompilationJob, CompilationResult
+│       ├── Function.java
+│       ├── Execution.java
+│       └── queue/             # CompilationJob, CompilationResult
 │
 ├── services/
-│   ├── api/                         # Spring Boot API service
-│   │   └── build.gradle.kts
+│   ├── api/                   # Spring Boot API service
+│   │   └── src/main/java/.../
+│   │       ├── web/           # Controllers, DTOs
+│   │       ├── service/       # Business logic
+│   │       ├── repository/    # JPA repositories
+│   │       ├── runtime/       # WASM execution
+│   │       └── messaging/     # PGMQ integration
 │   │
-│   └── compiler/                    # AssemblyScript compiler service
-│       ├── build.gradle.kts
-│       ├── scripts/run-with-podman.sh  # helper for local Podman tests
-│       └── src/                     # see docs/compiler.md for structure
+│   └── compiler/              # AssemblyScript compiler
+│       └── src/main/java/.../
+│           ├── core/          # Compilation logic
+│           └── messaging/     # PGMQ integration
 │
-├── infra/                           # Infrastructure configuration
-│   ├── compose.yml                  # Podman/Docker Compose
-│   └── migrations/                  # Liquibase database migrations
-│       ├── db.changelog-master.yaml
-│       └── changelog/
-│           ├── 001-create-functions-table.yaml
-│           ├── 002-create-executions-table.yaml
-│           └── 003-setup-pgmq-queues.yaml
+├── infra/                     # Infrastructure
+│   ├── compose.yml            # Local development
+│   └── migrations/            # Liquibase changelogs
 │
-├── docs/
-│   ├── README.md                    # This file
-│   ├── api.md                       # API reference
-│   ├── roadmap.md                   # Future phases
-│   ├── stack.md                     # Technology stack
-│   └── decisions/                   # ADRs
+├── docs/                      # Documentation
+│   ├── guides/                # User guides
+│   ├── api.md                 # API reference
+│   └── decisions/             # ADRs
 │
-├── gradle/libs.versions.toml
-├── build.gradle.kts
-└── settings.gradle.kts
+└── scope/                     # Canonical specifications
+    ├── contracts.md           # API & queue contracts
+    ├── entities.md            # Domain entities
+    └── flows.md               # Sequence diagrams
 ```
 
-## Related Docs
+## Documentation Index
 
-- [API Reference](./api.md)
-- [Infrastructure](./infrastructure.md)
-- [Compiler Service](./compiler.md)
-- [WASM Runtime](./wasm-runtime.md)
-- [Session Handoff](./session-handoff.md)
-- [Roadmap](./roadmap.md)
-- [Tech Stack](./stack.md)
-- [ADR-001: WASM Runtime](./decisions/001-wasm-runtime.md)
-- [ADR-002: Message Queue](./decisions/002-message-queue-pgmq.md)
+### User Guides
+- [Getting Started](./guides/getting-started.md) - First function in 5 minutes
+- [Writing Functions](./guides/writing-functions.md) - AssemblyScript function guide
+
+### Reference
+- [API Reference](./api.md) - Complete endpoint documentation
+- [WASM Runtime](./wasm-runtime.md) - Chicory runtime details
+- [Compiler Service](./compiler.md) - Compilation pipeline
+- [Infrastructure](./infrastructure.md) - Deployment and ops
+
+### Specifications
+- [Canonical Contracts](../scope/contracts.md) - Source of truth for APIs
+- [Domain Entities](../scope/entities.md) - Entity definitions and state machines
+- [System Flows](../scope/flows.md) - End-to-end sequences
+
+### Project
+- [Roadmap](./roadmap.md) - Phase 0/1/2 plans
+- [Session Handoff](./session-handoff.md) - Current implementation status
+- [Design: API Service](./design-api-service.md) - Implementation blueprint
+- [AGENTS.md](../AGENTS.md) - Coding conventions
+
+### Architecture Decisions
+- [ADR-001: WASM Runtime](./decisions/001-wasm-runtime.md) - Why Chicory
+- [ADR-002: Message Queue](./decisions/002-message-queue-pgmq.md) - Why pgmq

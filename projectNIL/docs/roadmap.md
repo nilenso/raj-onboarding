@@ -1,15 +1,30 @@
 # Roadmap
 
-## Phase 0: Core FaaS (Current)
+## Phase 0: Core FaaS - COMPLETE
 
-**Goal**: Minimal viable FaaS without auth.
+**Status**: All issues closed, merged to main (December 27, 2025)
 
-- Register, update, delete functions
+**Implemented**:
+- Register, list, get, update, delete functions
 - Compile source to WASM (AssemblyScript)
-- Execute functions with input/output
+- Execute functions with JSON input/output
 - Track execution history
+- PGMQ-based async compilation pipeline
+- Canonical DTO serialization
 
-**Entities**: Function, Execution
+**Endpoints**:
+| Endpoint | Status |
+|----------|--------|
+| `POST /functions` | Done |
+| `GET /functions` | Done |
+| `GET /functions/{id}` | Done |
+| `PUT /functions/{id}` | Done |
+| `DELETE /functions/{id}` | Done |
+| `POST /functions/{id}/execute` | Done |
+| `GET /functions/{id}/executions` | Done |
+| `GET /executions/{id}` | Done |
+
+**Test Coverage**: 64 tests (6 common, 48 API, 10 compiler)
 
 ---
 
@@ -43,6 +58,11 @@ canAccess(user, resource):
       OR any(group in user.groups where group.id in resource.allowed_groups)
 ```
 
+**Open Questions**:
+- JWT vs session tokens?
+- API key rotation policy?
+- Integration with external identity providers?
+
 ---
 
 ## Phase 2: Analytics
@@ -58,7 +78,7 @@ canAccess(user, resource):
 **Open Questions**:
 - Real-time vs batch processing?
 - Same DB vs dedicated analytics store?
-- Built-in dashboard vs external tool?
+- Built-in dashboard vs external tool (Grafana)?
 
 ---
 
@@ -70,3 +90,7 @@ canAccess(user, resource):
 | Function versioning | Track versions, rollback capability |
 | Additional languages | Rust, Go, C/C++ compilers |
 | Async execution | Long-running functions with callbacks |
+| WASM module caching | Cache parsed modules for performance |
+| Rate limiting | Per-user/function execution limits |
+| Cold start optimization | Pre-warm frequently used functions |
+| Multi-region deployment | Geographic distribution |

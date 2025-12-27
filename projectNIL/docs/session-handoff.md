@@ -1,138 +1,124 @@
 # Session Handoff Document
 
 **Last Updated**: December 27, 2025  
-**Current Branch**: `feature-issue-29`  
-**Last PR Merged**: #57 (WASM Runtime Implementation)
+**Current Branch**: `dev`  
+**Last PR Merged**: #67 (dev → main: Issue #55 - Canonical DTO Alignment)
 
 This document captures the current state of ProjectNIL for session continuity.
 
 ---
 
-## 1. What Was Completed This Session
+## 1. Phase 0 Status: COMPLETE
 
-### Issue #29: Execute a Function
+All Phase 0 issues are closed and merged to main:
 
-**Status**: Implementation complete on `feature-issue-29` branch
-
-Implemented the execute function endpoint per Issue #29 acceptance criteria:
-
-| File | Purpose |
-|------|---------|
-| `repository/FunctionRepository.java` | Spring Data JPA repository for Functions |
-| `repository/ExecutionRepository.java` | Spring Data JPA repository for Executions |
-| `service/FunctionService.java` | Service with `findById()` and `findReadyById()` validation |
-| `service/FunctionNotFoundException.java` | Exception for missing functions (404) |
-| `service/FunctionNotReadyException.java` | Exception for non-READY functions (400) |
-| `service/ExecutionService.java` | Orchestrates WASM execution and persistence |
-| `service/ExecutionNotFoundException.java` | Exception for missing executions (404) |
-| `web/FunctionController.java` | REST controller with `POST /functions/{id}/execute` |
-| `web/GlobalExceptionHandler.java` | Maps exceptions to HTTP responses |
-| `config/JacksonConfiguration.java` | ObjectMapper bean configuration |
-
-**Test coverage**: 11 integration tests using Testcontainers (PostgreSQL):
-- Success scenarios: echo, add, greet functions, null input handling
-- Error scenarios: 404 for missing function, 400 for PENDING/COMPILING/FAILED status
-- Runtime failures: WASM trap returns 200 with FAILED status
-- Persistence: execution records are saved on success and failure
-
-**Configuration updates**:
-- `application.yaml` - Added datasource, JPA, Liquibase configuration
-- `Execution.java` - Added `@JdbcTypeCode(SqlTypes.JSON)` for jsonb columns
-- `ExecutionRequest.java` - Changed `input` from `String` to `Object`
-- `ApiApplication.java` - Fixed `@EnableJpaRepositories` path
+| Issue | Title | PR | Status |
+|-------|-------|-----|--------|
+| #24 | Register a Function | #52, #54 | Closed |
+| #25 | List Available Functions | #52, #54 | Closed |
+| #26 | Get Function Details | #52, #54 | Closed |
+| #27 | Update a Function | #62, #63 | Closed |
+| #28 | Delete a Function | #52, #54 | Closed |
+| #29 | Execute a Function | #57 | Closed |
+| #30 | Get Execution Details | #64, #65 | Closed |
+| #31 | List Executions for a Function | #64, #65 | Closed |
+| #53 | API: Consume pgmq compilation results | #54 | Closed |
+| #54 | API: Publish pgmq compilation jobs | #54 | Closed |
+| #55 | API: Enforce canonical DTOs | #66, #67 | Closed |
 
 ---
 
 ## 2. Current Implementation Status
 
-### API Service
+### API Service - COMPLETE
 
-| Component | Status | Notes |
-|-----------|--------|-------|
-| Domain entities | Done | `Function`, `Execution` in common module |
-| Queue DTOs | Done | `CompilationJob`, `CompilationResult` |
-| Web DTOs | Done | `FunctionRequest`, `FunctionResponse`, etc. |
-| WASM Runtime | Done | Chicory-based, with timeout and ABI validation |
-| Health endpoint | Done | `GET /health` |
-| Database config | Done | Datasource, JPA, Liquibase in `application.yaml` |
-| Repositories | Done | `FunctionRepository`, `ExecutionRepository` |
-| FunctionService | Done | `findById()`, `findReadyById()` |
-| ExecutionService | Done | Orchestrates WASM execution and persistence |
-| FunctionController | Partial | Only `POST /functions/{id}/execute` |
-| GlobalExceptionHandler | Done | 404, 400, 500 error handling |
-| Queue integration | Not started | Need `MessagePublisher`, `CompilationPoller` |
+| Component | Location | Status |
+|-----------|----------|--------|
+| Domain entities | `common/src/.../domain/` | Done |
+| Queue DTOs | `common/src/.../domain/queue/` | Done |
+| Web DTOs | `api/src/.../web/` | Done |
+| WASM Runtime | `api/src/.../runtime/` | Done |
+| Health endpoint | `api/src/.../web/health/` | Done |
+| Database config | `api/src/.../resources/application.yaml` | Done |
+| Repositories | `api/src/.../repository/` | Done |
+| FunctionService | `api/src/.../service/` | Done (CRUD + execute) |
+| ExecutionService | `api/src/.../service/` | Done |
+| FunctionController | `api/src/.../web/` | Done (all endpoints) |
+| ExecutionController | `api/src/.../web/` | Done |
+| GlobalExceptionHandler | `api/src/.../web/` | Done |
+| PgmqClient | `api/src/.../messaging/` | Done |
+| CompilationResultPoller | `api/src/.../messaging/` | Done |
+| CompilationResultHandler | `api/src/.../service/` | Done |
 
-### Compiler Service
+### Compiler Service - COMPLETE
 
-| Component | Status | Notes |
-|-----------|--------|-------|
-| AssemblyScriptCompiler | Done | Compiles AS to WASM |
-| DefaultCompilerRunner | Done | Polls queue, processes jobs |
-| JdbcPgmqClient | Done | PGMQ integration via JDBC |
-| WorkspaceManager | Done | Isolated compilation directories |
-| ProcessExecutor | Done | External process with timeout |
+| Component | Status |
+|-----------|--------|
+| AssemblyScriptCompiler | Done |
+| DefaultCompilerRunner | Done |
+| JdbcPgmqClient | Done |
+| WorkspaceManager | Done |
+| ProcessExecutor | Done |
 
-### Infrastructure
+### Infrastructure - COMPLETE
 
-| Component | Status | Notes |
-|-----------|--------|-------|
-| Database migrations | Done | Functions, Executions tables, PGMQ queues |
-| Docker compose | Done | Local development environment |
-| CI/CD | Done | GitHub Actions for tests |
-
----
-
-## 3. Open Issues (Phase 0)
-
-### Completed
-
-| Issue | Title | Notes |
-|-------|-------|-------|
-| #29 | Execute a Function | Done - `POST /functions/{id}/execute` |
-
-### Unblocked (Foundation Now Ready)
-
-| Issue | Title | Notes |
-|-------|-------|-------|
-| #24 | Register a Function | Repositories/services ready, need CRUD controller |
-| #25 | List Available Functions | Depends on #24 |
-| #26 | Get Function Details | Depends on #24 |
-| #27 | Update a Function | Depends on #24 |
-| #28 | Delete a Function | Depends on #24 |
-| #30 | Get Execution Details | ExecutionService ready, need endpoint |
-| #31 | List Executions for a Function | ExecutionRepository ready, need endpoint |
-| #53 | API: Consume pgmq compilation results | Need CompilationPoller |
-| #54 | API: Publish pgmq compilation jobs | Need MessagePublisher |
-| #55 | API: Enforce canonical DTOs | Ongoing |
+| Component | Status |
+|-----------|--------|
+| Database migrations | Done |
+| Docker compose | Done |
+| CI/CD | Done |
 
 ---
 
-## 4. Recommended Next Steps
+## 3. API Endpoints (All Implemented)
 
-1. **Function CRUD endpoints** (#24, #25, #26, #27, #28)
-   - Add create/update/delete methods to FunctionService
-   - Add remaining endpoints to FunctionController
-   
-2. **Execution query endpoints** (#30, #31)
-   - Add `GET /executions/{id}` endpoint
-   - Add `GET /functions/{id}/executions` endpoint
-
-3. **Queue integration** (#53, #54)
-   - Implement `MessagePublisher` for publishing compilation jobs
-   - Implement `CompilationPoller` for consuming results
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/functions` | Register a function |
+| GET | `/functions` | List all functions |
+| GET | `/functions/{id}` | Get function details |
+| PUT | `/functions/{id}` | Update a function |
+| DELETE | `/functions/{id}` | Delete a function |
+| POST | `/functions/{id}/execute` | Execute a function |
+| GET | `/functions/{id}/executions` | List executions for a function |
+| GET | `/executions/{id}` | Get execution details |
+| GET | `/health` | Health check |
 
 ---
 
-## 5. Known Issues and Technical Debt
+## 4. Test Status
+
+All tests passing:
+
+```
+:common:test - PASSED (6 tests)
+:services:api:test - PASSED (48 tests)
+:services:compiler:test - PASSED (10 tests)
+```
+
+**Total: 64 tests**
+
+---
+
+## 5. Recommended Next Steps (Phase 1)
+
+1. **Authentication & Authorization** - User/API key auth
+2. **Rate Limiting** - Protect against abuse
+3. **Monitoring & Alerting** - Metrics collection, dashboards
+4. **Additional Languages** - Rust, Go compilers
+5. **Function Versioning** - Track versions, rollback
+
+---
+
+## 6. Known Technical Debt
 
 ### WASM Runtime
 
 | Issue | Severity | Notes |
 |-------|----------|-------|
-| Executor per execution | Low | Creates new thread pool per call; optimize if needed |
-| No module caching | Low | Parses WASM on every execution; add caching for perf |
-| No hard memory limit | Medium | Only logs warning at 16MB; may need enforcement |
-| String size limit hardcoded | Low | 10MB limit not configurable |
+| Executor per execution | Low | Creates new thread pool per call |
+| No module caching | Low | Parses WASM on every execution |
+| No hard memory limit | Medium | Only logs warning at 16MB |
 
 ### Compiler Service
 
@@ -141,19 +127,10 @@ Implemented the execute function endpoint per Issue #29 acceptance criteria:
 | No retry mechanism | Medium | Failed jobs are deleted immediately |
 | No dead letter queue | Medium | Failed compilations have no DLQ |
 | Single-threaded processing | Low | Only one job at a time |
-| No input validation | Medium | Source code not validated before filesystem write |
-| Possible Base64 double encoding | High | Check `publishResult()` - may double-encode WASM |
-
-### API Service
-
-| Issue | Severity | Notes |
-|-------|----------|-------|
-| ~~@EnableJpaRepositories path~~ | ~~Low~~ | Fixed - now points to `api.repository` |
-| FunctionResponse incomplete | Low | Missing fields for detailed view (description, source) |
 
 ---
 
-## 6. Key Documentation References
+## 7. Key Documentation References
 
 | Document | Purpose |
 |----------|---------|
@@ -161,22 +138,18 @@ Implemented the execute function endpoint per Issue #29 acceptance criteria:
 | `scope/contracts.md` | HTTP API, queue messages, WASM ABI |
 | `scope/flows.md` | End-to-end sequence diagrams |
 | `scope/entities.md` | Domain entities and state machines |
+| `docs/guides/` | User guides (getting started, writing functions) |
 | `docs/wasm-runtime.md` | WASM runtime implementation details |
-| `docs/design-api-service.md` | API service blueprint and status |
 | `docs/compiler.md` | Compiler service documentation |
 | `AGENTS.md` | Coding guidelines and conventions |
 
 ---
 
-## 7. Commands Reference
+## 8. Commands Reference
 
 ```bash
 # Navigate to project
 cd /Users/nilenso/source/work/onboarding/raj-onboarding/projectNIL
-
-# Check current status
-git status
-git branch
 
 # Run all tests
 ./gradlew test
@@ -185,7 +158,7 @@ git branch
 ./gradlew :services:api:test
 ./gradlew :services:compiler:test
 
-# Check build
+# Full build
 ./gradlew build
 
 # Start local environment
@@ -200,7 +173,7 @@ gh pr list --state merged --limit 10
 
 ---
 
-## 8. Architecture Quick Reference
+## 9. Architecture Quick Reference
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -212,11 +185,11 @@ gh pr list --state merged --limit 10
 │                      API Service (:8080)                         │
 │  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐  │
 │  │ FunctionController│  │ ExecutionService │  │ WasmRuntime     │  │
-│  │ (execute: DONE)  │  │ (DONE)           │  │ (DONE)          │  │
+│  │ (CRUD + execute) │  │ (DONE)           │  │ (DONE)          │  │
 │  └─────────────────┘  └─────────────────┘  └─────────────────┘  │
 │  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐  │
-│  │ FunctionService  │  │ FunctionRepo    │  │ ExecutionRepo   │  │
-│  │ (DONE)           │  │ (DONE)          │  │ (DONE)          │  │
+│  │ ExecutionController│ │ CompilationPoller│  │ PgmqClient      │  │
+│  │ (DONE)           │  │ (DONE)           │  │ (DONE)          │  │
 │  └─────────────────┘  └─────────────────┘  └─────────────────┘  │
 └─────────────────────────────────────────────────────────────────┘
         │                       │
@@ -241,24 +214,10 @@ gh pr list --state merged --limit 10
 
 ---
 
-## 9. Test Status
-
-All tests passing as of session end:
-
-```
-:common:test - PASSED (6 tests)
-:services:api:test - PASSED (24 tests: 13 runtime + 11 controller)
-:services:compiler:test - PASSED (10 tests)
-```
-
-**Note**: API controller tests require Testcontainers with PostgreSQL. Set `DOCKER_HOST` environment variable for Podman.
-
----
-
 ## 10. Session Notes
 
-- Issue #29 (Execute a Function) is now complete with full test coverage
-- The execute endpoint follows the canonical flow from `scope/flows.md` (Flow 3)
-- Error semantics match `scope/practices.md`: user errors return 200 with FAILED status
-- The foundation (repositories, services, exception handling) is ready for CRUD endpoints
-- Next major milestone: Function CRUD endpoints (#24-#28) and queue integration (#53-#54)
+- Phase 0 is complete with all API endpoints implemented
+- 48 API integration tests provide comprehensive coverage
+- DTOs follow canonical serialization per scope/contracts.md
+- Queue integration fully operational (publish jobs, consume results)
+- Ready for Phase 1: Authentication & Authorization
