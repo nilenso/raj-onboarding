@@ -5,8 +5,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.projectnil.api.repository.ExecutionRepository;
 import com.projectnil.api.runtime.WasmExecutionException;
 import com.projectnil.api.runtime.WasmRuntime;
+import com.projectnil.api.web.ExecutionDetailResponse;
 import com.projectnil.api.web.ExecutionRequest;
 import com.projectnil.api.web.ExecutionResponse;
+import com.projectnil.api.web.ExecutionSummaryResponse;
 import com.projectnil.common.domain.Execution;
 import com.projectnil.common.domain.ExecutionStatus;
 import com.projectnil.common.domain.Function;
@@ -17,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -123,7 +126,7 @@ public class ExecutionService {
     }
 
     /**
-     * Find an execution by ID.
+     * Find an execution by ID (for execute response).
      *
      * @param executionId the execution ID
      * @return the execution response
@@ -134,6 +137,43 @@ public class ExecutionService {
         Execution execution = executionRepository.findById(executionId)
                 .orElseThrow(() -> new ExecutionNotFoundException(executionId));
         return toResponse(execution);
+    }
+
+    /**
+     * Get detailed execution by ID.
+     *
+     * <p>Per issue #30, returns all fields including input, output, timestamps.
+     *
+     * @param executionId the execution ID
+     * @return the detailed execution response
+     * @throws ExecutionNotFoundException if not found
+     */
+    @Transactional(readOnly = true)
+    public ExecutionDetailResponse getById(UUID executionId) {
+        Execution execution = executionRepository.findById(executionId)
+                .orElseThrow(() -> new ExecutionNotFoundException(executionId));
+        return toDetailResponse(execution);
+    }
+
+    /**
+     * Find all executions for a function.
+     *
+     * <p>Per issue #31, returns lightweight summaries ordered by startedAt DESC.
+     * Validates that the function exists first.
+     *
+     * @param functionId the function ID
+     * @return list of execution summaries
+     * @throws FunctionNotFoundException if function not found
+     */
+    @Transactional(readOnly = true)
+    public List<ExecutionSummaryResponse> findByFunctionId(UUID functionId) {
+        // Validate function exists (throws 404 if not)
+        functionService.findById(functionId);
+
+        return executionRepository.findByFunctionIdOrderByCreatedAtDesc(functionId)
+                .stream()
+                .map(this::toSummaryResponse)
+                .toList();
     }
 
     private String serializeInput(Object input) {
@@ -155,6 +195,29 @@ public class ExecutionService {
                 execution.getOutput(),
                 execution.getErrorMessage(),
                 execution.getCreatedAt()
+        );
+    }
+
+    private ExecutionDetailResponse toDetailResponse(Execution execution) {
+        return new ExecutionDetailResponse(
+                execution.getId(),
+                execution.getFunctionId(),
+                execution.getStatus(),
+                execution.getInput(),
+                execution.getOutput(),
+                execution.getErrorMessage(),
+                execution.getStartedAt(),
+                execution.getCompletedAt(),
+                execution.getCreatedAt()
+        );
+    }
+
+    private ExecutionSummaryResponse toSummaryResponse(Execution execution) {
+        return new ExecutionSummaryResponse(
+                execution.getId(),
+                execution.getStatus(),
+                execution.getStartedAt(),
+                execution.getCompletedAt()
         );
     }
 }
