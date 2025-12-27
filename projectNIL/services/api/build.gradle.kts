@@ -12,7 +12,7 @@ dependencies {
     implementation(libs.spring.boot.starter.data.jpa)
     implementation(libs.jackson.databind)
     implementation(libs.liquibase.core)
-    runtimeOnly(libs.postgresql)
+    implementation(libs.postgresql)
 
     implementation(project(":common"))
     

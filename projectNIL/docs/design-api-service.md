@@ -205,36 +205,174 @@ All Web and Queue DTOs are implemented as Java `records`. This enforces immutabi
 | FunctionController | `api/src/.../web/` | Partial (#29 - execute only) |
 | Global exception handler | `api/src/.../web/` | Done (#29) |
 
+### Completed (This Session - #53, #54)
+
+| Component | Location | Status |
+|-----------|----------|--------|
+| PgmqClient interface | `api/src/.../messaging/` | Done (#54) |
+| JdbcPgmqClient | `api/src/.../messaging/` | Done (#54) |
+| PgmqProperties | `api/src/.../messaging/` | Done (#54) |
+| PgmqConfiguration | `api/src/.../messaging/` | Done (#54) |
+| CompilationResultPoller | `api/src/.../messaging/` | Done (#53) |
+| CompilationResultHandler | `api/src/.../service/` | Done (#53) |
+| FunctionController (CRUD) | `api/src/.../web/` | Done (#54) |
+
 ### Not Yet Implemented
 
 | Component | Location | Blocked By |
 |-----------|----------|------------|
-| FunctionController CRUD | `api/src/.../web/` | - |
-| MessagePublisher impl | `api/src/.../queue/` | - |
-| CompilationPoller | `api/src/.../queue/` | MessagePublisher |
+| PUT /functions/{id} | `api/src/.../web/` | - |
 
 ### Endpoint Implementation Status
 
 | Method | Endpoint | Issue | Status |
 |--------|----------|-------|--------|
-| POST | `/functions` | #24 | Not started |
-| GET | `/functions` | #25 | Not started |
-| GET | `/functions/{id}` | #26 | Not started |
+| POST | `/functions` | #24 | **Done** (#54) |
+| GET | `/functions` | #25 | **Done** (#54) |
+| GET | `/functions/{id}` | #26 | **Done** (#54) |
 | PUT | `/functions/{id}` | #27 | Not started |
-| DELETE | `/functions/{id}` | #28 | Not started |
+| DELETE | `/functions/{id}` | #28 | **Done** (#54) |
 | POST | `/functions/{id}/execute` | #29 | **Done** |
 | GET | `/functions/{id}/executions` | #30 | Not started |
 | GET | `/executions/{id}` | #31 | Not started |
 
 ---
 
-## 9. Next Steps (Recommended Order)
+## 9. Queue Integration Roadmap (#53, #54)
+
+This section details the implementation plan for PGMQ integration in the API service.
+
+### 9.1 Architecture Overview
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                              API Service                                     │
+│  ┌─────────────────────┐     ┌─────────────────────────────────────────┐    │
+│  │  FunctionController │     │  CompilationResultPoller                │    │
+│  │  POST /functions    │     │  @Scheduled (background thread)         │    │
+│  └─────────┬───────────┘     └───────────────────┬─────────────────────┘    │
+│            │                                      │                          │
+│            ▼                                      ▼                          │
+│  ┌─────────────────────┐     ┌─────────────────────────────────────────┐    │
+│  │  FunctionService    │     │  CompilationResultHandler               │    │
+│  │  - create()         │     │  - applyResult(CompilationResult)       │    │
+│  │  - update()         │     │  - idempotent updates                   │    │
+│  └─────────┬───────────┘     └───────────────────┬─────────────────────┘    │
+│            │                                      │                          │
+│            ▼                                      ▼                          │
+│  ┌─────────────────────┐     ┌─────────────────────────────────────────┐    │
+│  │  CompilationJob     │     │  FunctionRepository                     │    │
+│  │  Publisher          │     │  - save(), findById()                   │    │
+│  └─────────┬───────────┘     └─────────────────────────────────────────┘    │
+│            │                                                                 │
+└────────────┼─────────────────────────────────────────────────────────────────┘
+             │                              ▲
+             ▼                              │
+┌────────────────────────────┐   ┌──────────────────────────────┐
+│  pgmq: compilation_jobs    │   │  pgmq: compilation_results   │
+└────────────────────────────┘   └──────────────────────────────┘
+             │                              ▲
+             ▼                              │
+┌─────────────────────────────────────────────────────────────────┐
+│                        Compiler Service                          │
+│  (Already implemented - polls jobs, publishes results)           │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### 9.2 Components to Implement
+
+| Component | Package | Responsibility |
+|-----------|---------|----------------|
+| `PgmqClient` | `api.messaging` | Interface for PGMQ operations |
+| `JdbcPgmqClient` | `api.messaging` | JDBC-based PGMQ implementation |
+| `CompilationJobPublisher` | `api.messaging` | Publishes `CompilationJob` to queue |
+| `CompilationResultPoller` | `api.messaging` | Polls `compilation_results` queue |
+| `CompilationResultHandler` | `api.service` | Applies results to function (idempotent) |
+
+### 9.3 Implementation Details
+
+#### 9.3.1 Issue #54: Publish Compilation Jobs
+
+**Flow** (per `scope/flows.md` Flow 1):
+```
+POST /functions
+    │
+    ├─ Validate FunctionRequest (name, language, source)
+    ├─ Validate language in SUPPORTED_LANGUAGES (Phase 0: "assemblyscript")
+    ├─ Create Function(status=PENDING)
+    ├─ Save to database
+    ├─ Publish CompilationJob to queue
+    ├─ Log "compilation.job.published"
+    └─ Return 201 FunctionResponse(status=PENDING)
+```
+
+**Key decisions**:
+- Function stays `PENDING` until compiler picks it up (compiler sets `COMPILING`)
+- Job publication failure → rollback transaction, return 500
+- Use same transaction for DB + queue publish (queue is backed by Postgres)
+
+#### 9.3.2 Issue #53: Consume Compilation Results
+
+**Flow** (per `scope/flows.md` Flow 1 & 2):
+```
+CompilationResultPoller (@Scheduled every 1s)
+    │
+    ├─ Read message from compilation_results (visibility timeout: 30s)
+    ├─ Parse CompilationResult(functionId, success, wasmBinary, error)
+    ├─ Call CompilationResultHandler.applyResult()
+    │       ├─ Find function by ID (skip if not found)
+    │       ├─ If success=true:
+    │       │   ├─ Decode base64 wasmBinary
+    │       │   ├─ Set status=READY, wasmBinary, compileError=null
+    │       │   └─ Save
+    │       ├─ If success=false:
+    │       │   ├─ Set status=FAILED, wasmBinary=null, compileError=error
+    │       │   └─ Save
+    │       └─ Log "compilation.result.applied"
+    ├─ Delete/archive message from queue
+    └─ Repeat
+```
+
+**Idempotency** (per `scope/practices.md`):
+- Re-applying the same result must not corrupt state
+- If function already `READY` or `FAILED`, log warning and skip
+- Use transaction: DB update + message delete atomic
+
+### 9.4 Configuration Properties
+
+```yaml
+projectnil:
+  pgmq:
+    job-queue: compilation_jobs
+    result-queue: compilation_results
+    poll-interval-ms: 1000
+    visibility-timeout-seconds: 30
+```
+
+### 9.5 Error Handling
+
+| Scenario | Behavior |
+|----------|----------|
+| Job publish fails | Transaction rollback, 500 to client |
+| Result poll fails | Log error, continue polling |
+| Function not found on result | Log warning, delete message |
+| DB update fails | Don't delete message (redelivery) |
+
+### 9.6 Testing Strategy
+
+- **Unit tests**: Mock `JdbcTemplate` for `JdbcPgmqClient`
+- **Integration tests**: Testcontainers with PostgreSQL + PGMQ extension
+- **End-to-end**: Register function → Compiler processes → Result applied
+
+---
+
+## 10. Next Steps (Recommended Order)
 
 1. ~~**Database configuration** - Add datasource config to `application.yaml`~~ Done
 2. ~~**Repositories** - Create `FunctionRepository` and `ExecutionRepository`~~ Done
-3. **FunctionService CRUD** - Add create, update, delete operations
-4. **FunctionController CRUD** - REST endpoints for function management
-5. **MessagePublisher** - PGMQ integration for compilation jobs
-6. **CompilationPoller** - Background polling for compilation results
-7. **Execution queries** - `GET /executions/{id}` and `GET /functions/{id}/executions`
+3. ~~**Queue Integration** (#54, #53) - PGMQ publisher and poller~~ Done
+4. ~~**FunctionService CRUD** - Add create, update, delete operations~~ Done
+5. ~~**FunctionController CRUD** - REST endpoints for function management~~ Partial (PUT not done)
+6. **Execution queries** - `GET /executions/{id}` and `GET /functions/{id}/executions`
+7. **PUT /functions/{id}** - Update function and recompile
 

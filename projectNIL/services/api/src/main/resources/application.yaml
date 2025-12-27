@@ -24,3 +24,10 @@ spring:
 projectnil:
   wasm:
     timeout: 10s
+
+  # PGMQ Configuration
+  pgmq:
+    job-queue: ${PGMQ_JOB_QUEUE:compilation_jobs}
+    result-queue: ${PGMQ_RESULT_QUEUE:compilation_results}
+    poll-interval-ms: ${PGMQ_POLL_INTERVAL_MS:1000}
+    visibility-timeout-seconds: ${PGMQ_VISIBILITY_TIMEOUT:30}
