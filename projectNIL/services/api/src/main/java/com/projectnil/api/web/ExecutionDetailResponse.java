@@ -11,7 +11,7 @@ import java.util.UUID;
  * <p>Per scope/contracts.md and issue #30, includes all fields for inspection:
  * <ul>
  *   <li>id, functionId, status</li>
- *   <li>input, output (JSON strings)</li>
+ *   <li>input, output (parsed JSON objects per #55)</li>
  *   <li>errorMessage (only populated if FAILED)</li>
  *   <li>startedAt, completedAt, createdAt</li>
  * </ul>
@@ -20,8 +20,8 @@ public record ExecutionDetailResponse(
     UUID id,
     UUID functionId,
     ExecutionStatus status,
-    String input,
-    String output,
+    Object input,
+    Object output,
     String errorMessage,
     LocalDateTime startedAt,
     LocalDateTime completedAt,
