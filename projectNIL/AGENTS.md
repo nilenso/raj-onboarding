@@ -17,7 +17,7 @@
 - `./gradlew :services:api:test --tests "com.projectnil.api.runtime.ChicoryWasmRuntimeTest"`
 
 ### Running Services
-- Full stack: `podman compose -f infra/compose.yml up -d`
+- Full stack: `podman compose up -d`
 - API only: `./gradlew :services:api:bootRun`
 - Compiler only: `./gradlew :services:compiler:bootRun`
 

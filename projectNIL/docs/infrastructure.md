@@ -191,7 +191,7 @@ Triggered on push to `main`:
 3. Build Compiler image → `compiler-image.tar`
 4. Copy to `/opt/projectnil/` on droplet
 5. Load images with `podman load`
-6. Run `podman-compose up -d`
+6. Run `podman compose up -d`
 7. Wait for health checks (API :8080, Compiler :8081)
 8. Cleanup tarballs
 
@@ -227,9 +227,12 @@ ansible-playbook -i "YOUR_IP," -u root provision.yml
 
 ### What Ansible Provisions
 
-- Podman and podman-compose
+- Podman and podman-compose (Python wrapper, for compatibility)
 - UFW firewall rule for port 8080
 - Directory structure at `/opt/projectnil/infra/migrations`
+
+> **Note:** For local development, prefer `podman compose` (native) over `podman-compose` (Python wrapper).
+> The native version is idempotent and handles existing containers correctly.
 
 ### Manual Verification
 

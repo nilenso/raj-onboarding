@@ -1,5 +1,6 @@
 # ProjectNIL Production Deployment
-# Usage: podman-compose -f prod.compose.yml up -d
+# Usage: podman compose -f prod.compose.yml up -d
+# Alternative: podman-compose -f prod.compose.yml up -d (if native compose unavailable)
 
 services:
   postgres:

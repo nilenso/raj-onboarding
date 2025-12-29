@@ -7,7 +7,7 @@ This document outlines the strategy for moving ProjectNIL from local development
 We have chosen **Ansible** for this implementation.
 
 ### Rationale:
-- **Compatibility:** User specifically requested `podman-compose`. Ansible represents the best tool for managing configuration files (the compose YAML) and system-level services (Podman) on a remote host.
+- **Compatibility:** Project uses Podman with compose support. Ansible represents the best tool for managing configuration files (the compose YAML) and system-level services (Podman) on a remote host.
 - **Scope:** Kamal is highly opinionated towards Traefik and Docker. Ansible is more flexible for the specialized needs of our multi-module Java project.
 - **Reproducibility:** Ansible playbooks will serve as documentation for our server setup (FW, Podman, SSH).
 
@@ -32,7 +32,7 @@ The `:services:api` depends on `:common`. A naive build within the API Dockerfil
 
 ### Phase 2: Server Provisioning (Ansible)
 - [ ] Define Inventory (Droplet IP).
-- [ ] Playbook: Install Podman, `podman-compose`, and configure UFW.
+- [ ] Playbook: Install Podman, compose support, and configure UFW.
 - [ ] Playbook: Setup app directory structure on server.
 
 ### Phase 3: CI/CD Pipeline
@@ -40,7 +40,7 @@ The `:services:api` depends on `:common`. A naive build within the API Dockerfil
     - Build images using GitHub Actions.
     - Save images to `.tar` files.
     - SCP images and the `prod.compose.yml` to the Droplet.
-    - Run `podman load` and `podman-compose up`.
+    - Run `podman load` and `podman compose up`.
 
 ## Bootstrap Instructions
 

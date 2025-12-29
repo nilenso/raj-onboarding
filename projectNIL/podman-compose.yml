@@ -1,5 +1,6 @@
 # ProjectNIL Local Development Environment
-# Usage: podman-compose up -d
+# Usage: podman compose up -d
+# Note: Use `podman compose` (native, with space) not `podman-compose` (Python wrapper)
 
 services:
   postgres:
@@ -21,7 +22,7 @@ services:
       start_period: 10s
 
   # Compiler service (polls compilation_jobs, publishes compilation_results)
-  # Note: Run migrations first with `podman-compose --profile migrate up liquibase`
+  # Note: Run migrations first with `podman compose --profile migrate up liquibase`
   compiler:
     build:
       context: ..
