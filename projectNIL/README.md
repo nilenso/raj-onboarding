@@ -9,37 +9,24 @@ ProjectNIL enables serverless function execution using WebAssembly as the runtim
 ### Supported Languages
 
 - **AssemblyScript** - Currently supported
-- More languages coming soon
 
 ## Development Setup
 
 ### Prerequisites
 
+- JDK 25 or later
 - Docker or Podman with compose support
 
 ### Start Dependencies (Database + Migrations)
 
 ```bash
 # Start PostgreSQL and run migrations
-podman compose up -d
+podman compose -f podman-compose.yml up -d
 ```
 
 > **Note:** Use `podman compose` (native, with a space) rather than `podman-compose` (Python wrapper).
 > The native version is idempotent and handles existing containers correctly.
-
-This will:
-1. Start a PostgreSQL database (with PGMQ extension) on port 5432
-2. Run Liquibase migrations to set up the schema
-
-### Default Database Credentials
-
-| Setting  | Value       |
-|----------|-------------|
-| Host     | localhost   |
-| Port     | 5432        |
-| Database | projectnil  |
-| User     | projectnil  |
-| Password | projectnil  |
+> The `-f podman-compose.yml` flag is required to avoid defaulting to `docker-compose.yml` when present.
 
 ### Connect to Database
 
