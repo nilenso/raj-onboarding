@@ -56,6 +56,7 @@ public class Function{
     private byte[] wasmBinary;
 
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "status", nullable=false)
     @Builder.Default
     private FunctionStatus status = FunctionStatus.PENDING;
