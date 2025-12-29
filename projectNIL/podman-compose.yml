@@ -63,8 +63,6 @@ services:
       --password=projectnil
       --changeLogFile=db.changelog-master.yaml
       update
-    profiles:
-      - migrate
 
 volumes:
   postgres_data:
