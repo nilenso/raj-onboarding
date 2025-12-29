@@ -41,6 +41,12 @@ This will:
 | User     | projectnil  |
 | Password | projectnil  |
 
+### Connect to Database
+
+```bash
+podman exec -it projectnil-db psql -U projectnil -d projectnil
+```
+
 ### Running Services
 
 ```bash
