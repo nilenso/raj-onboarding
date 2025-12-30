@@ -106,10 +106,95 @@ export TESTCONTAINERS_RYUK_DISABLED=true
 - Validate the full lifecycle: register function, poll queue, compile result, mark READY, execute with expected input/output.
 - Use the documented API (see `docs/api.md`) as a reference for request and response shapes.
 
-## 5. Testing Checklist
+## 5. End-to-End Test Plan
+
+### Test Environment
+
+```bash
+export API_URL="http://localhost:8080"        # Local
+export API_URL="http://157.245.108.179:8080"  # Production
+```
+
+### Test Categories
+
+| Category | Tests | Priority |
+|----------|-------|----------|
+| Health & Infrastructure | 2 | Smoke |
+| Function CRUD | 15 | Core |
+| Function Lifecycle | 6 | Core |
+| Execution | 12 | Core |
+| Error Handling | 15 | Regression |
+| Edge Cases | 10 | Comprehensive |
+| **Total** | **60** | |
+
+### Smoke Tests (Run First)
+
+```bash
+# Health check
+curl $API_URL/health
+# Expected: 200, {"status":"UP"}
+
+# Database connectivity
+curl $API_URL/functions
+# Expected: 200, []
+
+# Create function
+curl -X POST $API_URL/functions \
+  -H "Content-Type: application/json" \
+  -d '{"name":"test","language":"assemblyscript","source":"export function handle(input: string): string { return input; }"}'
+# Expected: 201, status=PENDING
+
+# Execute (after READY)
+curl -X POST $API_URL/functions/{id}/execute \
+  -H "Content-Type: application/json" \
+  -d '{"input": {}}'
+# Expected: 200, status=COMPLETED
+```
+
+### Test Data Fixtures
+
+**Echo Function** (simplest):
+```javascript
+export function handle(input: string): string {
+  return input;
+}
+```
+
+**Add Function**:
+```javascript
+export function handle(input: string): string {
+  const data = JSON.parse(input);
+  const sum = (data.a as i32) + (data.b as i32);
+  return JSON.stringify({ sum: sum });
+}
+```
+
+**Error Function** (throws):
+```javascript
+export function handle(input: string): string {
+  throw new Error("Intentional error");
+}
+```
+
+**Invalid Syntax** (compile error):
+```javascript
+this is not valid {{ assemblyscript
+```
+
+**Infinite Loop** (timeout test):
+```javascript
+export function handle(input: string): string {
+  while (true) {}
+  return input;
+}
+```
+
+## 6. Testing Checklist
+
 - [ ] Unit tests for each entity/service before behavioral changes (e.g., `Function`, `Execution`, queue DTOs).
 - [ ] Repository + Liquibase integration suites verifying schema alignment and JSONB queries.
 - [ ] Queue integration tests covering `compilation_jobs` and `compilation_results` workflows.
 - [ ] Spring Boot controller/service suites that simulate real HTTP flows and message publishing.
 - [ ] ArchUnit contracts for layering, immutability, and dependency boundaries.
 - [ ] End-to-end smoke test scheduled in Podman Compose (API + Postgres/pgmq + compiler interaction).
+- [ ] All 60 E2E test scenarios (Smoke → Core → Regression → Comprehensive).

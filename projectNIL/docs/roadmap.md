@@ -4,15 +4,18 @@
 
 **Status**: All issues closed, merged to main (December 27, 2025)
 
-**Implemented**:
-- Register, list, get, update, delete functions
-- Compile source to WASM (AssemblyScript)
-- Execute functions with JSON input/output
-- Track execution history
-- PGMQ-based async compilation pipeline
-- Canonical DTO serialization
+### User Stories Delivered
 
-**Endpoints**:
+| ID | Story | Acceptance |
+|----|-------|------------|
+| US-1 | **Register a Function**: As a developer, I want to register a function by sending source code, so that the platform can compile it and make it executable. | API returns `functionId` immediately; function becomes `READY` or `FAILED` after compilation |
+| US-2 | **Observe Compilation Outcome**: As a developer, I want to fetch function details, so that I can see whether compilation succeeded and view compile errors if it failed. | `GET /functions/{id}` shows `status` and `compileError` |
+| US-3 | **Execute a Function**: As a developer, I want to execute a compiled function with JSON input, so that I can get JSON output. | Execution only allowed when function is `READY`; each execution persisted with status |
+| US-4 | **Inspect Execution History**: As a developer, I want to see past executions of a function, so that I can debug and verify behavior. | `GET /functions/{id}/executions` lists executions; `GET /executions/{id}` shows details |
+| US-O1 | **Debug Stuck Compilation** (Operational): As an operator, I want to see queue backlogs and correlate them to functions. | Queues inspectable in Postgres; logs include `functionId` |
+
+### Endpoints Implemented
+
 | Endpoint | Status |
 |----------|--------|
 | `POST /functions` | Done |
@@ -24,7 +27,9 @@
 | `GET /functions/{id}/executions` | Done |
 | `GET /executions/{id}` | Done |
 
-**Test Coverage**: 64 tests (6 common, 48 API, 10 compiler)
+### Test Coverage
+
+64 tests total: 6 common, 48 API, 10 compiler
 
 ---
 
@@ -32,7 +37,7 @@
 
 **Goal**: Multi-user system with access control.
 
-**New Entities**:
+### New Entities
 
 | Entity | Purpose |
 |--------|---------|
@@ -42,13 +47,15 @@
 | ApiKey | Programmatic access tokens |
 | Environment | Key-value store for function config |
 
-**Capabilities**:
+### Capabilities
+
 - Admin: Full CRUD on all entities
 - Dev: Execute functions, read environments
 - Permission arrays on Function/Environment for access control
 - Session-based auth (browser) + API key auth (programmatic)
 
-**Access Control Logic**:
+### Access Control Logic
+
 ```
 canAccess(user, resource):
   if user.role == Admin: return true
@@ -58,9 +65,10 @@ canAccess(user, resource):
       OR any(group in user.groups where group.id in resource.allowed_groups)
 ```
 
-**Open Questions**:
+### Open Questions
+
 - JWT vs session tokens?
-- API key rotation policy?
+- API key rotation and revocation policy?
 - Integration with external identity providers?
 
 ---
@@ -69,13 +77,15 @@ canAccess(user, resource):
 
 **Goal**: Execution metrics and insights.
 
-**Capabilities**:
+### Capabilities
+
 - Execution duration tracking
 - Success/failure rates
 - Error type analysis
 - Usage dashboards
 
-**Open Questions**:
+### Open Questions
+
 - Real-time vs batch processing?
 - Same DB vs dedicated analytics store?
 - Built-in dashboard vs external tool (Grafana)?
@@ -94,3 +104,9 @@ canAccess(user, resource):
 | Rate limiting | Per-user/function execution limits |
 | Cold start optimization | Pre-warm frequently used functions |
 | Multi-region deployment | Geographic distribution |
+
+### Draft Ideas
+
+- Consider adding correlation IDs to execution responses for observability
+- May want to add `durationMs` to execution responses
+- Could add `GET /functions/{id}/stats` for execution statistics

@@ -1,48 +1,38 @@
-# Project NIL
+# ProjectNIL
 
-Towards a pedagogical CRUD to pick up on tooling and best practices.
+A Function-as-a-Service (FaaS) platform where users submit source code, the platform compiles it to WebAssembly, and users execute functions on demand with JSON input/output.
 
-## Documentation
+**Documentation**: https://nilenso.github.io/raj-onboarding/
 
-| Document | Description |
-|----------|-------------|
-| [AGENTS.md](./AGENTS.md) | Agentic coding guidelines, branching strategy, commit conventions |
-| [project-management.md](./project-management.md) | Issue types, Kanban workflow, GitHub CLI usage |
-| [effective-java.md](./effective-java.md) | Effective Java best practices reference |
-| [scope/README.md](./scope/README.md) | Canonical end-to-end scope (architecture, flows, contracts, practices) |
-| [docs/README.md](./docs/README.md) | Platform overview, local stack, operational notes |
-| [docs/api.md](./docs/api.md) | HTTP API reference (points to canonical contracts) |
-| [docs/stack.md](./docs/stack.md) | Technology stack versions and rationale |
-| [docs/design-api-service.md](./docs/design-api-service.md) | API service blueprint (references canonical scope) |
-| **Note** | `scope/` is the canonical specification. Docs under `docs/` summarize or add ops context. |
+## Quick Navigation
 
-### External Resources
+| Looking for... | GitHub | GitHub Pages |
+|----------------|--------|--------------|
+| Getting started / Quick start | [docs/guides/getting-started.md](./docs/guides/getting-started.md) | [Getting Started](https://nilenso.github.io/raj-onboarding/guides/getting-started/) |
+| API reference | [docs/api.md](./docs/api.md) | [API Reference](https://nilenso.github.io/raj-onboarding/api/) |
+| Writing functions | [docs/guides/writing-functions.md](./docs/guides/writing-functions.md) | [Writing Functions](https://nilenso.github.io/raj-onboarding/guides/writing-functions/) |
+| Architecture overview | [docs/architecture/overview.md](./docs/architecture/overview.md) | [Architecture](https://nilenso.github.io/raj-onboarding/architecture/overview/) |
+| Infrastructure / Deployment | [docs/infrastructure.md](./docs/infrastructure.md) | [Infrastructure](https://nilenso.github.io/raj-onboarding/infrastructure/) |
+| Contributing guide | [docs/development/contributing.md](./docs/development/contributing.md) | [Contributing](https://nilenso.github.io/raj-onboarding/development/contributing/) |
+| Coding standards | [docs/development/coding-standards.md](./docs/development/coding-standards.md) | [Coding Standards](https://nilenso.github.io/raj-onboarding/development/coding-standards/) |
+| Project workflow | [docs/development/workflow.md](./docs/development/workflow.md) | [Workflow](https://nilenso.github.io/raj-onboarding/development/workflow/) |
+| Roadmap | [docs/roadmap.md](./docs/roadmap.md) | [Roadmap](https://nilenso.github.io/raj-onboarding/roadmap/) |
+| Design decisions (ADRs) | [docs/decisions/](./docs/decisions/) | [Decisions](https://nilenso.github.io/raj-onboarding/decisions/001-wasm-runtime/) |
 
-- [GitHub Project Board](https://github.com/orgs/nilenso/projects/24/views/1) - Kanban tracking issues
+## External Resources
+
+- [GitHub Project Board](https://github.com/orgs/nilenso/projects/24/views/1) - Kanban tracking
 - [Journal Branch](https://github.com/nilenso/raj-onboarding/tree/journal) - Daily documentation entries
 
-### Workflows
+## Quick Start
 
-| Workflow | Description |
-|----------|-------------|
-| **Project Management** | Issues tracked via GitHub Projects. See [project-management.md](./project-management.md) for CLI usage and conventions. |
-| **Journalling** | Daily entries on `journal` branch, squash-merged to `main` with `[skip ci]`. |
-| **Branching** | Feature work on `feature-issue-<N>` branches, technical tasks on `dev`. PRs required for all merges to `main` (except journal). |
+```bash
+# Start the stack
+podman compose -f infra/compose.yml up -d
 
----
-
-
-# Appendix
-
-## init configs
-
+# Build and test
+./gradlew build
+./gradlew test
 ```
-gradle init \
-  --type java-application \
-  --dsl groovy \
-  --package rnil.enso \
-  --project-name ProjectNIL  \
-  --no-split-project  \
-  --no-incubating  \
-  --java-version 25
-```
+
+See [Getting Started](./docs/guides/getting-started.md) for detailed setup instructions.

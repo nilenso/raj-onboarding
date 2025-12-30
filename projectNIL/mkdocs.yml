@@ -57,25 +57,26 @@ plugins:
 
 nav:
   - Home: README.md
-  - User Guides:
-    - Getting Started: guides/getting-started.md
+  - Getting Started: guides/getting-started.md
+  - User Guide:
     - Writing Functions: guides/writing-functions.md
-  - Reference:
     - API Reference: api.md
-    - WASM Runtime: wasm-runtime.md
-    - Compiler Service: compiler.md
+  - Architecture:
+    - Overview: architecture/overview.md
+    - Domain Entities: architecture/entities.md
+    - System Flows: architecture/flows.md
   - Operations:
     - Infrastructure: infrastructure.md
-    - Testing Strategy: testing-strategy.md
-    - Deployment Roadmap: deployment-roadmap.md
-  - Architecture:
-    - Design: design-api-service.md
-    - Tech Stack: stack.md
-    - Roadmap: roadmap.md
+    - Testing: testing-strategy.md
+    - Troubleshooting: troubleshooting.md
+  - Development:
+    - Contributing: development/contributing.md
+    - Coding Standards: development/coding-standards.md
+    - Workflow: development/workflow.md
   - Decisions:
-    - ADR-001 WASM Runtime: decisions/001-wasm-runtime.md
-    - ADR-002 Message Queue: decisions/002-message-queue-pgmq.md
-  - Session Handoff: session-handoff.md
+    - WASM Runtime: decisions/001-wasm-runtime.md
+    - Message Queue: decisions/002-message-queue-pgmq.md
+  - Roadmap: roadmap.md
 
 extra:
   social:

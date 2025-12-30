@@ -6,7 +6,7 @@ This guide walks you through running your first function on ProjectNIL.
 
 | Environment | Base URL |
 |-------------|----------|
-| **Production** | `{{ defined from PRODUCTION_API_URL, e.g http://<droplet-ip>:8080 }}` |
+| **Production** | `http://157.245.108.179:8080` |
 | **Local Development** | `http://localhost:8080` |
 
 > **Note**: In production examples below, replace `$API_URL` with your production URL or set it as an environment variable.
