@@ -130,4 +130,4 @@ WASM provides sandboxing boundaries. The platform enforces:
 - External artifact storage (e.g., S3)
 - Function versioning
 
-See [Roadmap](roadmap.md) for planned features.
+See [Roadmap](../roadmap.md) for planned features.
