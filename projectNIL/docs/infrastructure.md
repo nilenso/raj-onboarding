@@ -382,9 +382,29 @@ podman exec projectnil-db pg_dump -U projectnil projectnil > backup.sql
 
 ---
 
-## 14. Related Documentation
+## 14. Deployment Decisions
 
-- [Deployment Roadmap](./deployment-roadmap.md) - Initial deployment planning
-- [Compiler Service](./compiler.md) - Compiler implementation details
-- [WASM Runtime](./wasm-runtime.md) - WASM execution details
-- [Session Handoff](./session-handoff.md) - Current project status
+### Tooling: Ansible
+
+We use Ansible for server provisioning over Kamal for these reasons:
+- **Compatibility**: User requested `podman-compose`; Ansible manages Podman better
+- **Scope**: Kamal is opinionated toward Traefik/Docker; Ansible is more flexible
+- **Reproducibility**: Playbooks document server setup (firewall, Podman, SSH)
+
+### Multi-Module Image Strategy
+
+The API depends on common module. We handle this with:
+- Build context at **project root** level
+- Multi-stage Dockerfiles that run `./gradlew :services:api:bootJar`
+- Avoids dependency resolution issues
+
+### Known Production Issues
+
+- **Postgres Volume Path**: PGMQ/Postgres 18+ requires `/var/lib/postgresql` (not `/var/lib/postgresql/data`)
+- **Podman Short-names**: Production requires fully qualified image names (e.g., `docker.io/liquibase/liquibase:4.30`)
+
+## 15. Related Documentation
+
+- [Architecture Overview](./architecture/overview.md) - System components
+- [System Flows](./architecture/flows.md) - Sequence diagrams
+- [Troubleshooting](./troubleshooting.md) - Common issues

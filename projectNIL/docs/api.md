@@ -1,12 +1,10 @@
 # API Reference
 
-Canonical API contracts live in `projectNIL/scope/contracts.md`.
-
 ## Base URL
 
 | Environment | URL |
 |-------------|-----|
-| **Production** | `{{ PRODUCTION_API_URL }}` |
+| **Production** | `http://157.245.108.179:8080` |
 | **Local** | `http://localhost:8080` |
 
 > Set `API_URL` environment variable to your target environment before running examples.
