@@ -1,7 +1,10 @@
-# Raj's Onboarding Repository[WIP]
+# Raj's Onboarding Repository
 
 [![integrations](https://github.com/nilenso/raj-onboarding/actions/workflows/integrations.yml/badge.svg?branch=dev)](https://github.com/nilenso/raj-onboarding/actions/workflows/integrations.yml)
 [![deployment](https://github.com/nilenso/raj-onboarding/actions/workflows/deployment.yml/badge.svg?branch=main)](https://github.com/nilenso/raj-onboarding/actions/workflows/deployment.yml)
+
+ - check out the [journal branch](https://github.com/nilenso/raj-onboarding/tree/journal) for latest updates, 
+   - yet to sync into main and dev
 
 ## Overview
 
