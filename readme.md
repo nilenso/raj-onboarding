@@ -21,4 +21,4 @@
 ## Calls to Action
 
  - read my [journal entries](./journal)
- - get started the onboarding project [pnil](./projectNIL)
+ - get started with the onboarding project [pnil](./projectNIL)
