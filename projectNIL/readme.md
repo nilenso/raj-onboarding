@@ -11,11 +11,11 @@ a primal Function-as-a-Service (FaaS) that allows devs to register functions and
 
 ## Dependencies
 
- - openjdk25
- - podman
- - make (optional)
- - compilers :
-   - asc : `npm install -g assemblyscript`
+ - **Java**: OpenJDK 25+
+ - **Containers**: Podman (or Docker) with podman-compose
+ - **Node.js**: Required for AssemblyScript compiler
+ - **AssemblyScript compiler**: `npm install -g assemblyscript`
+ - **Make**: Optional, for convenience commands
  
 
 init dependencies (pgmq + postgres container followed by liquibase migrations) first : `make setup`
