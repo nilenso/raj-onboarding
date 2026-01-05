@@ -5,7 +5,6 @@ import com.projectnil.common.domain.queue.CompilationResult;
 import com.projectnil.compiler.config.CompilerProperties;
 import com.projectnil.compiler.messaging.PgmqClient;
 import com.projectnil.compiler.messaging.QueuedCompilationJob;
-import java.util.Base64;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
@@ -114,7 +113,7 @@ public class DefaultCompilerRunner implements CompilerRunner, Runnable {
         CompilationResult result = new CompilationResult(
             job.functionId(),
             outcome.success(),
-            outcome.wasmBinary().map(Base64.getEncoder()::encode).orElse(null),
+            outcome.wasmBinary().orElse(null),
             outcome.errorMessage().orElse(null)
         );
         pgmqClient.publishResult(result);
