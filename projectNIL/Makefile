@@ -39,9 +39,9 @@ compiler:
 	./gradlew :services:compiler:bootRun
 
 
-# Stop and remove all containers
+# Stop and remove all containers and volumes
 clean:
-	podman compose -f $(COMPOSE_FILE) down
+	podman compose -f $(COMPOSE_FILE) down -v
 
 test:
 	./gradlew test
