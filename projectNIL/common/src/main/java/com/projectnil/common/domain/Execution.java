@@ -46,6 +46,7 @@ public class Execution {
     private String output;
 
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "status", nullable = false)
     @Builder.Default
     private ExecutionStatus status = ExecutionStatus.PENDING;
