@@ -15,7 +15,7 @@ a primal Function-as-a-Service (FaaS) that allows devs to register functions and
  - podman
  - make (optional)
 
-init dependencies (pgmq + postgres container followed by liquibase migrations) first
+init dependencies (pgmq + postgres container followed by liquibase migrations) first : `make setup`
 ``` bash
 podman compose -f podman-compose.yaml up -d
 ```
@@ -29,14 +29,14 @@ CONTAINER ID  IMAGE                          COMMAND     CREATED        STATUS  
 
 this sets up the queue and relational db with the liquibase [migrations](./infra/migrations)  
 
-## Connecting to Database
+## Connecting to Database : `make psql`
 
 ```bash
 podman exec -it projectnil-db psql -U projectnil -d projectnil
 ```
 
 ## Running Services
-proceed to run the api and compiler individually via gradlew  
+proceed to run the api and compiler individually via gradlew : `make api; make compiler`
 
 ```
 # Run the API service (port 8080)
@@ -48,10 +48,6 @@ proceed to run the api and compiler individually via gradlew
 ```
 
 check makefile for convenience commands:
- - open a terminal multiplexer and:
-   - make setup
-   - make api 
-   - make compiler (another pane)
-   
- will provide you with a dev env
-   
+
+run `make help`
+
