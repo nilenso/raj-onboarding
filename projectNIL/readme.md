@@ -14,6 +14,9 @@ a primal Function-as-a-Service (FaaS) that allows devs to register functions and
  - openjdk25
  - podman
  - make (optional)
+ - compilers :
+   - asc : `npm install -g assemblyscript`
+ 
 
 init dependencies (pgmq + postgres container followed by liquibase migrations) first : `make setup`
 ``` bash
