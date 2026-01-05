@@ -58,7 +58,8 @@ public class CompilerMessagingConfiguration {
             workspaceManager,
             processExecutor,
             timeout,
-            compilerProperties.ascBinary()
+            compilerProperties.ascBinary(),
+            compilerProperties.ascLibPath()
         );
     }
 

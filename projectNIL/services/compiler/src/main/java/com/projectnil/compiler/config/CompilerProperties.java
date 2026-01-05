@@ -10,5 +10,6 @@ public record CompilerProperties(
     long timeoutMs,
     long pollIntervalMs,
     String ascBinary,
-    String workspaceDir
+    String workspaceDir,
+    String ascLibPath
 ) {}

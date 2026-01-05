@@ -31,7 +31,8 @@ class AssemblyScriptCompilerTest {
             workspaceManager,
             processExecutor,
             Duration.ofSeconds(1),
-            "asc"
+            "asc",
+            null
         );
         workspace = Files.createTempDirectory("compiler-test");
     }
@@ -48,11 +49,13 @@ class AssemblyScriptCompilerTest {
         when(workspaceManager.writeSource(workspace, job.source())).thenReturn(sourceFile);
         when(workspaceManager.wasmFile(workspace)).thenReturn(wasmFile);
         when(processExecutor.execute(
-            List.of("asc", sourceFile.toString(), "--outFile", wasmFile.toString(), "--optimize"),
+            List.of("asc", sourceFile.toString(), "--outFile", wasmFile.toString(), "--optimize", "--exportRuntime"),
             Duration.ofSeconds(1)
         )).thenReturn(new ProcessExecutor.ProcessResult(0, "", ""));
 
         CompilationOutcome outcome = compiler.compile(job);
+
+        // Note: Tests use null ascLibPath, so no --path or --transform flags are added
 
         assertThat(outcome.success()).isTrue();
         assertThat(outcome.wasmBinary()).isPresent();
@@ -70,7 +73,7 @@ class AssemblyScriptCompilerTest {
         when(workspaceManager.writeSource(workspace, job.source())).thenReturn(sourceFile);
         when(workspaceManager.wasmFile(workspace)).thenReturn(wasmFile);
         when(processExecutor.execute(
-            List.of("asc", sourceFile.toString(), "--outFile", wasmFile.toString(), "--optimize"),
+            List.of("asc", sourceFile.toString(), "--outFile", wasmFile.toString(), "--optimize", "--exportRuntime"),
             Duration.ofSeconds(1)
         )).thenReturn(new ProcessExecutor.ProcessResult(1, "", "compile error"));
 

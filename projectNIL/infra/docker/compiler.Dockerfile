@@ -22,9 +22,11 @@ RUN ./gradlew :services:compiler:bootJar --no-daemon
 FROM eclipse-temurin:25-jre-alpine
 
 # Install language toolchains
-# AssemblyScript: requires Node.js + asc CLI
+# AssemblyScript: requires Node.js + asc CLI + json-as for JSON support
 RUN apk add --no-cache nodejs npm && \
-    npm install -g assemblyscript
+    npm install -g assemblyscript && \
+    mkdir -p /app/asc-libs && \
+    cd /app/asc-libs && npm init -y && npm install json-as
 
 WORKDIR /app
 
@@ -41,6 +43,7 @@ ENV PGMQ_USERNAME=projectnil
 ENV PGMQ_PASSWORD=projectnil
 ENV ASC_BINARY=asc
 ENV COMPILER_TMP_DIR=/app/tmp/compiler
+ENV ASC_LIB_PATH=/app/asc-libs/node_modules
 
 EXPOSE 8081
 

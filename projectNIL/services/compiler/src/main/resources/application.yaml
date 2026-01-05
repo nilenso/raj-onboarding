@@ -17,6 +17,7 @@ compiler:
   poll-interval-ms: 1000
   asc-binary: ${ASC_BINARY:asc}
   workspace-dir: ${COMPILER_TMP_DIR:./tmp/compiler}
+  asc-lib-path: ${ASC_LIB_PATH:./asc-libs/node_modules}
 
 pgmq:
   url: ${PGMQ_URL:jdbc:postgresql://localhost:5432/projectnil}

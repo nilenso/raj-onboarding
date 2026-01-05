@@ -19,17 +19,20 @@ public class AssemblyScriptCompiler implements LanguageCompiler {
     private final ProcessExecutor processExecutor;
     private final Duration timeout;
     private final String ascBinary;
+    private final String ascLibPath;
 
     public AssemblyScriptCompiler(
         WorkspaceManager workspaceManager,
         ProcessExecutor processExecutor,
         Duration timeout,
-        String ascBinary
+        String ascBinary,
+        String ascLibPath
     ) {
         this.workspaceManager = workspaceManager;
         this.processExecutor = processExecutor;
         this.timeout = timeout;
         this.ascBinary = ascBinary;
+        this.ascLibPath = ascLibPath;
     }
 
     @Override
@@ -74,6 +77,14 @@ public class AssemblyScriptCompiler implements LanguageCompiler {
         command.add("--outFile");
         command.add(wasmFile.toString());
         command.add("--optimize");
+        command.add("--exportRuntime");
+        if (ascLibPath != null && !ascLibPath.isEmpty()) {
+            command.add("--path");
+            command.add(ascLibPath);
+            // json-as requires a transform for JSON support
+            command.add("--transform");
+            command.add(ascLibPath + "/json-as/transform");
+        }
         return command;
     }
 }
