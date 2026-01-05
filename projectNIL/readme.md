@@ -54,3 +54,7 @@ check makefile for convenience commands:
 
 run `make help`
 
+
+## Tutorial
+
+ - follow along [here](./tutorial.md)
