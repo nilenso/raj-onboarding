@@ -51,7 +51,7 @@ check makefile for convenience commands:
  - open a terminal multiplexer and:
    - make setup
    - make api 
-   - make compiler
+   - make compiler (another pane)
    
  will provide you with a dev env
    
