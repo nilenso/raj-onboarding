@@ -2,7 +2,19 @@
 
 A hands-on walkthrough of ProjectNIL's core workflow: register a function, compile it, execute it, and view results.
 
-## Prerequisites
+## Option A: Use Production Endpoint (No Local Setup)
+
+If you want to skip local setup entirely, use the production API:
+
+```
+API_URL=http://157.245.108.179:8080
+```
+
+Replace `http://localhost:8080` with `$API_URL` in all commands below.
+
+## Option B: Local Setup
+
+### Prerequisites
 
 - `make setup` completed (postgres + pgmq container running)
 - `make api` running in terminal 1
