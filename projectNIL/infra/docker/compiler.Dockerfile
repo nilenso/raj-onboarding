@@ -23,10 +23,11 @@ FROM eclipse-temurin:25-jre-alpine
 
 # Install language toolchains
 # AssemblyScript: requires Node.js + asc CLI + json-as for JSON support
+# Note: assemblyscript must be in asc-libs for --path resolution to work correctly
 RUN apk add --no-cache nodejs npm && \
     npm install -g assemblyscript && \
     mkdir -p /app/asc-libs && \
-    cd /app/asc-libs && npm init -y && npm install json-as
+    cd /app/asc-libs && npm init -y && npm install json-as assemblyscript
 
 WORKDIR /app
 
