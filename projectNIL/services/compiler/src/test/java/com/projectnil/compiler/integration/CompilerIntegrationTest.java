@@ -148,7 +148,8 @@ class CompilerIntegrationTest {
             10_000L,
             200L,
             ascBinary.toString(),
-            workspaceRoot.toString()
+            workspaceRoot.toString(),
+            null
         );
 
         WorkspaceManager workspaceManager = new FileSystemWorkspaceManager(workspaceRoot);
@@ -157,7 +158,8 @@ class CompilerIntegrationTest {
             workspaceManager,
             processExecutor,
             Duration.ofSeconds(5),
-            ascBinary.toString()
+            ascBinary.toString(),
+            null
         );
         PgmqClient pgmqClient = new JdbcPgmqClient(jdbcTemplate, compilerProperties, objectMapper);
         runner = new DefaultCompilerRunner(pgmqClient, languageCompiler, compilerProperties);

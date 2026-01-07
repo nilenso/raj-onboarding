@@ -74,6 +74,10 @@ jobs:
             # Stop existing services gracefully
             podman-compose -f prod.compose.yml down --timeout 30 || true
             
+            # Remove the migrations container to ensure it runs fresh
+            # This is critical: one-shot containers may not re-run on 'up' if they already exited
+            podman rm -f projectnil-migrations 2>/dev/null || true
+            
             # Start services
             if ! podman-compose -f prod.compose.yml up -d; then
               echo "Deployment failed"
@@ -121,6 +125,19 @@ jobs:
               echo "Waiting for Compiler... (attempt $i/12)"
               sleep 5
             done
+            
+            # Verify database migrations and PGMQ queues
+            echo "=== Verifying database setup ==="
+            QUEUES=$(podman exec projectnil-db psql -U projectnil -d projectnil -t -c "SELECT pgmq.list_queues();" 2>/dev/null | tr -d ' ')
+            if echo "$QUEUES" | grep -q "compilation_jobs" && echo "$QUEUES" | grep -q "compilation_results"; then
+              echo "PGMQ queues verified: compilation_jobs, compilation_results"
+            else
+              echo "ERROR: PGMQ queues not found!"
+              echo "Queues found: $QUEUES"
+              echo "--- MIGRATION LOGS ---"
+              podman logs projectnil-migrations 2>&1 || true
+              exit 1
+            fi
             
             echo "=== Deployment successful ==="
             podman ps

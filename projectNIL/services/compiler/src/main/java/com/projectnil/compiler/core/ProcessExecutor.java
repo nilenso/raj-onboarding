@@ -15,6 +15,9 @@ public class ProcessExecutor {
 
     public ProcessResult execute(List<String> command, Duration timeout) throws IOException, InterruptedException {
         ProcessBuilder builder = new ProcessBuilder(command);
+        // Set JSON_MODE for json-as library
+        // Using SWAR mode as Chicory WASM runtime doesn't support SIMD instructions
+        builder.environment().put("JSON_MODE", "SWAR");
         Process process = builder.start();
         boolean finished = process.waitFor(timeout.toMillis(), TimeUnit.MILLISECONDS);
         if (!finished) {
