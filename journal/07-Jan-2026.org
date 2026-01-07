@@ -1,0 +1,10 @@
+#+title: 07 Jan 2026
+
+ - starting journalling again
+ - phase 0 of pnil (functions + executions) done
+ - reading : "user stories applied"
+ - also reading : "the joy of clojure" parallely
+ - more time for onboarding
+ - project overview for all this following monday/tuesday
+   - small presentation + code overview
+   - objective being documenting what I grasped/got done over the onboarding period
