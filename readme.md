@@ -1,15 +1,11 @@
-# Raj's Onboarding Repository
+# Raj's Onboarding
 
-[![integrations](https://github.com/nilenso/raj-onboarding/actions/workflows/integrations.yml/badge.svg?branch=dev)](https://github.com/nilenso/raj-onboarding/actions/workflows/integrations.yml)
-[![deployment](https://github.com/nilenso/raj-onboarding/actions/workflows/deployment.yml/badge.svg?branch=main)](https://github.com/nilenso/raj-onboarding/actions/workflows/deployment.yml)
-
- - check out the [journal branch](https://github.com/nilenso/raj-onboarding/tree/journal) for latest updates, 
-   - yet to sync into main and dev
+collation of what raj was upto when getting started at nilenso
 
 ## Overview
 
 ### onboarding logs
- - misc journal entries when reading effective java
+ - raj journals a little
  
 ### projectNIL
  - raj's first blood @ nilenso
@@ -18,7 +14,18 @@
    - transpilation target being wasm
    - persistence : postgres-18 and pgmq-1.8
    
+### clojure
+ - raj finally gets to have clojure
+ - 
+ 
+### Books
+
+ - [x] Effective Java
+ - [x] User stories applied
+ - [ ] The joy of clojure
+
 ## Calls to Action
 
- - read my [journal entries](./journal)
- - get started with the onboarding project [pnil](./projectNIL)
+ - read [journal entries](./journal)
+ - explore the onboarding project: [pnil](./projectNIL)
+ - explore [clojure](./clojure) training camp

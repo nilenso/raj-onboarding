@@ -1,0 +1,8 @@
+#+title: 17 Jan 2025
+
+ - I'd always wanted to write production lisp: was dreaming about it since sophomore year of uni (~7 years to that): finally.., we're here
+ - going to start work on goose : along the way, chasing that lisp flow/enlightment I once experienced long ago
+ - post discussions with some folks, clojure isn't supposed the vanilla lisp and aspects orthogonal to that mindset await to be grasped
+ - going for a focused burst of immersion (practical coupled with a literature sweep (blogs, papers, books)) to really get a feel for what's up
+ - have been going easy for the past couple of years when it comes to levelling up on my lisp speak becuase there was always some work I had to get done 
+ - interesting that this is work now, long way..
