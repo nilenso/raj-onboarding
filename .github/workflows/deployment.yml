@@ -1,8 +1,8 @@
-name: deployment
+name: pnil
 
 on:
   push:
-    branches: [ main ]
+    branches: [ pnil ]
 
 jobs:
   build-and-deploy:
