@@ -53,8 +53,9 @@ nbdist/
 # VS Code
 .vscode/
 
-# Aider
+# AI
 .aider*
+.ai.code.prompt.org
 
 # OS generated files
 .DS_Store
