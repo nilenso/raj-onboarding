@@ -79,6 +79,9 @@ junit-platform.properties
 # Add any project-specific ignores here
 scratchpad/
 
-
+#clojure
+.clj-kondo/
+.lsp/
+.nrepl-port
 
 pres/
