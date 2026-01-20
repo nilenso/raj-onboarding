@@ -84,5 +84,7 @@ scratchpad/
 .clj-kondo/
 .lsp/
 .nrepl-port
+.cpcache/
 
 pres/
+
