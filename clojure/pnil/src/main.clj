@@ -1,15 +1,25 @@
 (ns main
-
   (:require [org.httpkit.server :as hk-server]
-            [nrepl.server :as nrepl]))
+            [nrepl.server :as nrepl]
+            [reitit.ring :as ring]))
 
-(defn yield-bod []
-  "hello HTTP! changed (changed)")
+(defn- yield-bod []
+  "hello HTTP!")
 
-(defn app [req]
+(defn- root-handler [_req]
   {:status  200
    :body (yield-bod)
    :headers {"Content-Type" "text/html"}})
+
+(defn- status-handler [_req]
+  {:status 200
+   :body "OK"
+   :headers {"Content-Type" "text/html"}})
+
+(def app
+  (ring/ring-handler
+   (ring/router [["/" {:get root-handler}]
+                 ["/status" {:get status-handler}]])))
 
 (defn -main []
   (println  "starting httpkit-server")
