@@ -1,0 +1,7 @@
+#+title: 19 Jan 2025
+
+ - progressing on the joy of clojure
+ - reading up on the ecosystem : trying out biff
+ - a prac scratch space setup in the onboarding repo
+ - expecting to finish the book by the end of this week
+ - parallely going to start writing pnil in clojure
