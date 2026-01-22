@@ -2,6 +2,7 @@
 
 * Backlog
 ** setup cljkondo
+** spike : sandboxed compilation in clojure
 ** spike polylith structural breakdown
  - libs
  - components
