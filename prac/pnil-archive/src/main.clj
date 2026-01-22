@@ -3,12 +3,9 @@
             [nrepl.server :as nrepl]
             [reitit.ring :as ring]))
 
-(defn- yield-bod []
-  "hello HTTP!")
-
 (defn- root-handler [_req]
   {:status  200
-   :body (yield-bod)
+   :body "Sentinel Body"
    :headers {"Content-Type" "text/html"}})
 
 (defn- status-handler [_req]
