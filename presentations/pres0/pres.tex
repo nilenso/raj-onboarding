@@ -1,0 +1,197 @@
+% Created 2026-01-13 Tue 00:43
+% Intended LaTeX compiler: pdflatex
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{longtable}
+\usepackage{wrapfig}
+\usepackage{rotating}
+\usepackage[normalem]{ulem}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{capt-of}
+\usepackage{hyperref}
+\author{Raj Patil}
+\date{\today}
+\title{Raj's Onboarding ShowCase : 50 Days in (Nov 25 2025 - Jan 14 2026)}
+\hypersetup{
+ pdfauthor={Raj Patil},
+ pdftitle={Raj's Onboarding ShowCase : 50 Days in (Nov 25 2025 - Jan 14 2026)},
+ pdfkeywords={},
+ pdfsubject={},
+ pdfcreator={Emacs 30.2 (Org mode 9.7.34)}, 
+ pdflang={English}}
+\usepackage{biblatex}
+\addbibresource{/Users/nilenso/source/vcops/org/PrivateOrg/zotero-work.bib}
+\begin{document}
+
+\maketitle
+\tableofcontents
+
+\section{Overview}
+\label{sec:org8360fcd}
+showcase for projectnil : a rudimentary function as a service written in Java, employing wasm
+\section{Pnil}
+\label{sec:org1e58c8a}
+\subsection{Tech Stack}
+\label{sec:orge3cd8d8}
+\subsubsection{Code}
+\label{sec:org5e47451}
+\begin{itemize}
+\item Java 25, Spring Boot
+\item Chicory Wasm Runtime
+\end{itemize}
+\subsubsection{DataBase}
+\label{sec:org85334a2}
+\begin{itemize}
+\item Postgres 18
+\end{itemize}
+\subsubsection{Message Queue}
+\label{sec:orgd208c9e}
+\begin{itemize}
+\item pgmq 1.8
+\end{itemize}
+\subsubsection{Migrations}
+\label{sec:org15f432c}
+\begin{itemize}
+\item liquibase
+\end{itemize}
+\subsubsection{Infra}
+\label{sec:org29d3bfb}
+\begin{itemize}
+\item ansible
+\item podman
+\item scp'ing tarballs
+\end{itemize}
+\section{Arch}
+\label{sec:orge6ccf80}
+
+\begin{center}
+\includegraphics[width=.9\linewidth]{arch.png}
+\label{}
+\end{center}
+\section{Entities}
+\label{sec:org360d377}
+\begin{itemize}
+\item Functions
+\item Executions
+\end{itemize}
+\section{User Stories}
+\label{sec:org60f7f2c}
+\begin{itemize}
+\item CRD over Function
+\begin{itemize}
+\item C on Function     ->  registering a function
+\item R over Function   ->  polling to check status
+\end{itemize}
+\item CRD over Execution     
+\begin{itemize}
+\item C on exec         ->  running a Function
+\item R over Execution  ->  checking past runs
+\end{itemize}
+\end{itemize}
+\section{Appendix}
+\label{sec:orgbbd1dee}
+\subsection{System Flows}
+\label{sec:org4eed9ad}
+\subsubsection{Legend}
+\label{sec:orga03477e}
+\begin{itemize}
+\item API = API Service
+\item DB = PostgreSQL tables
+\item Q = pgmq queues
+\item CS = Compiler Service
+\item WR = WASM Runtime
+\end{itemize}
+\subsubsection{Flow 1: Register Function (Compilation Succeeds)}
+\label{sec:org1fb6920}
+\begin{center}
+\includegraphics[width=.9\linewidth]{mermaid0.png}
+\label{}
+\end{center}
+\subsubsection{Flow 2: Register Function (Compilation Fails)}
+\label{sec:orgc03f3e0}
+
+\begin{center}
+\includegraphics[width=.9\linewidth]{mermaid1.png}
+\label{}
+\end{center}
+\subsubsection{Flow 3: Execute Function (Success)}
+\label{sec:org91ef744}
+
+\textbf{\textbf{Precondition}}: `Function.status \texttt{= READY` and `Function.wasmBinary !} null`
+
+\begin{center}
+\includegraphics[width=.9\linewidth]{mermaid2.png}
+\label{}
+\end{center}
+
+---
+\subsubsection{Flow 4: Execute Function (Rejected - Not Ready)}
+\label{sec:org7abd9e3}
+
+\begin{center}
+\includegraphics[width=.9\linewidth]{mermaid3.png}
+\label{}
+\end{center}
+\subsubsection{Flow 5: Execute Function (Runtime Failure)}
+\label{sec:org61c9a50}
+
+Examples of runtime failures:
+\begin{itemize}
+\item WASM trap (e.g., unreachable instruction)
+\item Invalid ABI export
+\item Invalid JSON encoding in output
+\end{itemize}
+
+\begin{center}
+\includegraphics[width=.9\linewidth]{mermaid4.png}
+\label{}
+\end{center}
+
+\textbf{\textbf{Note}}: Runtime failures return HTTP `200` because the platform operated correctly; the failure is in the user's function.
+\subsubsection{Flow 6: Queue Redelivery / Retries}
+\label{sec:orgf2412e4}
+
+\begin{center}
+\includegraphics[width=.9\linewidth]{mermaid5.png}
+\label{}
+\end{center}
+\subsubsection{Compiler Service Flow}
+\label{sec:orged6016c}
+\begin{enumerate}
+\item Runtime Flow
+\label{sec:org02e7f32}
+
+\begin{enumerate}
+\item \textbf{\textbf{Startup}}: Load configuration, establish pgmq connection, verify queues exist
+\item \textbf{\textbf{Job Consumption}}: Poll `compilation\textsubscript{jobs}` with visibility timeout
+\item \textbf{\textbf{Language Filtering}}: Process only jobs matching supported language; archive others
+\item \textbf{\textbf{Compilation}}: 
+\begin{itemize}
+\item Write source to temp file
+\item Execute `asc <file> --binaryFile <output>.wasm --exportRuntime --runtime incremental --optimize`
+\item Capture stdout/stderr
+\end{itemize}
+\item \textbf{\textbf{Result Publishing}}:
+\begin{itemize}
+\item Success: Base64-encode WASM, publish with `success=true`
+\item Failure: Publish with `success=false` and error message
+\end{itemize}
+\item \textbf{\textbf{Cleanup}}: Remove temp files, delete/archive queue message
+\end{enumerate}
+\item Error Handling
+\label{sec:org1a52a9b}
+
+\begin{center}
+\begin{tabular}{ll}
+Error Type & Action\\
+\hline
+Compilation failure (user code) & Publish `success=false`, archive message\\
+Transient infrastructure failure & Allow message to reappear via visibility timeout\\
+Fatal error (DB unavailable) & Exit process, let orchestrator restart\\
+\end{tabular}
+\end{center}
+\end{enumerate}
+\end{document}

@@ -1,0 +1,55 @@
+#+title: Raj's Onboarding ShowCase : 50 Days in (Nov 25 2025 - Jan 14 2026)
+
+* Overview
+ showcase for projectnil : a rudimentary function as a service written in Java, employing wasm
+* Pnil
+- Tech Stack
+  - Code
+    - Java 25, Spring Boot
+    - Chicory Wasm Runtime
+  - DataBase
+    - Postgres 18
+  - Message Queue
+    - pgmq 1.8
+  - Migrations
+    - liquibase
+  - Infra
+    - ansible
+    - podman
+    - scp'ing tarballs
+* Arch
+
+#+begin_src mermaid :file arch.png
+flowchart TB
+  Client[Client] -->|HTTP JSON| API[API Service]
+
+  subgraph DB[PostgreSQL]
+    Tables[(functions, executions)]
+    Jobs[[pgmq: compilation_jobs]]
+    Results[[pgmq: compilation_results]]
+  end
+
+  API -->|JPA| Tables
+  API -->|pgmq send| Jobs
+
+  Compiler[Compiler Service] -->|pgmq read| Jobs
+  Compiler -->|pgmq send| Results
+
+  API -->|pgmq read| Results
+  API -->|execute WASM| Wasm[WASM Runtime]
+#+end_src
+
+#+RESULTS:
+[[file:arch.png]]
+
+* Entities
+ - Functions
+ - Executions
+* User Stories
+ - CRD over Function
+   - C on Function     ->  registering a function
+   - R over Function   ->  polling to check status
+ - CRD over Execution     
+   - C on exec         ->  running a Function
+   - R over Execution  ->  checking past runs 
+     
