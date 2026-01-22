@@ -14,9 +14,9 @@ collation of what raj was upto when getting started at nilenso
    - transpilation target being wasm
    - persistence : postgres-18 and pgmq-1.8
    
-### clojure
- - raj finally gets to have clojure
- - 
+### pNIL
+ - raj's rewrites projectNIL in clojure
+ - still a primal FaaS
  
 ### Books
 
@@ -27,5 +27,5 @@ collation of what raj was upto when getting started at nilenso
 ## Calls to Action
 
  - read [journal entries](./journal)
- - explore the onboarding project: [pnil](./projectNIL)
- - explore [clojure](./clojure) training camp
+ - explore the onboarding project (java): [projectNIL](./projectNIL)
+ - explore [pNIL(clojure)](./pNIL)
