@@ -2,13 +2,13 @@
 
 * Backlog
 ** setup cljkondo
-** spike for structural configs analysis
+** spike polylith structural breakdown
  - libs
  - components
  - bases 
  - projects
  - dev and prod profiles
-* WIP
+* In Progress
 ** setup polylith
 * Review
 * Done
