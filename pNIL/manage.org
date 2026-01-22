@@ -1,0 +1,14 @@
+#+title: Manage
+
+* Backlog
+** setup cljkondo
+** spike for structural configs analysis
+ - libs
+ - components
+ - bases 
+ - projects
+ - dev and prod profiles
+* WIP
+** setup polylith
+* Review
+* Done

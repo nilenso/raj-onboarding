@@ -1,4 +1,8 @@
 # ProjectNIL (but in clojure)
 
-## Resources
+## Quick Links
+ - [project management](./manage.org)
+ - [design](./design.org)
+
+### Resources
  - https://polylith.gitbook.io/polylith
