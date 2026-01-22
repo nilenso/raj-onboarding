@@ -1,0 +1,10 @@
+#+title: 22 Jan 2026
+
+ - paired with atharva yesterday towards an overall read of goose
+   - understood the Broker protocol : have a few opinions :
+     - can be broken down into producer, consumer and commons 
+     - will setup localstack for working with amazon sqs
+       
+ - will start structuring pnil as a polylith : https://polylith.gitbook.io/polylith
+   - archived the old stuff
+   - setting it up in the pnil directory in root
