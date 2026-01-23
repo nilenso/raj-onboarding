@@ -1,4 +1,4 @@
-(ns pracapi
+(ns practice_api 
   (:require [org.httpkit.server :as hk-server]
             [nrepl.server :as nrepl]
             [reitit.ring :as ring]))

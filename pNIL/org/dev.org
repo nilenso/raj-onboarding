@@ -3,7 +3,7 @@
 
 * WorkFlow
  - operate on new code in development : see pracapi.clj for instance
-   - run with =clj -M:dev -m pracpi= for instance
+   - run with =clj -M:dev -m practice_api= for instance
  - post experiments, package into relevant component
 * Initial Setup
 ** Install poly
