@@ -6,5 +6,3 @@
  - [user stories](./org/stories.org)
  - [dev-setup](./org/dev.org)
 
-### Resources
- - https://polylith.gitbook.io/polylith
