@@ -31,3 +31,14 @@
 (best > (range 10))
 (best < (range 10))
 
+(doc class)
+
+(j  (class #"regex compilee"))
+
+(class (java.util.regex.Pattern/compile "regex compilee"))
+
+(doc re-seq)
+
+(j (class (re-seq #"\w+" "asdf  asdf asdf")))
+ 
+
