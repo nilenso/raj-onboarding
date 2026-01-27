@@ -2,6 +2,7 @@
   (:require [clojure.repl :refer [doc]]
             [clojure.java.javadoc :refer [javadoc]]))
 
+(def j javadoc)
 
 (def testmap {:a 'a :b 'b})
 (:a testmap)
