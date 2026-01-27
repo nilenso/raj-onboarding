@@ -59,7 +59,6 @@
 
 (yield-dims-better frame)
 
-;; find out the issues that is leading to failure in the getter-juxt macro
 (map #(println %) '(1 2))
 
 
