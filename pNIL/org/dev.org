@@ -1,17 +1,3 @@
 #+title: Dev
 
-
-* WorkFlow
- - operate on new code in development : see pracapi.clj for instance
-   - run with =clj -M:dev -m practice_api= for instance
- - post experiments, package into relevant component
-* Initial Setup
-** Install poly
- - https://cljdoc.org/d/polylith/clj-poly/0.3.32/doc/install
-   - depends on: clojure cli, atleast Java 21 and git
-** Workspace setup
-#+begin_src sh
-poly create workspace name:pnil top-ns:pnil dialects:clj
-#+end_src
- - can also used the deps.edn shipped =poly= via =clj -M:poly=
-   
+ - install clojure cli: https://clojure.org/guides/install_clojure

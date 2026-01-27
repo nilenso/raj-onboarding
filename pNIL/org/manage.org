@@ -3,17 +3,7 @@
 * Backlog
 ** setup cljkondo
 ** spike : sandboxed compilation in clojure
-*** Resources
- - https://nilenso.slack.com/archives/C07C7EGE476/p1767762457619189?thread_ts=1767336989.073589&cid=C07C7EGE476
-** spike polylith structural breakdown
- - libs
- - components
- - bases 
- - projects
- - dev and prod profiles
 * In Progress
-** setup polylith
-*** Resources
- - https://github.com/furkan3ayraktar/clojure-polylith-realworld-example-app?tab=readme-ov-file
+** Research Sweep and Docs BootStrap
 * Review
 * Done

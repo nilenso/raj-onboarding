@@ -3,6 +3,6 @@
 ## Quick Links
  - [task management](./org/manage.org)
  - [design](./org/design.org)
- - [user stories](./org/stories.org)
+ - [context](./org/context.org)
  - [dev-setup](./org/dev.org)
 
