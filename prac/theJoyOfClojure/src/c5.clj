@@ -1,6 +1,7 @@
 (ns c5
-  (:require [clojure.repl :refer [doc]]
-            [clojure.java.javadoc :refer [javadoc]]))
+  (:require
+   [clojure.repl :refer [doc]]
+   [clojure.java.javadoc :refer [javadoc]]))
 
 (def j javadoc)
 
@@ -26,11 +27,11 @@ ds
 
 dsi
 
-(def dsir (replace {:a :d} dsu))
+(def dsir (replace {:a :d} dsi))
 
 dsir
 
-(doc replace) 
+(doc replace)
 
 (doc transduce)
 
@@ -39,3 +40,7 @@ dsir
 ;;  l-mhd : cider-doc
 ;;  l-mhj : cider-javadoc
 
+;; l-mhd clojure.test
+
+;; testing cider progress bar
+(Thread/sleep 5000)
