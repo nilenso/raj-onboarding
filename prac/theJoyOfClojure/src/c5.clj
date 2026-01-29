@@ -1,6 +1,7 @@
 (ns c5
   (:require [clojure.repl :refer [doc]]
             [clojure.java.javadoc :refer [javadoc]]))
+
 (def j javadoc)
 
 (doc into-array)
@@ -20,3 +21,21 @@ ds
 (seq ds)
 
 (doc type)
+
+(def dsi [:a :b :c])
+
+dsi
+
+(def dsir (replace {:a :d} dsu))
+
+dsir
+
+(doc replace) 
+
+(doc transduce)
+
+;; https://clojure.org/reference/transducers
+
+;;  l-mhd : cider-doc
+;;  l-mhj : cider-javadoc
+
