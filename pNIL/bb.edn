@@ -1,0 +1,5 @@
+{:min-bb-version "0.4.0"
+ :tasks
+ {deps-up (shell "podman compose -f podman-compose.yaml up -d")
+  deps-down (shell "podman compose -f podman-compose.yaml down -v")}
+ }

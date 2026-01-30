@@ -1,0 +1,85 @@
+# ProjectNIL Production Deployment
+# Usage: podman-compose -f prod.compose.yml up -d
+
+services:
+  postgres:
+    image: ghcr.io/pgmq/pg18-pgmq:v1.8.0
+    container_name: projectnil-db
+    environment:
+      POSTGRES_DB: ${DB_NAME:-projectnil}
+      POSTGRES_USER: ${DB_USER:-projectnil}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-projectnil}
+    volumes:
+      - postgres_prod_data:/var/lib/postgresql:Z
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-projectnil} -d ${DB_NAME:-projectnil}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  liquibase:
+    image: docker.io/liquibase/liquibase:4.30
+    container_name: projectnil-migrations
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./migrations:/liquibase/changelog
+    command: >
+      --search-path=/liquibase/changelog
+      --url=jdbc:postgresql://postgres:5432/${DB_NAME:-projectnil}
+      --username=${DB_USER:-projectnil}
+      --password=${DB_PASSWORD:-projectnil}
+      --changeLogFile=db.changelog-master.yaml
+      update
+
+  api:
+    image: projectnil-api:latest
+    container_name: projectnil-api
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${DB_NAME:-projectnil}
+      SPRING_DATASOURCE_USERNAME: ${DB_USER:-projectnil}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-projectnil}
+      SPRING_THREADS_VIRTUAL_ENABLED: "true"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      liquibase:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:8080/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  compiler:
+    image: projectnil-compiler:latest
+    container_name: projectnil-compiler
+    ports:
+      - "8081:8081"
+    environment:
+      PGMQ_URL: jdbc:postgresql://postgres:5432/${DB_NAME:-projectnil}
+      PGMQ_USERNAME: ${DB_USER:-projectnil}
+      PGMQ_PASSWORD: ${DB_PASSWORD:-projectnil}
+      ASC_BINARY: asc
+      COMPILER_TMP_DIR: /app/tmp/compiler
+    depends_on:
+      postgres:
+        condition: service_healthy
+      liquibase:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:8081/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+volumes:
+  postgres_prod_data:
