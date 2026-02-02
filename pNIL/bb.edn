@@ -1,6 +1,6 @@
 {:min-bb-version "0.4.0"
  :tasks
- {repl {:doc "Run the main application + nrepl"
+ {main {:doc "Run the main application + nrepl"
         :task (do
                 (println "Starting main application")
                 (shell "clj -M -m main"))}
