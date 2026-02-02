@@ -1,5 +1,18 @@
 {:min-bb-version "0.4.0"
  :tasks
- {deps-up (shell "podman compose -f podman-compose.yaml up -d")
-  deps-down (shell "podman compose -f podman-compose.yaml down -v")}
- }
+ {dev-deps-up (do
+                (println "pg dev up + migrations")
+                (shell "podman compose -f podman-compose.yaml up -d"))
+  dev-deps-down (do
+                  (println "pg dev container down")
+                  (shell "podman compose -f podman-compose.yaml down -v"))
+  test-deps-up (do
+                 (println "pg test up + migrations")
+                 (shell "podman compose -f podman-compose-test.yaml up -d"))
+  test-deps-down (do
+                   (println "pg test container down")
+                   (shell "podman compose -f podman-compose-test.yaml down -v"))
+  lint {:doc "clj-kondo linting"
+        :task (do
+                (println "linting with clj-kondo")
+                (shell "clj-kondo --lint bb.edn deps.edn src test --fail-level error"))}}}
