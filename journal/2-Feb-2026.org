@@ -2,8 +2,9 @@
 
 * pNIL WorkLog
 ** [X] setup clj-kondo with bb
-** [ ] separate production and testing db for pnil
+** [X] separate production and testing db for pnil
    - involves creating a podman compose alias in bb with a different db name (projectnil-test), prod remains projectnil
+ - 5433 for the test db, default being 5432
 ** [ ] setup clojure.test usage
    - get tests running for pg reads and writes
      - uses the test db setup above and not the local prod(dev)
