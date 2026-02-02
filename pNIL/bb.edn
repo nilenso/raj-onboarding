@@ -6,7 +6,7 @@
                 (println "Starting main application")
                 (shell "clj -M -m main"))}
   test {:doc "Run tests using the JVM clj tool"
-        :task (shell "clj -M:test")}
+        :task (shell "clj -X:test")}
   dev-deps-up (do
                 (println "pg dev up + migrations")
                 (shell "podman compose -f podman-compose.yaml up -d"))
