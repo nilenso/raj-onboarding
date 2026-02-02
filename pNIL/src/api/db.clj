@@ -1,8 +1,8 @@
 (ns api.db
   (:require
-   [next.jdbc :as jdbc :refer [execute!]]
+   [next.jdbc :as jdbc :refer [execute! get-datasource]]
    [next.jdbc.sql :as sql :refer [insert!]]
-   [next.jdbc.types :refer [as-other]]))
+   [next.jdbc.types :as types]))
 
 
 (defn get-functions [datasource]
@@ -23,7 +23,7 @@
                 :host "localhost"
                 :port 5432}) ; 5433 when testing
 
-  (def datasource (jdbc/get-datasource db-spec))
+  (def datasource (get-datasource db-spec))
 
   (truncate-all-tables datasource)
 
@@ -31,7 +31,7 @@
                             :description "desc"
                             :language "asc"
                             :source "source"
-                            :status (as-other "PENDING")})
+                            :status (types/as-other "PENDING")})
 
   (get-functions datasource)
 
