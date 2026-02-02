@@ -1,9 +1,0 @@
-#+title: Manage
-
-* Backlog
-** setup cljkondo
-** spike : sandboxed compilation in clojure
-* In Progress
-** Research Sweep and Docs BootStrap
-* Review
-* Done

@@ -1,3 +1,0 @@
-#+title: Dev
-
- - install clojure cli: https://clojure.org/guides/install_clojure
