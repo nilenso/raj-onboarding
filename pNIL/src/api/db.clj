@@ -12,10 +12,10 @@
 (def ds (yield-ds db))
 
 (defn get-fns [ds]
-  (jdbc/execute! ds ["select * from functions;"]))
+  (jdbc/execute! ds ["SELECT * FROM FUNCTIONS;"]))
 
 (defn truncate-all-tables [ds]
-  (jdbc/execute! ds ["TRUNCATE functions, executions;"]))
+  (jdbc/execute! ds ["TRUNCATE FUNCTIONS, EXECUTIONS;"]))
 
 (defn add-fn [ds fn-map]
   (sql/insert! ds :functions fn-map))
