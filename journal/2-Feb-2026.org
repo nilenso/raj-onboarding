@@ -1,0 +1,19 @@
+#+title: 2 Feb 2026
+
+* pNIL WorkLog
+** [ ] separate production and testing db for pnil
+   - involves creating a podman compose alias in bb with a different db name (projectnil-test), prod remains projectnil
+** [ ] setup clojure.test usage
+   - get tests running for pg reads and writes
+     - uses the test db setup above and not the local prod(dev)
+** [ ] old compiler setup bb cmd
+ - runs the java compiler (web assmebly script) for testing the new clojure 
+** [ ] user story write for executions endpoint
+ - exec a func -> create on an exec : setup sentinel for now (triggers chicory runtime exec (sync))
+ - read an exec(s) 
+** [ ] chicory implementation in clojure : spike
+ - be able to run a wasm bin in clojure (the api) : new user story
+ - dependent on the executions endpoint being implemented for user acceptance criteria observability
+
+** [ ] research non functional benchmarking potential
+ - initial discussion with neena
