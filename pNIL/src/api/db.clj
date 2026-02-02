@@ -6,21 +6,29 @@
 
 (def db {:dbtype "postgres" :dbname "projectnil" :user "projectnil" :password "projectnil"})
 
-(def ds (jdbc/get-datasource db))
+(defn yield-ds [db-spec]
+  (jdbc/get-datasource db-spec))
 
-(defn get-fns []
+(def ds (yield-ds db))
+
+(defn get-fns [ds]
   (jdbc/execute! ds ["select * from functions;"]))
 
-(defn add-fn [fn-map]
-  (sql/insert! ds :functions fn-map))
+(defn truncate-all-tables [ds]
+  (jdbc/execute! ds ["TRUNCATE functions, executions;"]))
 
+(defn add-fn [ds fn-map]
+  (sql/insert! ds :functions fn-map))
 
 (comment
 
-  (add-fn {:name "name"
-           :description "desc"
-           :language "asc"
-           :source "source"
-           :status (as-other "PENDING")})
+  (add-fn ds {:name "name"
+              :description "desc"
+              :language "asc"
+              :source "source"
+              :status (as-other "PENDING")})
 
-  (get-fns))
+  (get-fns ds)
+
+  (truncate-all-tables ds)
+  )
