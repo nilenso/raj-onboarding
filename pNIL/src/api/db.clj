@@ -1,35 +1,38 @@
 (ns api.db
   (:require
-   [next.jdbc :as jdbc]
-   [next.jdbc.sql :as sql]
+   [next.jdbc :as jdbc :refer [execute!]]
+   [next.jdbc.sql :as sql :refer [insert!]]
    [next.jdbc.types :refer [as-other]]))
 
-(def db {:dbtype "postgres" :dbname "projectnil" :user "projectnil" :password "projectnil"})
 
-(defn yield-ds [db-spec]
-  (jdbc/get-datasource db-spec))
+(defn get-functions [datasource]
+  (execute! datasource ["SELECT * FROM FUNCTIONS;"]))
 
-(def ds (yield-ds db))
+(defn truncate-all-tables [datasource]
+  (execute! datasource ["TRUNCATE FUNCTIONS, EXECUTIONS;"]))
 
-(defn get-fns [ds]
-  (jdbc/execute! ds ["SELECT * FROM FUNCTIONS;"]))
-
-(defn truncate-all-tables [ds]
-  (jdbc/execute! ds ["TRUNCATE FUNCTIONS, EXECUTIONS;"]))
-
-(defn add-fn [ds fn-map]
-  (sql/insert! ds :functions fn-map))
+(defn add-function [datasource fn-map]
+  (insert! datasource :functions fn-map))
 
 (comment
 
-  (add-fn ds {:name "name"
-              :description "desc"
-              :language "asc"
-              :source "source"
-              :status (as-other "PENDING")})
+  (def db-spec {:dbtype "postgres"
+                :dbname "projectnil"
+                :user "projectnil"
+                :password "projectnil"
+                :host "localhost"
+                :port 5432}) ; 5433 when testing
 
-  (get-fns ds)
+  (def datasource (jdbc/get-datasource db-spec))
 
-  (truncate-all-tables ds)
+  (truncate-all-tables datasource)
 
-  )
+  (add-function datasource {:name "name"
+                            :description "desc"
+                            :language "asc"
+                            :source "source"
+                            :status (as-other "PENDING")})
+
+  (get-functions datasource)
+
+  (truncate-all-tables datasource))
