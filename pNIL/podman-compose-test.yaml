@@ -8,6 +8,8 @@ services:
       POSTGRES_DB: projectnil
       POSTGRES_USER: projectnil
       POSTGRES_PASSWORD: projectnil
+    networks:
+      - pnil_test
     volumes:
       - test_postgres_data:/var/lib/postgresql
     healthcheck:
@@ -25,6 +27,8 @@ services:
     depends_on:
       postgres_test:
         condition: service_healthy
+    networks:
+      - pnil_test
     volumes:
       - ./infra/migrations:/liquibase/changelog:Z
     command: >
@@ -37,3 +41,7 @@ services:
 
 volumes:
   test_postgres_data:
+
+networks:
+  pnil_test:
+    name: "pnil_test"
