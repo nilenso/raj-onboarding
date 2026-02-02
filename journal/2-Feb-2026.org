@@ -1,6 +1,7 @@
 #+title: 2 Feb 2026
 
 * pNIL WorkLog
+** [X] setup clj-kondo with bb
 ** [ ] separate production and testing db for pnil
    - involves creating a podman compose alias in bb with a different db name (projectnil-test), prod remains projectnil
 ** [ ] setup clojure.test usage
