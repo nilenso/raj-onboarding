@@ -5,9 +5,11 @@
 ** [X] separate production and testing db for pnil
    - involves creating a podman compose alias in bb with a different db name (projectnil-test), prod remains projectnil
  - 5433 for the test db, default being 5432
-** [ ] setup clojure.test usage
+** [X] setup clojure.test usage
    - get tests running for pg reads and writes
      - uses the test db setup above and not the local prod(dev)
+** setup dev nrepl separately from the main repl
+ - [ ] separate out into a bb task that calls out clj from a dev/user ns
 ** [ ] old compiler setup bb cmd
  - runs the java compiler (web assmebly script) for testing the new clojure 
 ** [ ] user story write for executions endpoint
