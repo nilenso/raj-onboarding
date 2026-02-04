@@ -1,5 +1,5 @@
 services:
-  postgres:
+  postgres_dev:
     image: ghcr.io/pgmq/pg18-pgmq:v1.8.0
     container_name: projectnil-db
     ports:
@@ -17,15 +17,15 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 10s
+      start_period: 3s
 
   # Liquibase migration runner
   # Runs migrations and exits
-  liquibase:
+  liquibase_dev:
     image: liquibase/liquibase:4.30
     container_name: projectnil-migrations
     depends_on:
-      postgres:
+      postgres_dev:
         condition: service_healthy
     networks:
       - pnil_dev
@@ -33,7 +33,7 @@ services:
       - ./infra/migrations:/liquibase/changelog:Z
     command: >
       --search-path=/liquibase/changelog
-      --url=jdbc:postgresql://postgres:5432/projectnil
+      --url=jdbc:postgresql://postgres_dev:5432/projectnil
       --username=projectnil
       --password=projectnil
       --changeLogFile=db.changelog-master.yaml

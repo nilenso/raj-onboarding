@@ -17,11 +17,11 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 10s
+      start_period: 3s
 
   # Liquibase migration runner
   # Runs migrations and exits
-  liquibase:
+  liquibase_test:
     image: liquibase/liquibase:4.30
     container_name: projectnil-migrations-test
     depends_on:
@@ -33,7 +33,7 @@ services:
       - ./infra/migrations:/liquibase/changelog:Z
     command: >
       --search-path=/liquibase/changelog
-      --url=jdbc:postgresql://postgres:5433/projectnil
+      --url=jdbc:postgresql://postgres_test:5432/projectnil
       --username=projectnil
       --password=projectnil
       --changeLogFile=db.changelog-master.yaml
