@@ -13,12 +13,18 @@
   dev-deps-down (do
                   (println "pg dev container down")
                   (shell "podman compose -f podman-compose.yaml down -v"))
+  dev-deps-logs (do
+                  (println "pg dev container logs")
+                  (shell "podman compose -f podman-compose.yaml logs -f"))
   test-deps-up (do
                  (println "pg test up + migrations")
                  (shell "podman compose -f podman-compose-test.yaml up -d"))
   test-deps-down (do
                    (println "pg test container down")
                    (shell "podman compose -f podman-compose-test.yaml down -v"))
+  test-deps-logs (do
+                   (println "pg test container logs")
+                   (shell "podman compose -f podman-compose-test.yaml logs -f"))
   lint {:doc "clj-kondo linting"
         :task (do
                 (println "linting with clj-kondo")
