@@ -1,10 +1,8 @@
 {:min-bb-version "0.4.0"
  :tasks
  {
-  main {:doc "Run the api application + nrepl"
-        :task (do
-                (println "Starting main application")
-                (shell "clj -X api.main/init-server"))}
+  run-api {:doc "Run the api application + nrepl"
+           :task (shell "clj -M -m api.main")}
   test {:doc "Run tests using the JVM clj tool"
         :task (shell "clj -X:test")}
   dev-deps-up (do
