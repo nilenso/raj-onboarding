@@ -1,0 +1,16 @@
+#+title: 3 Feb 2026
+
+* pNIL Worklog
+** [ ] old compiler setup bb cmd
+ - runs the java compiler (web assmebly script) for testing the new clojure 
+** [ ] user story write for executions endpoint
+ - exec a func -> create on an exec : setup sentinel for now (triggers chicory runtime exec (sync))
+ - read an exec(s) 
+** [ ] chicory implementation in clojure : spike
+ - be able to run a wasm bin in clojure (the api) : new user story
+ - dependent on the executions endpoint being implemented for user acceptance criteria observability
+
+** [ ] research non functional benchmarking potential
+ - initial discussion with neena
+
+

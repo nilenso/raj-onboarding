@@ -21,3 +21,6 @@
 
 ** [ ] research non functional benchmarking potential
  - initial discussion with neena
+
+* Incompletes carried over
+ - except dev nrepl , proceeding as usual : reading up a little on embedding a repl on the server
