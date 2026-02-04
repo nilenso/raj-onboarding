@@ -1,4 +1,4 @@
-{:env "DEV"
+{:env #or [#env PROFILE "DEV"]
  :api-server {:http-port 8080
               :nrepl-port 8081}
  :compiler-server {:http-port 9090

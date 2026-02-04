@@ -1,10 +1,13 @@
 {:min-bb-version "0.4.0"
  :tasks
  {
-  run-api {:doc "Run the api application + nrepl"
-           :task (shell "clj -M -m api.main")}
+  run-api-dev {:doc "run the api server[DEV]"
+               :task (shell "clj -M -m api.main")}
+  run-api-prod {:doc "run the api server[PROD]"
+                :task (shell {:extra-env {"PROFILE" "PROD"}}
+                             "clj -M -m api.main")}
   test {:doc "Run tests using the JVM clj tool"
-        :task (shell "clj -X:test")}
+        :task (shell "clojure -X:test")}
   dev-deps-up (do
                 (println "pg dev up + migrations")
                 (shell "podman compose -f podman-compose.yaml up -d"))
