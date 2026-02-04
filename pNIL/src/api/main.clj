@@ -1,8 +1,8 @@
 (ns api.main
   (:require
    [org.httpkit.server :as hk-server]
-   [nrepl.server :as nrepl]
-   [reitit.ring :as ring]))
+   [reitit.ring :as ring]
+   [utils :refer [env-predicated-nrepl-init read-config-file]]))
 
 (defn- root-handler [_req]
   {:status  200 :body "Sentinel Body"
@@ -18,8 +18,12 @@
    (ring/router [["/" {:get root-handler}]
                  ["/status" {:get status-handler}]])))
 
-(defn init-server [opts]
-  (println  "starting httpkit-server")
-  (hk-server/run-server app {:port 8080})
-  (println  "starting nrepl-server")
-  (nrepl/start-server :port 8081))
+(defn -main []
+  (let [configs (read-config-file "config.edn")
+        http-port (-> configs
+                      (:api-server)
+                      (:http-port))]
+    (env-predicated-nrepl-init configs :api-server)
+    (println  "starting api-server | port" http-port)
+    (hk-server/run-server app {:port http-port})
+    (println "api-server started")))
