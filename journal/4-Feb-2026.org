@@ -1,0 +1,26 @@
+#+title: 4 Feb 2026
+
+* Dump Carryover
+load testing:
+ - ab, jmeter
+   
+clojure profiling:
+ - tufte
+ - clj-async-profiler
+
+
+misc:
+ - http://www.clojurenewbieguide.com/
+ - https://martinfowler.com/articles/on-pair-programming.html
+   
+reading code:
+ - medley: https://github.com/weavejester/medley/blob/master/src/medley/core.cljc
+   
+   
+notes:
+ - json parsing being handled in the api , so the user doesn't need to worry about dependencies in their function
+ - default exec status to running in execution schema
+ - take a config.edn : nrepl-enabled? predicate instead of envs
+
+fix prod/dev config readup from config.edn
+
