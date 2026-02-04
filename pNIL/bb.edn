@@ -1,10 +1,10 @@
 {:min-bb-version "0.4.0"
  :tasks
  {
-  main {:doc "Run the main application + nrepl"
+  main {:doc "Run the api application + nrepl"
         :task (do
                 (println "Starting main application")
-                (shell "clj -M -m main"))}
+                (shell "clj -X api.main/init-server"))}
   test {:doc "Run tests using the JVM clj tool"
         :task (shell "clj -X:test")}
   dev-deps-up (do
@@ -23,3 +23,4 @@
         :task (do
                 (println "linting with clj-kondo")
                 (shell "clj-kondo --lint bb.edn deps.edn src test --fail-level error"))}}}
+
