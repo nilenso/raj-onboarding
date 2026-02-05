@@ -18,11 +18,14 @@
                              (:nrepl-port))]
           (nrepl/start-server :port nrepl-port
                               :handler cider-nrepl-handler)
-          (log! :info "nrepl server started port"
-                {:component component :nrepl-port nrepl-port}))
+          (log! {:level :info 
+                 :msg "nrepl server started" 
+                 :data {:component component :nrepl-port nrepl-port}}))
         (catch Exception e
-          (error! ::nrepl-server-start-failed e {:component component}))))
-    (log! :info "Non-DEV environment detected - skipping nrepl startup" {:component component :env (:env configs)})))
+          (error! {:id ::nrepl-server-start-failed :data {:component component}} e))))
+    (log! {:level :info 
+           :msg "Non-DEV environment - skipping nrepl startup" 
+           :data {:component component :env (:env configs)}})))
 
 (defn- read-configs 
   "read configs, secrets from resources and merge them"
@@ -30,8 +33,9 @@
   (try
     (let [base-config (read-config (io/resource "config.edn"))
           secrets (read-config (io/resource "secrets.edn"))]
-      (log! :info "Configs read from resources"
-            {:base-config base-config :secrets (keys secrets)})
+      (log! {:level :info 
+             :msg "Configs read from resources" 
+             :data {:base-config base-config :secrets (keys secrets)}})
       (merge base-config secrets))
     (catch Exception e
       (error! ::config-read-failed e)

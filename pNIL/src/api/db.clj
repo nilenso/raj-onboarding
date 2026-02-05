@@ -45,9 +45,9 @@
   (try 
     (prog1
      (insert! datasource :functions fn-map)
-     (log! :debug ::function-addition-successful fn-map))
+     (log! {:level :debug :id ::function-addition-successful :data fn-map}))
     (catch Exception e
-      (error! ::function-addition-failed e {:function-name (:name fn-map)})
+      (error! {:id ::function-addition-failed :data {:function-name (:name fn-map)}} e)
       (throw e))))
 
 (defn delete-function
@@ -56,7 +56,7 @@
   (try
     (prog1 
      (execute! datasource ["DELETE FROM FUNCTIONS WHERE id = ?;" fn-id])
-     (log! :debug ::function-deletion-successful {:function-id fn-id}))
+     (log! {:level :debug :id ::function-deletion-successful :data {:function-id fn-id}}))
     (catch Exception e
-      (error! ::function-deletion-failed e {:function-id fn-id})
+      (error! {:id ::function-deletion-failed :data {:function-id fn-id}} e)
       (throw e))))

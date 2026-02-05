@@ -26,6 +26,8 @@
     (u/env-predicated-nrepl-init u/configs :api-server)
     (try
       (hk-server/run-server app {:port http-port})
-      (log! :info ::api-server-started {:http-port http-port})
+      (log! {:level :info
+             :msg "API server is running"
+             :data {:http-port http-port}})
       (catch Exception e
         (error! ::server-start-failed e)))))
