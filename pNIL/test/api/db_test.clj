@@ -1,8 +1,7 @@
 (ns api.db-test
   (:require
    [api.db :as api-db]
-   [next.jdbc :as jdbc ]
-   [next.jdbc.sql :as sql]
+   [next.jdbc :as jdbc]
    [next.jdbc.types :refer [as-other]]
    [clojure.test :as t :refer [testing is deftest use-fixtures]]))
 
@@ -14,7 +13,7 @@
                         (binding [*datasource* datasource]
                           (test-fn)))))
 
-(deftest add-function-test 
+(deftest add-function-test
   (testing "adding a function to the database"
     (let [datasource *datasource*]
       (api-db/add-function datasource
@@ -45,3 +44,17 @@
       (let [functions (api-db/get-functions datasource)]
         (is (= 2 (count functions)))
         (is (= #{"func1" "func2"} (set (map :functions/name functions))))))))
+
+(deftest delete-function-test
+  (testing "deleting a function from the database"
+    (let [datasource *datasource*
+          fn-entry (api-db/add-function datasource
+                                        {:name "tobedeleted"
+                                         :description "to be deleted"
+                                         :language "ruby"
+                                         :source "def handle(input); input; end"
+                                         :status (as-other "PENDING")})
+          fn-id (:functions/id fn-entry)]
+      (api-db/delete-function datasource fn-id)
+      (let [functions (jdbc/execute! datasource ["SELECT * FROM FUNCTIONS WHERE id = ?" fn-id])]
+        (is (= 0 (count functions)))))))
