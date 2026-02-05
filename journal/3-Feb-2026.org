@@ -12,5 +12,3 @@
 
 ** [ ] research non functional benchmarking potential
  - initial discussion with neena
-
-
