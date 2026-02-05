@@ -2,8 +2,17 @@
   (:require
    [next.jdbc :as jdbc :refer [execute! get-datasource]]
    [next.jdbc.sql :as sql :refer [insert!]]
-   [next.jdbc.types :as types]))
+   [next.jdbc.types :as types]
+   [utils :as u]))
 
+(defn get-profile-datasource [profile]
+  (let [base-spec (:db u/configs)
+        port (-> base-spec
+                 (:ports)
+                 (profile))]
+    (get-datasource
+     (assoc base-spec
+            :port port))))
 
 (defn get-functions [datasource]
   (execute! datasource ["SELECT * FROM FUNCTIONS;"]))
@@ -15,15 +24,7 @@
   (insert! datasource :functions fn-map))
 
 (comment
-
-  (def db-spec {:dbtype "postgres"
-                :dbname "projectnil"
-                :user "projectnil"
-                :password "projectnil"
-                :host "localhost"
-                :port 5432}) ; 5433 when testing
-
-  (def datasource (get-datasource db-spec))
+  (def datasource (get-profile-datasource :dev))               ; :test or :dev
 
   (truncate-all-tables datasource)
 

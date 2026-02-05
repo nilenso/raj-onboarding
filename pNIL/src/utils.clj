@@ -20,7 +20,10 @@
         (println component "nrepl started")))
     (println "Non-DEV environment" (:env configs) "detected - skipping" component "nrepl startup")))
 
-(defn read-config-file [path]
-  "Reads the config file at the given path and returns it as a map"
-  (read-config (io/resource path)))
+(defn read-configs []
+  "read configs, secrets from resources and merge them"
+  (let [base-config (read-config (io/resource "config.edn"))
+        secrets (read-config (io/resource "secrets.edn"))]
+    (merge base-config secrets)))
 
+(defonce configs (read-configs))
