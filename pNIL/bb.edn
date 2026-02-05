@@ -7,7 +7,7 @@
                 :task (shell {:extra-env {"PROFILE" "PROD"}}
                              "clj -M -m api.main")}
   test {:doc "Run tests using the JVM clj tool"
-        :task (shell "clojure -X:test")}
+        :task (shell "clj -X:test")}
   dev-deps-up (do
                 (println "pg dev up + migrations")
                 (shell "podman compose -f podman-compose.yaml up -d"))
