@@ -5,7 +5,9 @@
    [next.jdbc.types :as types]
    [utils :as u]))
 
-(defn get-profile-datasource [profile]
+(defn get-profile-datasource
+  "create a next.jdbc datasource for the given profile (:dev or :test)"
+  [profile]
   (let [base-spec (:db u/configs)
         port (-> base-spec
                  (:ports)
@@ -14,13 +16,20 @@
      (assoc base-spec
             :port port))))
 
-(defn get-functions [datasource]
-  (execute! datasource ["SELECT * FROM FUNCTIONS;"]))
-
-(defn truncate-all-tables [datasource]
+(defn truncate-all-tables
+  "truncate all tables in the database"
+  [datasource]
   (execute! datasource ["TRUNCATE FUNCTIONS, EXECUTIONS;"]))
 
-(defn add-function [datasource fn-map]
+(defn get-functions
+  "retrieve all functions from the FUNCTIONS table"
+  [datasource]
+  (execute! datasource ["SELECT * FROM FUNCTIONS;"]))
+
+
+(defn add-function
+  "insert a new function into the FUNCTIONS table"
+  [datasource fn-map]
   (insert! datasource :functions fn-map))
 
 (comment
