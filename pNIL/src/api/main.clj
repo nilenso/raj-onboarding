@@ -1,6 +1,7 @@
 (ns api.main
   (:require
    [org.httpkit.server :as hk-server]
+   [api.db :as db]
    [reitit.ring :as ring]
    [taoensso.telemere :as t :refer [log! error!]]
    [utils :as u]))
@@ -23,6 +24,11 @@
   (let [http-port (-> u/configs
                       (:api-server)
                       (:http-port))]
+    (db/start-pool!)
+    (.addShutdownHook 
+     (Runtime/getRuntime)
+     (Thread. #(do (log! :info "Shutting down")
+                   (db/stop-pool!))))
     (u/env-predicated-nrepl-init u/configs :api-server)
     (try
       (hk-server/run-server app {:port http-port})
@@ -30,4 +36,5 @@
              :msg "API server is running"
              :data {:http-port http-port}})
       (catch Exception e
+        (db/stop-pool!)
         (error! ::server-start-failed e)))))
