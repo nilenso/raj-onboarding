@@ -2,6 +2,7 @@
   (:require
    [org.httpkit.server :as hk-server]
    [reitit.ring :as ring]
+   [taoensso.telemere :as t :refer [log! error!]]
    [utils :as u]))
 
 (defn- root-handler [_req]
@@ -23,6 +24,8 @@
                       (:api-server)
                       (:http-port))]
     (u/env-predicated-nrepl-init u/configs :api-server)
-    (println  "starting api-server | port" http-port)
-    (hk-server/run-server app {:port http-port})
-    (println "api-server started")))
+    (try
+      (hk-server/run-server app {:port http-port})
+      (log! :info ::api-server-started {:http-port http-port})
+      (catch Exception e
+        (error! ::server-start-failed e)))))
