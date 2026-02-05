@@ -26,3 +26,22 @@
       (let [functions (jdbc/execute! datasource ["SELECT * FROM FUNCTIONS WHERE name = ?" "echo"])]
         (is (= 1 (count functions)))
         (is (= "echo" (:functions/name (first functions))))))))
+
+(deftest get-functions-test
+  (testing "retrieving functions from the database"
+    (let [datasource *datasource*]
+      (api-db/add-function datasource
+                           {:name "func1"
+                            :description "first function"
+                            :language "python"
+                            :source "def handle(input): return input"
+                            :status (as-other "PENDING")})
+      (api-db/add-function datasource
+                           {:name "func2"
+                            :description "second function"
+                            :language "javascript"
+                            :source "exports.handle = function(input) { return input; }"
+                            :status (as-other "PENDING")})
+      (let [functions (api-db/get-functions datasource)]
+        (is (= 2 (count functions)))
+        (is (= #{"func1" "func2"} (set (map :functions/name functions))))))))
