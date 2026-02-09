@@ -1,5 +1,10 @@
 #+title: 05 Feb 2026
 
 * pNIL worklog
-** [ ] Testing Setup
+** [X] Testing Setup
 - db functions CRUD tested
+- fixtures
+** [X] hikari: move from datasource to pooler
+** [X] telemere: logging 
+** [X] config updates (secrets, db, conn-pooler)
+** [X] primitive error handling scaffold
