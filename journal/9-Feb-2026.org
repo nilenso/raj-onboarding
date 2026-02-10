@@ -1,0 +1,9 @@
+#+title: 9 Feb 2026
+
+* 2026-02-09 11:35:33
+
+ - post discussion with neena : applying what's in joy of clojure in pnil is imp
+ - need to merge the reading and writing shortly 
+ - scaffold for pnil(logs, error handling, db conn,etc) has been setup
+ - domain oriented decisions (data structures) to be taken now
+ - morning to be directed towards the J.O.C : need to accelerate

@@ -1,9 +1,8 @@
 #+title: 10 Feb 2026
 
-* 2026-02-09 11:35:33
+* 2026-02-10 13:53:07
+ - ch 5 progress on joy of clojure
+ - read up on immutability and persistence and how it's facilitated in clojure (HAMTs (hash array mapped tries (ideal hash trees )))
+ - reading up misc docs as i find new abstractions (transducers today)
+   
 
- - post discussion with neena : applying what's in joy of clojure in pnil is imp
- - need to merge the reading and writing shortly 
- - scaffold for pnil(logs, error handling, db conn,etc) has been setup
- - domain oriented decisions (data structures) to be taken now
- - morning to be directed towards the J.O.C : need to accelerate
