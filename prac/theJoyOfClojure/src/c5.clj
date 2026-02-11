@@ -61,3 +61,9 @@ dsir
 (doc eduction)
 
 (eduction (comp (map inc) (map #(* % %))) (range 10))
+
+(doc conj)
+
+(doc assoc)
+
+(doc assoc-in)
