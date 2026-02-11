@@ -4,7 +4,7 @@
    [next.jdbc.sql :as sql :refer [insert!]]
    [taoensso.telemere :as t :refer [log! error!]]
    [hikari-cp.core :as hcp]
-   [utils :as u :refer [prog1]]))
+   [utils :as u]))
 
 (defn- pool-options
   "generate HikariCP options for the given profile (:dev or :test)"
@@ -51,9 +51,9 @@
   "truncate all tables in the database"
   []
   (try
-    (prog1
-     (execute! (get-pool) ["TRUNCATE FUNCTIONS, EXECUTIONS;"])
-     (log! :debug "All tables truncated successfully"))
+    (let [result (execute! (get-pool) ["TRUNCATE FUNCTIONS, EXECUTIONS;"])]
+      (log! :debug "All tables truncated successfully")
+      result)
     (catch Exception e
       (error! ::truncate-failed e)
       (throw e))))
@@ -62,9 +62,9 @@
   "retrieve all functions from the FUNCTIONS table"
   []
   (try
-    (prog1
-     (execute! (get-pool) ["SELECT * FROM FUNCTIONS;"])
-     (log! :debug "Functions retrieved successfully"))
+    (let [result (execute! (get-pool) ["SELECT * FROM FUNCTIONS;"])]
+      (log! :debug "Functions retrieved successfully")
+                result )
     (catch Exception e
       (error! ::function-retrieval-failed e)
       (throw e))))
@@ -73,9 +73,9 @@
   "insert a new function into the FUNCTIONS table"
   [fn-map]
   (try
-    (prog1
-     (insert! (get-pool) :functions fn-map)
-     (log! {:level :debug :id ::function-addition-successful :data fn-map}))
+    (let [result (insert! (get-pool) :functions fn-map)]
+      (log! {:level :debug :id ::function-addition-successful :data fn-map})
+                result )
     (catch Exception e
       (error! {:id ::function-addition-failed :data {:function-name (:name fn-map)}} e)
       (throw e))))
@@ -84,9 +84,9 @@
   "delete a function from the FUNCTIONS table by id"
   [fn-id]
   (try
-    (prog1
-     (execute! (get-pool) ["DELETE FROM FUNCTIONS WHERE id = ?;" fn-id])
-     (log! {:level :debug :id ::function-deletion-successful :data {:function-id fn-id}}))
+    (let [result (execute! (get-pool) ["DELETE FROM FUNCTIONS WHERE id = ?;" fn-id])]
+      (log! {:level :debug :id ::function-deletion-successful :data {:function-id fn-id}})
+                result )
     (catch Exception e
       (error! {:id ::function-deletion-failed :data {:function-id fn-id}} e)
       (throw e))))

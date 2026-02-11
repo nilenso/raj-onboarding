@@ -42,12 +42,3 @@
       (throw e))))
 
 (defonce configs (read-configs))
-
-(defmacro prog1
-  "Evaluate expr1, then evaluate and return the value of exprs...
-   (prog1 expr1 expr2 expr3 ...)
-   Returns the value of expr1."
-  [expr1 & exprs]
-  `(let [result# ~expr1]
-     ~@exprs
-     result#))
