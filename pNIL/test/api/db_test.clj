@@ -60,4 +60,20 @@
 (deftest get-function-by-id-test
   (testing "retrieving a function by id:"
     (testing "non existent id retreival:"
-      (is (= nil (api-db/get-function-by-id (random-uuid)))))))
+      (is (= nil (api-db/get-function-by-id (random-uuid)))))
+    (testing "newly created function retrieval"
+      (let [fn-1 (api-db/add-function {:name "func1"
+                                       :description "first function"
+                                       :language "python"
+                                       :source "def handle(input): return input"
+                                       :status (jdbc-types/as-other "PENDING")})
+            fn-1-id (:functions/id fn-1)
+            fn-2 (api-db/add-function {:name "func2"
+                                       :description "second function"
+                                       :language "javascript"
+                                       :source "exports.handle = function(input) { return input; }"
+                                       :status (jdbc-types/as-other "PENDING")})
+            fn-2-id (:functions/id fn-2)]
+        (is (= fn-1-id (:functions/id (api-db/get-function-by-id fn-1-id))))
+        (is (= fn-2-id (:functions/id (api-db/get-function-by-id fn-2-id))))))))
+

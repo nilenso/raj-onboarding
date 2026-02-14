@@ -71,8 +71,20 @@
       (error! ::function-retrieval-failed e)
       (throw e))))
 
-(defn get-function-by-id [fn-id]
-  nil)
+(defn get-function-by-id
+  "retrieve a function with specific id"
+  [fn-id]
+  (try
+    (let [result (execute! (get-pool) ["SELECT * FROM FUNCTIONS WHERE id = ?;" fn-id])]
+      (log! {:level :debug
+             :id ::get-function-by-id-successful
+             :data result})
+      (if (empty? result)
+        nil
+        (get result 0)))
+    (catch Exception e
+      (error! {:id ::get-function-by-id-failed :data {:fn-id fn-id}} e))))
+
 (defn add-function
   "insert a new function into the FUNCTIONS table"
   [fn-map]
