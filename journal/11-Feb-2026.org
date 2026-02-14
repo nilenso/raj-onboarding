@@ -1,0 +1,5 @@
+#+title: 11 Feb 2026
+
+* 2026-02-11 12:40:44 
+ - reading joc as usual
+ - exploring how HAMTs are finally used
