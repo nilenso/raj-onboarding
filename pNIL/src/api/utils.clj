@@ -56,7 +56,7 @@
     :default :info]
    ["-h" "--help"]])
 
-(defonce configs (atom {}))
+(defonce configs (atom nil))
 
 (defn process-cli-args
   "process command line arguments to override default config paths"

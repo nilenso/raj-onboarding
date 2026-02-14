@@ -8,7 +8,8 @@
 
 (use-fixtures :once 
   (fn [f]
-    (reset! u/configs (u/read-configs "config.edn" "secrets-test.edn"))
+    (u/process-cli-args ["-c" "config.edn"
+                         "-s" "secrets-test.edn"])
     (api-db/start-pool!)
     (try (f)
          (finally (api-db/stop-pool!)))))
