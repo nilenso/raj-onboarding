@@ -4,34 +4,36 @@
    [next.jdbc.sql :as sql :refer [insert!]]
    [taoensso.telemere :as t :refer [log! error!]]
    [hikari-cp.core :as hcp]
-   [utils :as u]))
+   [api.utils :as u]))
 
 (defn- pool-options
-  "generate HikariCP options for the given profile (:dev or :test)"
-  [profile]
-  (let [db-spec (:db u/configs)
-        pool-cfg (get-in u/configs [:api-server :db-cp])
-        port (get-in db-spec [:ports profile])]
+  "generate HikariCP options"
+  []
+  (let [db-spec (:db @u/configs)
+        pool-cfg (get-in @u/configs [:api-server :db-cp])]
+    (log! {:level :debug
+           :id ::pool-options-generated
+           :data {:db-spec db-spec
+                  :pool-cfg pool-cfg}})
     (merge pool-cfg
            {:adapter       "postgresql"
             :database-name (:dbname db-spec)
             :server-name   (:host db-spec)
-            :port-number   port
+            :port-number   (:port db-spec)
             :username      (:username db-spec)
             :password      (:password db-spec)
-            :pool-name     (str "pnil-" (name profile))})))
+            :pool-name     (str "pnil")})))
 
 (defonce ^:private pool (atom nil))
 
 (defn start-pool!
-  "initialize the connection pool for the given profile (:dev or :test)"
-  ([] (start-pool! :dev))
-  ([profile]
+  "initialize the connection pool"
+  ([]
    (if @pool
      (log! :warn ::pool-already-initialized)
      (do
        (log! :info ::starting-connection-pool)
-       (reset! pool (hcp/make-datasource (pool-options profile)))
+       (reset! pool (hcp/make-datasource (pool-options)))
        (log! :info ::connection-pool-started)))))
 
 (defn stop-pool!

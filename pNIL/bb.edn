@@ -1,33 +1,26 @@
 {:min-bb-version "0.4.0"
  :tasks
- {
-  run-api-dev {:doc "run the api server[DEV]"
-               :task (shell "clj -M -m api.main")}
-  run-api-prod {:doc "run the api server[PROD]"
-                :task (shell {:extra-env {"PROFILE" "PROD"}}
-                             "clj -M -m api.main")}
+ {run-api-dev {:doc "run the api server[DEV]"
+               :task (shell "clj -M -m api.main --configs-file config.edn --secrets-file secrets.edn --log-level debug")}
+
   test {:doc "Run tests using the JVM clj tool"
         :task (shell "clj -X:test")}
-  dev-deps-up (do
-                (println "pg dev up + migrations")
-                (shell "podman compose -f podman-compose.yaml up -d"))
-  dev-deps-down (do
-                  (println "pg dev container down")
-                  (shell "podman compose -f podman-compose.yaml down -v"))
-  dev-deps-logs (do
-                  (println "pg dev container logs")
-                  (shell "podman compose -f podman-compose.yaml logs -f"))
-  test-deps-up (do
-                 (println "pg test up + migrations")
-                 (shell "podman compose -f podman-compose-test.yaml up -d"))
-  test-deps-down (do
-                   (println "pg test container down")
-                   (shell "podman compose -f podman-compose-test.yaml down -v"))
-  test-deps-logs (do
-                   (println "pg test container logs")
-                   (shell "podman compose -f podman-compose-test.yaml logs -f"))
+
+  dev-deps-up {:doc "pg dev up + migrations"
+               :task (shell "podman compose -f podman-compose.yaml up -d")}
+  dev-deps-down {:doc "pg dev container down"
+                 :task (shell "podman compose -f podman-compose.yaml down -v")}
+  dev-deps-logs {:doc "pg dev container logs"
+                 :task (shell "podman compose -f podman-compose.yaml logs -f")}
+
+  test-deps-up  {:doc "pg test up + migrations"
+                 :task (shell "podman compose -f podman-compose-test.yaml up -d")}
+  test-deps-down {:doc "pg test container down"
+                  :task (shell "podman compose -f podman-compose-test.yaml down -v")}
+  test-deps-logs {:doc "pg test container logs"
+                  :task (shell "podman compose -f podman-compose-test.yaml logs -f")}
+
   lint {:doc "clj-kondo linting"
         :task (do
                 (println "linting with clj-kondo")
                 (shell "clj-kondo --lint bb.edn deps.edn src test --fail-level error"))}}}
-

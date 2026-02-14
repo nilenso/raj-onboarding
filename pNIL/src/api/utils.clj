@@ -30,24 +30,45 @@
 
 (defn- read-configs 
   "read configs, secrets from resources and merge them"
-  [] (read-configs "config.edn" "secrets.edn")
-  [config-path  secrets-path]
-  (try
-    (let [base-config (read-config (io/resource config-path))
-          secrets (read-config (io/resource secrets-path))]
-      (log! {:level :info 
-             :msg "Configs read from resources" 
-             :data {:base-config base-config :secrets (keys secrets)}})
-      (merge base-config secrets))
-    (catch Exception e
-      (error! ::config-read-failed e)
-      (throw e))))
+  ([] (read-configs "config.edn" "secrets.edn"))
+  ([config-path  secrets-path]
+   (try
+     (let [base-config (read-config (io/resource config-path))
+           secrets (read-config (io/resource secrets-path))]
+       (log! {:level :info 
+              :msg "Configs read from resources"})
+       (log! {:level :debug
+              :msg "config contents"
+              :data {:base base-config
+                     :secrets secrets}} )
+       (merge base-config secrets))
+     (catch Exception e
+       (error! ::config-read-failed e)
+       (throw e)))))
 
 (def cli-options
-  [["-c" "--configs CONFIG" "Path to config file in resources"
+  [["-c" "--configs-file CONFIG" "Path to config file in resources"
     :default "config.edn"]
-   ["-s" "--secrets SECRETS" "Path to secrets file in resources"
+   ["-s" "--secrets-file SECRETS" "Path to secrets file in resources"
     :default "secrets.edn"]
+   ["-l" "--log-level LEVEL" "Logging level (e.g. :debug, :info, :warn, :error)"
+    :parse-fn keyword
+    :default :info]
    ["-h" "--help"]])
 
-(defonce configs (read-configs))
+(defonce configs (atom {}))
+
+(defn process-cli-args
+  "process command line arguments to override default config paths"
+  [args]
+  (let [options (:options (parse-opts args cli-options))
+        cfile (:configs-file options)
+        sfile (:secrets-file options)
+        log-level (:log-level options)]
+    (t/set-min-level! :log log-level)
+    (log! {:level :info
+           :msg "CLI args processed"
+           :data {:configs-file cfile
+                  :secrets-file sfile
+                  :log-level log-level}})
+    (reset! configs (read-configs cfile sfile))))

@@ -4,7 +4,7 @@
    [api.db :as db]
    [reitit.ring :as ring]
    [taoensso.telemere :as t :refer [log! error!]]
-   [utils :as u]))
+   [api.utils :as u]))
 
 (defn- root-handler [_req]
   {:status  200 :body "Sentinel Body"
@@ -20,8 +20,9 @@
    (ring/router [["/" {:get root-handler}]
                  ["/status" {:get status-handler}]])))
 
-(defn -main []
-  (let [http-port (-> u/configs
+(defn -main [& args]
+  (u/process-cli-args args)               
+  (let [http-port (-> @u/configs
                       (:api-server)
                       (:http-port))]
     (db/start-pool!)
@@ -29,7 +30,7 @@
      (Runtime/getRuntime)
      (Thread. #(do (log! :info "Shutting down")
                    (db/stop-pool!))))
-    (u/env-predicated-nrepl-init u/configs :api-server)
+    (u/env-predicated-nrepl-init @u/configs :api-server)
     (try
       (hk-server/run-server app {:port http-port})
       (log! {:level :info
