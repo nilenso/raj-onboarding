@@ -1,6 +1,6 @@
 (ns api.db
   (:require
-   [next.jdbc :as jdbc :refer [execute!]]
+   [next.jdbc :as jdbc :refer [execute! execute-one!]]
    [next.jdbc.sql :as sql :refer [insert!]]
    [taoensso.telemere :as t :refer [log! error!]]
    [hikari-cp.core :as hcp]
@@ -75,13 +75,11 @@
   "retrieve a function with specific id"
   [fn-id]
   (try
-    (let [result (execute! (get-pool) ["SELECT * FROM FUNCTIONS WHERE id = ?;" fn-id])]
+    (let [result (execute-one! (get-pool) ["SELECT * FROM FUNCTIONS WHERE id = ?;" fn-id])]
       (log! {:level :debug
              :id ::get-function-by-id-successful
              :data result})
-      (if (empty? result)
-        nil
-        (get result 0)))
+      result)
     (catch Exception e
       (error! {:id ::get-function-by-id-failed :data {:fn-id fn-id}} e))))
 
