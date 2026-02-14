@@ -1,4 +1,4 @@
-{:paths ["src" "resources"]
+{:paths ["src" "resources" "test"]
  :deps
  {ring/ring-core {:mvn/version "1.15.3"}
   clojure.java-time/clojure.java-time {:mvn/version "1.4.3"}
@@ -8,6 +8,8 @@
   com.taoensso/telemere-slf4j {:mvn/version "1.2.1"}
   nrepl/nrepl {:mvn/version "1.5.1"}
   cider/cider-nrepl {:mvn/version "0.57.0"}
+  org.clojure/tools.namespace {:mvn/version "1.5.1"}
+  refactor-nrepl/refactor-nrepl {:mvn/version "3.11.0"} 
   metosin/reitit {:mvn/version "0.10.0"}
   hikari-cp/hikari-cp {:mvn/version "4.0.0"}
   com.taoensso/telemere {:mvn/version "1.2.1"}
