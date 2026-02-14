@@ -56,3 +56,8 @@
       (api-db/delete-function fn-id)
       (let [functions (jdbc/execute! (api-db/get-pool) ["SELECT * FROM FUNCTIONS WHERE id = ?" fn-id])]
         (is (= 0 (count functions)))))))
+
+(deftest get-function-by-id-test
+  (testing "retrieving a function by id:"
+    (testing "non existent id retreival:"
+      (is (= nil (api-db/get-function-by-id (random-uuid)))))))

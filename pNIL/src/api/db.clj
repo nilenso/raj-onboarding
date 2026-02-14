@@ -66,11 +66,13 @@
   (try
     (let [result (execute! (get-pool) ["SELECT * FROM FUNCTIONS;"])]
       (log! :debug "Functions retrieved successfully")
-                result )
+      result)
     (catch Exception e
       (error! ::function-retrieval-failed e)
       (throw e))))
 
+(defn get-function-by-id [fn-id]
+  nil)
 (defn add-function
   "insert a new function into the FUNCTIONS table"
   [fn-map]
