@@ -3,11 +3,13 @@
    [api.db :as api-db]
    [next.jdbc :as jdbc]
    [next.jdbc.types :as jdbc-types]
+   [api.utils :as u]
    [clojure.test :as t :refer [testing is deftest use-fixtures]]))
 
 (use-fixtures :once 
   (fn [f]
-    (api-db/start-pool! :test)
+    (reset! u/configs (u/read-configs "config.edn" "secrets-test.edn"))
+    (api-db/start-pool!)
     (try (f)
          (finally (api-db/stop-pool!)))))
 

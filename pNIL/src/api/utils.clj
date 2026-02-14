@@ -28,7 +28,7 @@
            :msg "Non-DEV environment - skipping nrepl startup" 
            :data {:component component :env (:env configs)}})))
 
-(defn- read-configs 
+(defn read-configs 
   "read configs, secrets from resources and merge them"
   ([] (read-configs "config.edn" "secrets.edn"))
   ([config-path  secrets-path]
