@@ -3,8 +3,8 @@
    [org.httpkit.server :as hk-server]
    [api.db :as db]
    [reitit.ring :as ring]
-   [taoensso.telemere :as t :refer [log! error!]]
-   [api.utils :as u]))
+   [taoensso.telemere :as t :refer [log!]]
+   [api.utils :as u :refer [throw-error!]]))
 
 (defn- root-handler [_req]
   {:status  200 :body "Sentinel Body"
@@ -38,4 +38,4 @@
              :data {:http-port http-port}})
       (catch Exception e
         (db/stop-pool!)
-        (throw (error! ::server-start-failed e))))))
+        (throw-error! ::server-start-failed e)))))

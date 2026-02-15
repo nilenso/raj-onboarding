@@ -1,10 +1,10 @@
 (ns api.db
   (:require
    [next.jdbc :as jdbc :refer [execute! execute-one!]]
-   [next.jdbc.sql :as sql :refer [insert!]]
-   [taoensso.telemere :as t :refer [log! error!]]
+   [next.jdbc.sql :refer [insert!]]
+   [taoensso.telemere :as t :refer [log!]]
    [hikari-cp.core :as hcp]
-   [api.utils :as u]))
+   [api.utils :as u :refer [throw-error!]]))
 
 (defn- pool-options
   "generate HikariCP options"
@@ -47,27 +47,27 @@
 (defn get-pool
   "retrieve the connection pool, throwing an error if it's not initialized"
   []
-  (or @pool (throw (ex-info "Pool not initialized" {}))))
+  (or @pool (throw-error! ::pool-not-initialized)))
 
 (defn truncate-all-tables
   "truncate all tables in the database"
   []
   (try
     (let [result (execute! (get-pool) ["TRUNCATE FUNCTIONS, EXECUTIONS;"])]
-      (log! :debug "All tables truncated successfully")
+      (log! :debug ::all-tables-truncated-successfully)
       result)
     (catch Exception e
-      (throw (error! ::truncate-failed e)))))
+      (throw-error! ::truncate-failed e))))
 
 (defn get-functions
   "retrieve all functions from the FUNCTIONS table"
   []
   (try
     (let [result (execute! (get-pool) ["SELECT * FROM FUNCTIONS;"])]
-      (log! :debug "Functions retrieved successfully")
+      (log! :debug ::functions-retrieved-successfully)
       result)
     (catch Exception e
-      (throw (error! ::function-retrieval-failed e)))))
+      (throw-error! ::function-retrieval-failed e))))
 
 (defn get-function-by-id
   "retrieve a function with specific id"
@@ -79,7 +79,7 @@
              :data result})
       result)
     (catch Exception e
-      (throw (error! {:id ::get-function-by-id-failed :data {:fn-id fn-id}} e)))))
+      (throw-error! ::get-function-by-id-failed e {:fn-id fn-id}))))
 
 (defn add-function
   "insert a new function into the FUNCTIONS table"
@@ -89,7 +89,7 @@
       (log! {:level :debug :id ::function-addition-successful :data fn-map})
       result)
     (catch Exception e
-      (throw (error! {:id ::function-addition-failed :data {:function-name (:name fn-map)}} e)))))
+      (throw-error!  ::function-addition-failed e {:function-name (:name fn-map)}))))
 
 
 (defn delete-function
@@ -100,7 +100,7 @@
       (log! {:level :debug :id ::function-deletion-successful :data {:function-id fn-id}})
       result)
     (catch Exception e
-      (throw (error! {:id ::function-deletion-failed :data {:function-id fn-id}} e)))))
+      (throw-error! ::function-deletion-failed e {:function-id fn-id}))))
 
 (defn update-function
   [fn-id fn-update-map]
