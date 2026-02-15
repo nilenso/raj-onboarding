@@ -4,6 +4,7 @@
    [next.jdbc :as jdbc]
    [next.jdbc.types :as jdbc-types]
    [api.utils :as u]
+   [test-helpers :as h]
    [clojure.test :as t :refer [testing is deftest use-fixtures]]))
 
 (use-fixtures :once 
@@ -77,3 +78,8 @@
         (is (= fn-1-id (:functions/id (api-db/get-function-by-id fn-1-id))))
         (is (= fn-2-id (:functions/id (api-db/get-function-by-id fn-2-id))))))))
 
+
+(deftest update-function-test
+  (testing "throws when updating non-existent id"
+    (h/thrown-with-id? ::api-db/update-on-non-existent-fn-id
+                       #(api-db/update-function (random-uuid) {:sentinel-key :sentinel-val}))))
