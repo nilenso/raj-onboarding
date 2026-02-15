@@ -81,5 +81,20 @@
 
 (deftest update-function-test
   (testing "throws when updating non-existent id"
-    (h/thrown-with-id? ::api-db/update-on-non-existent-fn-id
-                       #(api-db/update-function (random-uuid) {:sentinel-key :sentinel-val}))))
+    (is (h/thrown-with-id? :api.db/update-on-non-existent-fn-id
+                           #(api-db/update-function (random-uuid) {:name "x"}))))
+  (testing "updates reflected when fetching again"
+    (let [original (api-db/add-function {:name "original-name"
+                                         :description "original-desc"
+                                         :language "assemblyscript"
+                                         :source "original-source"
+                                         :status (jdbc-types/as-other "PENDING")})
+          fn-id (:functions/id original)
+          _ (api-db/update-function fn-id {:name "updated-name"
+                                           :description "updated-desc"})
+          fetched (api-db/get-function-by-id fn-id)]
+      (is (= "updated-name" (:functions/name fetched)))
+      (is (= "updated-desc" (:functions/description fetched)))
+      ;; unchanged fields remain
+      (is (= "assemblyscript" (:functions/language fetched)))
+      (is (= "original-source" (:functions/source fetched))))))
