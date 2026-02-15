@@ -71,3 +71,23 @@
                   :secrets-file sfile
                   :log-level log-level}})
     (reset! configs (read-configs cfile sfile))))
+
+(defn- annotated-error!
+  "helper for logging and throwing errors with a consistent structure"
+  ([id]
+   (annotated-error! id nil {}))
+  ([id cause]
+   (annotated-error! id cause {}))
+  ([id cause data]
+   (let [ex-data (assoc data :id id)]
+     (error! {:id id :data data}
+             (ex-info (str id) ex-data cause)))))
+
+(defn throw-error!
+  "log and throw an error with a consistent structure"
+  ([id]
+   (throw (annotated-error! id)))
+  ([id cause]
+   (throw (annotated-error! id cause)))
+  ([id cause data]
+   (throw (annotated-error! id cause data))))
