@@ -23,7 +23,7 @@
                  :msg "nrepl server started" 
                  :data {:component component :nrepl-port nrepl-port}}))
         (catch Exception e
-          (error! {:id ::nrepl-server-start-failed :data {:component component}} e))))
+          (throw (error! {:id ::nrepl-server-start-failed :data {:component component}} e)))))
     (log! {:level :info 
            :msg "Non-DEV environment - skipping nrepl startup" 
            :data {:component component :env (:env configs)}})))
@@ -43,15 +43,14 @@
                      :secrets secrets}} )
        (merge base-config secrets))
      (catch Exception e
-       (error! ::config-read-failed e)
-       (throw e)))))
+       (throw (error! ::config-read-failed e))))))
 
 (def cli-options
   [["-c" "--configs-file CONFIG" "Path to config file in resources"
     :default "config.edn"]
    ["-s" "--secrets-file SECRETS" "Path to secrets file in resources"
     :default "secrets.edn"]
-   ["-l" "--log-level LEVEL" "Logging level (e.g. :debug, :info, :warn, :error)"
+   ["-l" "--log-level LEVEL" "Logging level (debug, info, warn, error)"
     :parse-fn keyword
     :default :info]
    ["-h" "--help"]])

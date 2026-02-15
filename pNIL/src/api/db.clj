@@ -57,8 +57,7 @@
       (log! :debug "All tables truncated successfully")
       result)
     (catch Exception e
-      (error! ::truncate-failed e)
-      (throw e))))
+      (throw (error! ::truncate-failed e)))))
 
 (defn get-functions
   "retrieve all functions from the FUNCTIONS table"
@@ -68,8 +67,7 @@
       (log! :debug "Functions retrieved successfully")
       result)
     (catch Exception e
-      (error! ::function-retrieval-failed e)
-      (throw e))))
+      (throw (error! ::function-retrieval-failed e)))))
 
 (defn get-function-by-id
   "retrieve a function with specific id"
@@ -81,7 +79,7 @@
              :data result})
       result)
     (catch Exception e
-      (error! {:id ::get-function-by-id-failed :data {:fn-id fn-id}} e))))
+      (throw (error! {:id ::get-function-by-id-failed :data {:fn-id fn-id}} e)))))
 
 (defn add-function
   "insert a new function into the FUNCTIONS table"
@@ -89,10 +87,10 @@
   (try
     (let [result (insert! (get-pool) :functions fn-map)]
       (log! {:level :debug :id ::function-addition-successful :data fn-map})
-                result )
+      result)
     (catch Exception e
-      (error! {:id ::function-addition-failed :data {:function-name (:name fn-map)}} e)
-      (throw e))))
+      (throw (error! {:id ::function-addition-failed :data {:function-name (:name fn-map)}} e)))))
+
 
 (defn delete-function
   "delete a function from the FUNCTIONS table by id"
@@ -100,7 +98,10 @@
   (try
     (let [result (execute! (get-pool) ["DELETE FROM FUNCTIONS WHERE id = ?;" fn-id])]
       (log! {:level :debug :id ::function-deletion-successful :data {:function-id fn-id}})
-                result )
+      result)
     (catch Exception e
-      (error! {:id ::function-deletion-failed :data {:function-id fn-id}} e)
-      (throw e))))
+      (throw (error! {:id ::function-deletion-failed :data {:function-id fn-id}} e)))))
+
+(defn update-function
+  [fn-id fn-update-map]
+  nil)

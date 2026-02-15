@@ -38,4 +38,4 @@
              :data {:http-port http-port}})
       (catch Exception e
         (db/stop-pool!)
-        (error! ::server-start-failed e)))))
+        (throw (error! ::server-start-failed e))))))
