@@ -1,7 +1,7 @@
 (ns api.db
   (:require
    [next.jdbc :as jdbc :refer [execute! execute-one!]]
-   [next.jdbc.sql :refer [insert!]]
+   [next.jdbc.sql :refer [insert! update!]]
    [taoensso.telemere :as t :refer [log!]]
    [hikari-cp.core :as hcp]
    [api.utils :as u :refer [throw-error!]]))
@@ -103,7 +103,13 @@
       (throw-error! ::function-deletion-failed e {:function-id fn-id}))))
 
 (defn update-function
+  "update a function in the FUNCTIONS table"
   [fn-id fn-update-map]
-  (let [old-fn-map (get-function-by-id fn-id)]
-    (when-not old-fn-map
-      (throw-error! ::update-on-non-existent-fn-id))))
+  (when-not (get-function-by-id fn-id)
+    (throw-error! ::update-on-non-existent-fn-id nil {:fn-id fn-id}))
+  (try
+    (update! (get-pool) :functions fn-update-map {:id fn-id})
+    (log! {:level :debug :id ::function-update-successful :data {:fn-id fn-id}})
+    (get-function-by-id fn-id)
+    (catch Exception e
+      (throw-error! ::function-update-failed e {:fn-id fn-id}))))
