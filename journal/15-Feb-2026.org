@@ -11,4 +11,13 @@
  - proceeding with the usual tdd (red, green, refactor) for the rest of the check boxes in the issue (gh issue view 75)
    - commit would consequently follow that pattern for a while : red, green, refactor prefixes
  - fixed some nrepl-middleware deps
-* 2026-02-15 12:09:12 
+* 2026-02-15
+ - read about diff b/w clojure.lang.ExceptionInfo and java.lang.Exception
+ - writing some error and test helpers
+ - refactoring for uniformity all across
+
+* 2026-02-15 14:25:29  
+ - tdd for update-function : done
+ - jumping into sources more often (jdbc/update! and other syntactic sugars)
+ - getting better with repl usage
+   
