@@ -1,0 +1,14 @@
+#+title: 15 Feb 2026
+
+* 2026-02-15 12:06:27
+ - updates from yesterday
+ - taking in cli args instead of passing a fixed config now
+ - readup on the atoms, refs, vars and agents
+   - using atoms for state management (conn pool of db and config)
+ - getting comfortable with tdd w/ cider
+   - and the repl driven mindset, haven't restarted my nrepl server for a while now : slowly getting what it actually means rather
+ - wrote the get-function-by-id like that 
+ - proceeding with the usual tdd (red, green, refactor) for the rest of the check boxes in the issue (gh issue view 75)
+   - commit would consequently follow that pattern for a while : red, green, refactor prefixes
+ - fixed some nrepl-middleware deps
+* 2026-02-15 12:09:12 
