@@ -104,4 +104,6 @@
 
 (defn update-function
   [fn-id fn-update-map]
-  nil)
+  (let [old-fn-map (get-function-by-id fn-id)]
+    (when-not old-fn-map
+      (throw-error! ::update-on-non-existent-fn-id))))
