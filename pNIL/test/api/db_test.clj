@@ -5,10 +5,12 @@
    [next.jdbc.types :as jdbc-types]
    [api.utils :as u]
    [test-helpers :as h]
+   [taoensso.telemere :as tel]
    [clojure.test :as t :refer [testing is deftest use-fixtures]]))
 
 (use-fixtures :once 
   (fn [f]
+    (tel/set-min-level! :fatal)
     (u/process-cli-args ["-c" "config.edn"
                          "-s" "secrets-test.edn"])
     (api-db/start-pool!)
