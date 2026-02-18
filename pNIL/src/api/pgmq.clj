@@ -14,9 +14,8 @@
 
 (defn purge-pgmq-queues []
   (try
-    (execute-batch! (get-pool) (vec (map #(str "SELECT pgmq.purge_queue('" % "')")
-                                         ["compilation_jobs"
-                                          "compilation_results"])))
+    (doseq [queue ["compilation_jobs" "compilation_results"]]
+      (execute! (get-pool) ["SELECT pgmq.purge_queue(?)" queue]))
     (log! {:level :debug
            :msg "Purged pgmq queues"})
     (catch Exception e
