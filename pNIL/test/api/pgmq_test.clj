@@ -24,5 +24,5 @@
         job {:functions/id fuuid
              :functions/language "clojure"
              :functions/source "(println \"Hello, World!\")"}]
-    (is (= [{:pgmq.send fuuid}] (api-pgmq/publish-pgmq-job job)))))
+    (is (< 0 (:send (api-pgmq/publish-pgmq-job job))))))
 

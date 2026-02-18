@@ -2,6 +2,7 @@
  :deps
  {ring/ring-core {:mvn/version "1.15.3"}
   clojure.java-time/clojure.java-time {:mvn/version "1.4.3"}
+  org.clojure/data.json {:mvn/version "2.5.2"}
   org.clojure/tools.cli {:mvn/version "1.3.250"}
   http-kit/http-kit {:mvn/version "2.9.0-beta3"}
   com.dylibso.chicory/runtime {:mvn/version "1.6.1"}
