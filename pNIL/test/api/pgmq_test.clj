@@ -3,7 +3,7 @@
    [api.db :as api-db]
    [api.pgmq :as api-pgmq]
    [api.utils :as u]
-   [clojure.test :as t :refer [deftest is use-fixtures]]))
+   [clojure.test :as t :refer [deftest is use-fixtures testing]]))
 
 (use-fixtures :once
   (fn [f]
@@ -20,9 +20,37 @@
     (f)))
 
 (deftest publish-pgmq-job-test
-  (let [fuuid (random-uuid)
-        job {:functions/id fuuid
-             :functions/language "clojure"
-             :functions/source "(println \"Hello, World!\")"}]
-    (is (< 0 (:send (api-pgmq/publish-pgmq-job job))))))
+  (testing "publishing a job to pgmq should return a message id without an error"
+    (let [fuuid (random-uuid)
+          job {:functions/id fuuid
+               :functions/language "clojure"
+               :functions/source "(println \"Hello, World!\")"}]
+      (is (< 0 (:send (api-pgmq/publish-pgmq-job job)))))))
 
+(deftest publish-pgmq-job-validation-test
+  (testing "publishing a job with missing keys should throw an assertion error"
+    (is (thrown? AssertionError
+                 (api-pgmq/publish-pgmq-job {:functions/id (random-uuid)
+                                             :functions/language "clojure"})))))
+
+(deftest publish-pgmq-job-and-read-back-test
+  (testing "publishing a job and then reading it back should return the same job"
+    (let [fuuid (random-uuid)
+          job {:functions/id fuuid
+               :functions/language "clojure"
+               :functions/source "(println \"Hello, World!\")"}]
+      (api-pgmq/publish-pgmq-job job)
+      (is (= (str (:functions/id job)) (:id (api-pgmq/read-one-from-pgmq "compilation_jobs")))))))
+
+(deftest read-pgmq-result-test
+  (testing "reading from an empty pgmq queue should return nil"
+    (is (= nil (api-pgmq/read-pgmq-result))))
+  (testing "reading from pgmq should return the published message"
+    (let [fuuid (random-uuid)
+          job {:id fuuid
+               :language "clojure"
+               :source "(println \"Hello, World!\")"
+               :status "success"
+               :wasm-bin "00"}]
+      (api-pgmq/publish-pgmq-message "compilation_results" job)
+      (is (= (str (:id job)) (:id (api-pgmq/read-pgmq-result)))))))
