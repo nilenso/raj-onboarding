@@ -1,5 +1,4 @@
-(ns test-helpers
-  )
+(ns test-helpers)
 
 (defn thrown-with-id? [expected-id f]
   (try

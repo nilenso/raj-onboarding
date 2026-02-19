@@ -74,7 +74,7 @@
           job {:functions/id fuuid
                :functions/language "clojure"
                :functions/source "(println \"Hello, World!\")"}
-          msg-id (:send (api-pgmq/publish-pgmq-job job)) ]
+          msg-id (:send (api-pgmq/publish-pgmq-job job))]
       (let [msg (api-pgmq/read-one-from-pgmq "compilation_jobs")]
         (is (= (str (:functions/id job)) (:id msg)))
         (is (= {:delete true} (api-pgmq/delete-pgmq-msg "compilation_jobs" msg-id)))))))
