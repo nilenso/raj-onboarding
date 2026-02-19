@@ -84,6 +84,20 @@
       comp-result
       (throw-error! ::pgmq-result-missing-keys nil {:comp-result comp-result}))))
 
+(defn delete-pgmq-msg
+  "delete a message from pgmq given the queue and message id"
+  [queue msg-id]
+  (try
+    (let [result (execute-one! (get-pool) ["SELECT pgmq.delete(?, ?)" queue msg-id])]
+      (log! {:level :debug
+             :msg "Deleted message from pgmq"
+             :data {:queue queue
+                    :msg-id msg-id
+                    :result result}})
+      result)
+    (catch Exception e
+      (throw-error! ::pgmq-delete-failed e {:queue queue :msg-id msg-id}))))
+
 (comment
   (db/start-pool!)
 

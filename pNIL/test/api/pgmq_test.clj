@@ -67,3 +67,18 @@
                   :source "(println \"Hello, World!\")"}]
       (api-pgmq/publish-pgmq-message "compilation_results" result)
       (is (h/thrown-with-id? :api.pgmq/pgmq-result-missing-keys #(api-pgmq/read-pgmq-result))))))
+
+(deftest delete-existing-pgmq-msg-test
+  (testing "deleting a message from pgmq should return true and remove the message from the queue"
+    (let [fuuid (random-uuid)
+          job {:functions/id fuuid
+               :functions/language "clojure"
+               :functions/source "(println \"Hello, World!\")"}
+          msg-id (:send (api-pgmq/publish-pgmq-job job)) ]
+      (let [msg (api-pgmq/read-one-from-pgmq "compilation_jobs")]
+        (is (= (str (:functions/id job)) (:id msg)))
+        (is (= {:delete true} (api-pgmq/delete-pgmq-msg "compilation_jobs" msg-id)))))))
+
+(deftest delete-non-existent-pgmq-msg-test
+  (testing "deleting a non-existent message from pgmq should return false without an error"
+    (is (= {:delete false} (api-pgmq/delete-pgmq-msg "compilation_jobs" 10000000)))))
