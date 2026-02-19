@@ -84,9 +84,14 @@
       (throw-error! ::pgmq-read-failed e {:queue queue}))))
 
 (defn read-pgmq-result
-  "read a compilation result from pgmq"
+  "read and validate compilation result from pgmq"
   []
-  (read-one-from-pgmq "compilation_results"))
+  (let [comp-result (read-one-from-pgmq "compilation_results")]
+    (if (or (nil? comp-result)          ;; allow nil result for empty queue case
+            (= (set (keys comp-result))
+               #{:id :language :source :status :wasm-bin}))
+      comp-result
+      (throw-error! ::pgmq-result-missing-keys nil {:comp-result comp-result}))))
 
 (comment
   (db/start-pool!)

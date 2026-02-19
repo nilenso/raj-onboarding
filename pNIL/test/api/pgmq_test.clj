@@ -3,6 +3,7 @@
    [api.db :as api-db]
    [api.pgmq :as api-pgmq]
    [api.utils :as u]
+   [test-helpers :as h]
    [clojure.test :as t :refer [deftest is use-fixtures testing]]))
 
 (use-fixtures :once
@@ -42,9 +43,12 @@
       (api-pgmq/publish-pgmq-job job)
       (is (= (str (:functions/id job)) (:id (api-pgmq/read-one-from-pgmq "compilation_jobs")))))))
 
-(deftest read-pgmq-result-test
+(deftest read-pgmq-empty-queue-result-test
   (testing "reading from an empty pgmq queue should return nil"
-    (is (= nil (api-pgmq/read-pgmq-result))))
+    (api-pgmq/purge-pgmq-queues)
+    (is (= nil (api-pgmq/read-pgmq-result)))))
+
+(deftest simulate-published-result-read-test
   (testing "reading from pgmq should return the published message"
     (let [fuuid (random-uuid)
           job {:id fuuid
@@ -54,3 +58,12 @@
                :wasm-bin "00"}]
       (api-pgmq/publish-pgmq-message "compilation_results" job)
       (is (= (str (:id job)) (:id (api-pgmq/read-pgmq-result)))))))
+
+(deftest simulate-invalid-published-result-read-test
+  (testing "recieving incomplete result from pgmq should throw an assertion error"
+    (let [fuuid (random-uuid)
+          result {:id fuuid
+                  :language "clojure"
+                  :source "(println \"Hello, World!\")"}]
+      (api-pgmq/publish-pgmq-message "compilation_results" result)
+      (is (h/thrown-with-id? :api.pgmq/pgmq-result-missing-keys #(api-pgmq/read-pgmq-result))))))
