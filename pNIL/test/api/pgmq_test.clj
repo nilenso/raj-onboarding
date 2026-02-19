@@ -60,7 +60,7 @@
       (is (= (str (:id job)) (:id (api-pgmq/read-pgmq-result)))))))
 
 (deftest simulate-invalid-published-result-read-test
-  (testing "recieving incomplete result from pgmq should throw an assertion error"
+  (testing "receiving incomplete result from pgmq should throw an assertion error"
     (let [fuuid (random-uuid)
           result {:id fuuid
                   :language "clojure"

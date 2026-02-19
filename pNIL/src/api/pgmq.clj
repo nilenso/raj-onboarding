@@ -1,11 +1,11 @@
 (ns api.pgmq
   (:require
-   [next.jdbc :as jdbc :refer [execute! execute-one! execute-batch!]]
+   [next.jdbc :as jdbc :refer [execute! execute-one!]]
    [clojure.data.json :as json :refer [write-str read-str]]
-   [next.jdbc.sql :refer [insert! update!]]
+   [clojure.set :as set :refer [subset?]]
    [taoensso.telemere :as t :refer [log!]]
-   [hikari-cp.core :as hcp]
    [api.db :as db :refer [get-pool]]
+   [clojure.walk :refer [keywordize-keys]]
    [api.utils :as u :refer [throw-error!]])
   (:import
    [org.postgresql.util PGobject]))
@@ -20,7 +20,7 @@
       (.setType pgtype)
       (.setValue (write-str x)))))
 
-(defn <-pgobject
+(defn- <-pgobject
   "Transform PGobject containing `json` or `jsonb` value to Clojure data."
   [^PGobject v]
   (let [type  (.getType v)
@@ -28,14 +28,6 @@
     (if (#{"jsonb" "json"} type)
       (some-> value read-str (with-meta {:pgtype type}))
       value)))
-
-(defn- ->job [id language source]
-  {:functionId id
-   :language language
-   :source  source})
-
-(defn- result []
-  nil)
 
 (defn purge-pgmq-queues []
   (try
@@ -50,7 +42,7 @@
   "publish a message to pgmq, given the queue and function map"
   [queue fn-map]
   (try
-    (let [result (execute-one! (get-pool) ["SELECT pgmq.send(?, ?)"  queue (->pgobject fn-map)])]
+    (let [result (execute-one! (get-pool) ["SELECT pgmq.send(?, ?)" queue (->pgobject fn-map)])]
       (log! {:level :debug
              :msg "Published job to pgmq"
              :data {:queue queue
@@ -79,7 +71,7 @@
              :data {:queue queue
                     :result result}})
       (when result
-        (clojure.walk/keywordize-keys (<-pgobject (:message result)))))
+        (keywordize-keys (<-pgobject (:message result)))))
     (catch Exception e
       (throw-error! ::pgmq-read-failed e {:queue queue}))))
 
@@ -88,8 +80,7 @@
   []
   (let [comp-result (read-one-from-pgmq "compilation_results")]
     (if (or (nil? comp-result)          ;; allow nil result for empty queue case
-            (= (set (keys comp-result))
-               #{:id :language :source :status :wasm-bin}))
+            (subset? #{:id :language :source :status :wasm-bin} (set (keys comp-result))))
       comp-result
       (throw-error! ::pgmq-result-missing-keys nil {:comp-result comp-result}))))
 
@@ -102,7 +93,6 @@
                      :functions/language "clojure"
                      :functions/source "(println \"Hello, World!\""})
 
-  
   (clojure.walk/keywordize-keys
    (<-pgobject
     (:message
@@ -119,6 +109,4 @@
 
   (read-one-from-pgmq "compilation_jobs")
 
-  (read-pgmq-result)
-
-  (->pgobject (->job (random-uuid) "clojure" "(println \"Hello, World!\"")))
+  (read-pgmq-result))

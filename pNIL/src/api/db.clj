@@ -113,10 +113,3 @@
     (get-function-by-id fn-id)
     (catch Exception e
       (throw-error! ::function-update-failed e {:fn-id fn-id}))))
-
-(comment
-
-  (start-pool!)
-
-
-  )

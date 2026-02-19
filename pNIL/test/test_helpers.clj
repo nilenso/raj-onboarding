@@ -1,5 +1,5 @@
 (ns test-helpers
-  (:require  [clojure.test :as t]))
+  )
 
 (defn thrown-with-id? [expected-id f]
   (try
