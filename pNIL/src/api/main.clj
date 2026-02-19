@@ -1,41 +1,33 @@
 (ns api.main
   (:require
-   [org.httpkit.server :as hk-server]
    [api.db :as db]
-   [reitit.ring :as ring]
    [taoensso.telemere :as t :refer [log!]]
+   [api.gateway :as g]
    [api.utils :as u :refer [throw-error!]]))
 
-(defn- root-handler [_req]
-  {:status  200 :body "Sentinel Body"
-   :headers {"Content-Type" "text/html"}})
-
-(defn- status-handler [_req]
-  {:status 200
-   :body "OK"
-   :headers {"Content-Type" "text/html"}})
-
-(def app
-  (ring/ring-handler
-   (ring/router [["/" {:get root-handler}]
-                 ["/status" {:get status-handler}]])))
-
 (defn -main [& args]
-  (u/process-cli-args args)               
+  (u/process-cli-args args)
   (let [http-port (-> @u/configs
                       (:api-server)
                       (:http-port))]
     (db/start-pool!)
-    (.addShutdownHook 
+    (.addShutdownHook
      (Runtime/getRuntime)
-     (Thread. #(do (log! :info "Shutting down")
+     (Thread. #(do (log! {:level :info
+                          :msg "Shutting down db connection pool"})
                    (db/stop-pool!))))
+
+    ;; conditionally start the nREPL server if the configuration is set 
     (u/env-predicated-nrepl-init @u/configs :api-server)
+
     (try
-      (hk-server/run-server app {:port http-port})
-      (log! {:level :info
-             :msg "API server is running"
-             :data {:http-port http-port}})
+      (let [stop-server-fn (g/run-server http-port)]
+        (.addShutdownHook
+         (Runtime/getRuntime)
+         (Thread. #(do (log! {:level  :info
+                              :msg "Shutting down API server"
+                              :data {:http-port http-port}})
+                       (stop-server-fn)))))
       (catch Exception e
         (db/stop-pool!)
         (throw-error! ::server-start-failed e)))))
