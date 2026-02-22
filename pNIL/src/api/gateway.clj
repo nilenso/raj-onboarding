@@ -7,7 +7,7 @@
 
 (def app
   (r/ring-handler
-   (r/router [["/status" {:get h/status-handler}]])))
+   (r/router [["/status" {:get ahc/status-handler}]])))
 
 (defn run-server
   "Starts the API server on the specified HTTP port."
