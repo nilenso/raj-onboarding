@@ -91,3 +91,13 @@
    (throw (annotated-error! id cause)))
   ([id cause data]
    (throw (annotated-error! id cause data))))
+
+(defn uuidfy
+  "helper to parse a string id to a UUID, if it's not already a UUID"
+  [id]
+  (if (uuid? id)
+    id
+    (try
+      (parse-uuid id)
+      (catch Exception e
+        (throw-error! ::invalid-uuid id e)))))
