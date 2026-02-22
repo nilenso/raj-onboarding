@@ -82,7 +82,7 @@
   []
   (let [comp-result (read-one-from-pgmq "compilation_results")]
     (if (or (nil? comp-result)          ;; allow nil result for empty queue case
-            (subset? #{:id :language :source :status :wasm-bin} (set (keys comp-result))))
+            (subset? #{:id :language :source :status :wasm_binary} (set (keys comp-result))))
       comp-result
       (throw-error! ::pgmq-result-missing-keys nil {:comp-result comp-result}))))
 
