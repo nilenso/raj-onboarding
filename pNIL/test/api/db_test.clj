@@ -2,7 +2,6 @@
   (:require
    [api.db :as api-db]
    [next.jdbc :as jdbc]
-   [next.jdbc.types :as jdbc-types]
    [api.utils :as u]
    [test-helpers :as h]
    [taoensso.telemere :as tel]
@@ -27,7 +26,7 @@
                           :description "echos input, unaltered"
                           :language "assemblyscript"
                           :source "export function handle(input: string): string {return input;}"
-                          :status (jdbc-types/as-other "PENDING")})
+                          :status "PENDING"})
     (let [functions (jdbc/execute! (api-db/get-pool) ["SELECT * FROM FUNCTIONS WHERE name = ?" "echo"])]
       (is (= 1 (count functions)))
       (is (= "echo" (:functions/name (first functions)))))))
@@ -38,12 +37,12 @@
                           :description "first function"
                           :language "python"
                           :source "def handle(input): return input"
-                          :status (jdbc-types/as-other "PENDING")})
+                          :status "PENDING"})
     (api-db/add-function {:name "func2"
                           :description "second function"
                           :language "javascript"
                           :source "exports.handle = function(input) { return input; }"
-                          :status (jdbc-types/as-other "PENDING")})
+                          :status "PENDING"})
     (let [functions (api-db/get-functions)]
       (is (= 2 (count functions)))
       (is (= #{"func1" "func2"} (set (map :functions/name functions)))))))
@@ -54,7 +53,7 @@
                                          :description "to be deleted"
                                          :language "ruby"
                                          :source "def handle(input); input; end"
-                                         :status (jdbc-types/as-other "PENDING")})
+                                         :status "PENDING"})
           fn-id (:functions/id fn-entry)]
       (api-db/delete-function fn-id)
       (let [functions (jdbc/execute! (api-db/get-pool) ["SELECT * FROM FUNCTIONS WHERE id = ?" fn-id])]
@@ -69,13 +68,13 @@
                                        :description "first function"
                                        :language "python"
                                        :source "def handle(input): return input"
-                                       :status (jdbc-types/as-other "PENDING")})
+                                       :status "PENDING"})
             fn-1-id (:functions/id fn-1)
             fn-2 (api-db/add-function {:name "func2"
                                        :description "second function"
                                        :language "javascript"
                                        :source "exports.handle = function(input) { return input; }"
-                                       :status (jdbc-types/as-other "PENDING")})
+                                       :status "PENDING"})
             fn-2-id (:functions/id fn-2)]
         (is (= fn-1-id (:functions/id (api-db/get-function-by-id fn-1-id))))
         (is (= fn-2-id (:functions/id (api-db/get-function-by-id fn-2-id))))))))
@@ -90,7 +89,7 @@
                                          :description "original-desc"
                                          :language "assemblyscript"
                                          :source "original-source"
-                                         :status (jdbc-types/as-other "PENDING")})
+                                         :status "PENDING"})
           fn-id (:functions/id original)
           _ (api-db/update-function fn-id {:name "updated-name"
                                            :description "updated-desc"})
