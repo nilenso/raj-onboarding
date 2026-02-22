@@ -118,15 +118,27 @@
   (when-not (get-function-by-id fn-id)
     (throw-error! ::update-on-non-existent-fn-id nil {:fn-id fn-id}))
   (try
-    (update! (get-pool) :functions (if (get fn-update-map :status)
-                                     (assoc fn-update-map :status
-                                            (enwrap-pg-status-enum (:status fn-update-map)))
-                                     fn-update-map)
+    (update! (get-pool) :functions (dissoc (if (get fn-update-map :status)
+                                             (assoc fn-update-map :status
+                                                    (enwrap-pg-status-enum (:status fn-update-map)))
+                                             fn-update-map)
+                                           :id)
              {:id fn-id})
     (log! {:level :debug :id ::function-update-successful :data {:fn-id fn-id}})
     (get-function-by-id fn-id)
     (catch Exception e
       (throw-error! ::function-update-failed e {:fn-id fn-id}))))
+
+;; functions attrs
+;; (:functions/status
+;; :functions/wasm_binary
+;; :functions/updated_at
+;; :functions/compile_error
+;; :functions/created_at
+;; :functions/name
+;; :functions/source
+;; :functions/id (primary) : dissoc before update
+;; => :functions/language)
 
 (comment
   (start-pool!)
