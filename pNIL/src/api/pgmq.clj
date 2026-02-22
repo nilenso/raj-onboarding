@@ -100,6 +100,11 @@
     (catch Exception e
       (throw-error! ::pgmq-delete-failed e {:queue queue :msg-id msg-id}))))
 
+(defn delete-pgmq-result
+  "delete a compilation result from pgmq given the message id"
+  [msg-id]
+  (delete-pgmq-msg "compilation_results" msg-id))
+
 (comment
   (db/start-pool!)
 
@@ -114,6 +119,8 @@
     (:message
      (read-one-from-pgmq "compilation_jobs"))))
 
+  (read-one-from-pgmq "compilation_jobs")
+
   (publish-pgmq-message "compilation_results"
                         {:functions/id (random-uuid)
                          :functions/language "clojure"
@@ -123,6 +130,11 @@
 
   (read-one-from-pgmq "compilation_results")
 
-  (read-one-from-pgmq "compilation_jobs")
 
-  (read-pgmq-result))
+  (read-pgmq-result)
+
+  (delete-pgmq-result (get (read-one-from-pgmq "compilation_results") :msg-id))
+
+  (read-pgmq-result)
+
+  )
