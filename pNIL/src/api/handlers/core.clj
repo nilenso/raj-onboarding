@@ -1,4 +1,5 @@
-(ns api.handlers)
+(ns api.handlers.core)
+
 
 (defn status-handler [_req]
   {:status 200

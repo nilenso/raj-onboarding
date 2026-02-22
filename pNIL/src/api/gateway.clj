@@ -3,7 +3,7 @@
    [reitit.ring :as r]
    [taoensso.telemere :as t :refer [log!]]
    [org.httpkit.server :as hks]
-   [api.handlers :as h]))
+   [api.handlers.core :as ahc]))
 
 (def app
   (r/ring-handler
