@@ -71,7 +71,9 @@
              :data {:queue queue
                     :result result}})
       (when result
-        (keywordize-keys (<-pgobject (:message result)))))
+        (assoc
+         (keywordize-keys (<-pgobject (:message result)))
+         :msg-id (:msg_id result))))
     (catch Exception e
       (throw-error! ::pgmq-read-failed e {:queue queue}))))
 
