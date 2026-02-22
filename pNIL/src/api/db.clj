@@ -2,6 +2,8 @@
   (:require
    [next.jdbc :as jdbc :refer [execute! execute-one!]]
    [next.jdbc.sql :refer [insert! update!]]
+   [next.jdbc.types :as jdbc-types :refer [as-other]]
+   [clojure.string :as s :refer [upper-case]]
    [taoensso.telemere :as t :refer [log!]]
    [hikari-cp.core :as hcp]
    [api.utils :as u :refer [throw-error!]]))
@@ -59,6 +61,11 @@
     (catch Exception e
       (throw-error! ::truncate-failed e))))
 
+(defn- enwrap-pg-status-enum
+  "helper function to convert status string to a PG-compatible type"
+  [status]
+  (as-other (upper-case status)))
+
 (defn get-functions
   "retrieve all functions from the FUNCTIONS table"
   []
@@ -85,7 +92,10 @@
   "insert a new function into the FUNCTIONS table"
   [fn-map]
   (try
-    (let [result (insert! (get-pool) :functions fn-map)]
+    (let [result (insert! (get-pool) :functions (if (get fn-map :status)
+                                                  (assoc fn-map :status
+                                                         (enwrap-pg-status-enum (:status fn-map)))
+                                                  fn-map))]
       (log! {:level :debug :id ::function-addition-successful :data fn-map})
       result)
     (catch Exception e
@@ -108,8 +118,35 @@
   (when-not (get-function-by-id fn-id)
     (throw-error! ::update-on-non-existent-fn-id nil {:fn-id fn-id}))
   (try
-    (update! (get-pool) :functions fn-update-map {:id fn-id})
+    (update! (get-pool) :functions (if (get fn-update-map :status)
+                                     (assoc fn-update-map :status
+                                            (enwrap-pg-status-enum (:status fn-update-map)))
+                                     fn-update-map)
+             {:id fn-id})
     (log! {:level :debug :id ::function-update-successful :data {:fn-id fn-id}})
     (get-function-by-id fn-id)
     (catch Exception e
       (throw-error! ::function-update-failed e {:fn-id fn-id}))))
+
+(comment
+  (start-pool!)
+
+  (def test-fn-id (random-uuid))
+
+  (add-function {:id test-fn-id
+                 :name "test-fn"
+                 :language "clojure"
+                 :source "(println \"Hello, World!\")"
+                 :status "pending"})
+
+  (get-function-by-id test-fn-id)
+
+  (update-function test-fn-id {:status "ready"})
+
+  (get-function-by-id test-fn-id)
+
+  (delete-function test-fn-id)
+
+  (get-function-by-id test-fn-id)
+
+  )
