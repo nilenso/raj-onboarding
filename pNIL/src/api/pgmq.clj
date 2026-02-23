@@ -61,26 +61,28 @@
           "fn-map contains id, language and source keys")
   (publish-pgmq-message "compilation_jobs" fn-map))
 
-(defn read-one-from-pgmq
-  "read a compilation result from pgmq"
-  [queue]
-  (try
-    (let [result (execute-one! (get-pool) ["SELECT * FROM pgmq.read(?, ?::integer, ?::integer, ?::jsonb)" queue 0 1 (->pgobject {})])]
-      (log! {:level :debug
-             :msg "Read from pgmq"
-             :data {:queue queue
-                    :result result}})
-      (when result
-        (assoc
-         (keywordize-keys (<-pgobject (:message result)))
-         :msg-id (:msg_id result))))
-    (catch Exception e
-      (throw-error! ::pgmq-read-failed e {:queue queue}))))
+(defn read-from-pgmq
+  "read qty messages from queue with visibility timeout of vt, default being reading one without marking it as invisible"
+  ([queue]
+   (read-from-pgmq queue 1 0))
+  ([queue qty vt]
+   (try
+     (let [result (execute-one! (get-pool) ["SELECT * FROM pgmq.read(?, ?::integer, ?::integer, ?::jsonb)" queue vt qty (->pgobject {})])]
+       (log! {:level :debug
+                    :msg "Read from pgmq"
+              :data {:queue queue
+                     :result result}})
+       (when result
+         (assoc
+          (keywordize-keys (<-pgobject (:message result)))
+                :msg-id (:msg_id result))))
+     (catch Exception e
+       (throw-error! ::pgmq-read-failed e {:queue queue})))))
 
 (defn read-pgmq-result
   "read and validate compilation result from pgmq"
   []
-  (let [comp-result (read-one-from-pgmq "compilation_results")]
+  (let [comp-result (read-from-pgmq "compilation_results")]
     (if (or (nil? comp-result)          ;; allow nil result for empty queue case
             (subset? #{:id :language :source :status :wasm_binary} (set (keys comp-result))))
       comp-result
@@ -117,9 +119,9 @@
   (clojure.walk/keywordize-keys
    (<-pgobject
     (:message
-     (read-one-from-pgmq "compilation_jobs"))))
+     (read-from-pgmq "compilation_jobs"))))
 
-  (read-one-from-pgmq "compilation_jobs")
+  (read-from-pgmq "compilation_jobs")
 
   (publish-pgmq-message "compilation_results"
                         {:functions/id (random-uuid)
@@ -128,13 +130,10 @@
                          :functions/status "success"
                          :functions/wasm-bin "00"})
 
-  (read-one-from-pgmq "compilation_results")
-
-
-  (read-pgmq-result)
-
-  (delete-pgmq-result (get (read-one-from-pgmq "compilation_results") :msg-id))
+  (read-from-pgmq "compilation_results")
 
   (read-pgmq-result)
 
-  )
+  (delete-pgmq-result (get (read-from-pgmq "compilation_results") :msg-id))
+
+  (read-pgmq-result))
