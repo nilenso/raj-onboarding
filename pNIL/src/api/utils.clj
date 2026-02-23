@@ -111,3 +111,10 @@
 (defn base64->bytes [s]
   (when s
     (.decode (Base64/getDecoder) s)))
+
+(comment
+
+  (assert (= "Test"
+             (String. (base64->bytes (bytes->base64 (.getBytes "Test"))))))
+
+  )
