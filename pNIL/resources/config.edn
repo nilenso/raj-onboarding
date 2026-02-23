@@ -1,10 +1,10 @@
 {:nrepl? true
- :api-server {:http-port 8080
+ :api-server {:http-port 8082
               :nrepl-port 8081
               :db-cp {:maximum-pool-size 10
                       :minimum-idle 2
                       :connection-timeout 30000
                       :idle-timeout 600000
                       :max-lifetime 1800000}}
- :compiler-server {:http-port 9090
+ :compiler-server {:http-port 9092
                    :nrepl-port 9091}}
