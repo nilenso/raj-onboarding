@@ -44,7 +44,8 @@
   (when-let [p @pool]
     (log! :info ::stopping-connection-pool)
     (hcp/close-datasource p)
-    (reset! pool nil)))
+    (reset! pool nil)
+    (log! :info ::connection-pool-stopped)))
 
 (defn get-pool
   "retrieve the connection pool, throwing an error if it's not initialized"
