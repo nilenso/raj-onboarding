@@ -5,7 +5,9 @@
    [clojure.tools.cli :refer [parse-opts]]
    [nrepl.server :as nrepl]
    [taoensso.telemere :as t :refer [log! error!]]
-   [cider.nrepl :refer [cider-nrepl-handler]]))
+   [cider.nrepl :refer [cider-nrepl-handler]])
+  (:import
+   [java.util Base64]))
 
 (defn env-predicated-nrepl-init
   "run the nrepl server if :nrepl? is true in configs"
@@ -101,3 +103,11 @@
       (parse-uuid id)
       (catch Exception e
         (throw-error! ::invalid-uuid id e)))))
+
+(defn bytes->base64 [b]
+  (when b
+    (.encodeToString (Base64/getEncoder) b)))
+
+(defn base64->bytes [s]
+  (when s
+    (.decode (Base64/getDecoder) s)))
