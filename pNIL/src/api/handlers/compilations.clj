@@ -3,8 +3,7 @@
    [api.db :as db]
    [next.jdbc :as jdbc]
    [api.pgmq :as pgmq]
-   [next.jdbc.types :as jdbc-types :refer [as-binary]]
-   [api.utils :as u :refer [throw-error! uuidfy]]
+   [api.utils :as u :refer [throw-error!]]
    [taoensso.telemere :as t :refer [log!]]))
 
 ;; handler for compilation results received from pgmq,
@@ -14,7 +13,7 @@
 (defn process-compilation-result
   "update a function status (ready, failed) from compiling (idempotent : ignore if already applied)"
   [compilation-result]
-  (let [fn-id (uuidfy (:id compilation-result))
+  (let [fn-id (u/uuidfy (:id compilation-result))
         current (db/get-function-by-id fn-id)
         applied? (get #{"READY" "FAILED"} (:functions/status current))]
     ;; when already in a terminal state, ignore the update and log a warning
@@ -26,11 +25,10 @@
                     :current-status (:functions/status current)
                     :incoming-result compilation-result}})
       (try
-        (db/update-function fn-id (dissoc compilation-result
-                                          :id
-                                          :language
-                                          :source
-                                          :msg-id))
+        (let [update-map (-> compilation-result
+                             (dissoc :id :language :source :msg-id)
+                             (update :wasm_binary u/base64->bytes))]
+          (db/update-function fn-id  update-map))
         (log! {:level :debug
                :id ::compilation-update-applied
                :data {:fn-id fn-id
@@ -52,9 +50,11 @@
 
 (comment
   (db/start-pool!)
+
   (pgmq/purge-pgmq-queues)
 
   ;; simuating a registration
+  ;; default pending but sent to compiling right away
 
   ;; add-fn
   
@@ -62,7 +62,7 @@
     (db/add-function {:name "test-fn"
                       :language "clojure"
                       :source "(println \"Hello, World!\")"
-                      :status "pending"}))
+                      :status "compiling"}))
 
   (def test-fn-id (:functions/id test-fn))
 
@@ -75,9 +75,9 @@
                              {:functions/id test-fn-id
                               :functions/language "clojure"
                               :functions/source "(println \"Hello, World!\""
-                              :functions/status "success"
+                              :functions/status "ready"
                               :functions/compile_error ""
-                              :functions/wasm_binary (as-binary "00")})
+                              :functions/wasm_binary (u/bytes->base64 (.getBytes "00"))})
 
   ;; the poller will read like this
   
@@ -89,7 +89,12 @@
   ;; and then process like this
   (process-compilation-result test-comp-result)
 
-  (pgmq/delete-pgmq-result (:msg-id test-comp-result))
-  
+  ;; check if the db record was updated
+
+  (db/get-function-by-id test-fn-id)
+
+  ;; checking if the pgmq message was deleted after processing
+
+  (pgmq/read-pgmq-result)
 
   )
