@@ -21,3 +21,11 @@
     - need to update the api for it to be polymorphic : use the default conn pool when db level atomics (reads) vs take in a transaction dedicated conn when needed
 
 ### Idempotent compilations handler
+
+### polling compilation results
+
+ - simple short poller via core.async
+ - alts! to wait on a stop-chan and a poll-interval-ms config'd timeout chan
+ - stop-chan exposed via return and registerd as shutdown hook as the gateway
+ - for a given amount of reads, mapv (force eager eval) the futures of results into compilation results handler  
+
