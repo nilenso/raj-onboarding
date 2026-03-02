@@ -132,7 +132,7 @@
                          :functions/language "clojure"
                          :functions/source "(println \"Hello, World!\""
                          :functions/status "success"
-                         :functions/wasm-bin "00"})
+                         :functions/wasm_binary "00"})
 
   (read-from-pgmq "compilation_results")
 
@@ -140,4 +140,17 @@
 
   (delete-pgmq-result (get (read-from-pgmq "compilation_results") :msg-id))
 
-  (read-pgmq-result))
+  (read-pgmq-result)
+
+  (for [i (range 10)]
+    (publish-pgmq-message "compilation_results"
+                          {:functions/id (random-uuid)
+                           :functions/language "clojure"
+                           :functions/source "(println \"Hello, World!\")"
+                           :functions/status "success"
+                           :functions/wasm_binary "00"}))
+
+  ;; eval that repeatedly within a sec and msg-id's should be invisible for a while (or observe an increment of 5), then show up again after
+  (read-pgmq-results-batch 5 2)
+
+  )
