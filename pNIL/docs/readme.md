@@ -19,3 +19,5 @@
  - current top level abstractions (see db.clj and pgmq.clj) don't take in conn-pool and use a stateful one
     - given pg rdbms and pg mq use the same conn (and it's masked), have just used the stateful one so far : could consider using a dedicated api for transactions
     - need to update the api for it to be polymorphic : use the default conn pool when db level atomics (reads) vs take in a transaction dedicated conn when needed
+
+### Idempotent compilations handler
