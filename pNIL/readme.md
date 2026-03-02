@@ -3,6 +3,7 @@
 ## Overview
  - writing the overall orchestrator in clojure, while keeping the older java compiler service
 
+
 # Design Mulls
 
 ### Meta
@@ -15,8 +16,12 @@
     - else, comment blocks represent the repl interaction
 
 ### structured logging with qualified keywords
+ - all maps : convenient parsing for observability in hindsight
 
 ### state management with atoms (configs, pools)
+ - hybrid api for db and q (state and stateless for datasource)
+ - to make the db and q api polymorphic with a default pool as well as allow for transaction specific data sources
+ - transactions when need to, else quick access through the existing pool
 
 ### -main: system lifecycle orchestrator
  - read configs
@@ -36,4 +41,5 @@
  - simple short poller via core.async
  - alts! to wait on a stop-chan and a poll-interval-ms config'd timeout chan
  - stop-chan exposed via return and registerd as shutdown hook as the gateway
- - for a given amount of reads, mapv (force eager eval) the futures of results into compilation results handler  
+ - concurrency contenders
+    - for a given amount of reads, mapv (force eager eval) the futures of results into compilation results handler  
