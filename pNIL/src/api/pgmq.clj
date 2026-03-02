@@ -88,6 +88,10 @@
       comp-result
       (throw-error! ::pgmq-result-missing-keys nil {:comp-result comp-result}))))
 
+(defn read-pgmq-results-batch
+  [batch-size vt]
+  (read-from-pgmq "compilation_results" batch-size vt))
+
 (defn delete-pgmq-msg
   "delete a message from pgmq given the queue and message id"
   [queue msg-id]
