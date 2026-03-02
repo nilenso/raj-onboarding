@@ -44,3 +44,8 @@
  - concurrency contenders
     - for a given amount of reads, mapv (force eager eval) the futures of results into compilation results handler  
     - fixed worker pipeline from core.async : decided to proceed with this given am using core.async anyway
+ - visibility timeout for result reads during polls
+    - setting a viz timeout for messages to 0 also works when I pick up work cause there's just one poller and am removing the messages from the queue in case of succesful application 
+    - but would not like these to be re-read on the next polling cycle in case the transactions from the past state still haven't been completed 
+    - need to be empirical with this number : will iterate and updates
+
