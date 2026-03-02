@@ -13,6 +13,10 @@
 
 ### state management with atoms (configs, pools)
 
+### -main: system lifecycle orchestrator
+ - read configs
+ - start servers, register hooks
+
 ### simulating transactions with compilation handler
 
  -  https://github.com/seancorfield/next-jdbc/blob/develop/doc/transactions.md
