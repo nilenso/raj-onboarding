@@ -1,4 +1,4 @@
-# Aspects worth discussing
+# Design Mulls
 
 ### Meta
 
