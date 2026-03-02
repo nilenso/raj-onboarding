@@ -43,3 +43,4 @@
  - stop-chan exposed via return and registerd as shutdown hook as the gateway
  - concurrency contenders
     - for a given amount of reads, mapv (force eager eval) the futures of results into compilation results handler  
+    - fixed worker pipeline from core.async : decided to proceed with this given am using core.async anyway
