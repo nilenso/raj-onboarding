@@ -102,7 +102,6 @@
     (catch Exception e
       (throw-error!  ::function-addition-failed e {:function-name (:name fn-map)}))))
 
-
 (defn delete-function
   "delete a function from the FUNCTIONS table by id"
   [fn-id]
@@ -152,7 +151,22 @@
                  :source "(println \"Hello, World!\")"
                  :status "pending"})
 
+  (get-functions)
+
   (get-function-by-id test-fn-id)
+
+  (keys (get-function-by-id test-fn-id))
+  ;; => (
+  ;; :functions/status
+  ;; :functions/wasm_binary
+  ;; :functions/updated_at
+  ;; :functions/compile_error
+  ;; :functions/created_at
+  ;; :functions/name
+  ;; :functions/source
+  ;; :functions/id
+  ;; :functions/description
+  ;; => :functions/language)
 
   (update-function test-fn-id {:status "ready"})
 
@@ -160,6 +174,4 @@
 
   (delete-function test-fn-id)
 
-  (get-function-by-id test-fn-id)
-
-  )
+  (get-function-by-id test-fn-id))
