@@ -1,9 +1,10 @@
 {:nrepl? true
  :api-server {:http-port 9080
               :nrepl-port 9081
-              :poller {:poll-interval-ms 100
+              :poller {:poll-interval-ms 5000
                        :batch-size 5
-                       :visibilty-timeout-sec 5}
+                       :visibilty-timeout-sec 5
+                       :worker-count 5}
               :db-cp {:maximum-pool-size 10
                       :minimum-idle 2
                       :connection-timeout 30000
