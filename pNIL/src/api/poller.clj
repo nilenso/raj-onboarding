@@ -1,29 +1,50 @@
 (ns api.poller
   (:require
    [taoensso.telemere :as t :refer [log!]]
-   [clojure.core.async :as a :refer [go-loop timeout chan alts!]]
+   [clojure.core.async :as a :refer [go-loop timeout chan alts! pipeline]]
    [api.handlers.compilations :refer [process-compilation-result]]
    [api.pgmq :as q]
    [api.utils :as u :refer [throw-error!]]))
 
-(defn start-poller [poller-config]
+(defn start-poller
+  [{:keys [poll-interval-ms
+           visibilty-timeout-sec
+           batch-size
+           worker-count]}]
   (log! {:level :info
          :msg "Starting compilation results poller"
-         :data {:poller-config poller-config}})
+         :data {:poll-interval-ms poll-interval-ms
+                :visibilty-timeout-sec visibilty-timeout-sec
+                :batch-size batch-size
+                :worker-count worker-count}})
   (let [stop-chan (chan)
-        poll-interval-ms (:poll-interval-ms poller-config)
-        poll-batch-size (:batch-size poller-config)]
+        work-chan (chan batch-size)     
+        out-chan (chan)]                
+
+    ;; start worker pipeline to process compilation results
+    (pipeline worker-count
+              out-chan                  
+              (comp (map process-compilation-result) ;transducer application order : map runs first
+                    (filter (constantly false))) ;don't need the results, not populating out-chan
+              work-chan) 
+    
     (go-loop []
-      (log! {:level :debug
-             :msg "Polling for compilation results"})
+      (comment (log! {:level :debug
+                      :msg "Polling for compilation results"}))
       (let [[val port] (alts! [stop-chan (timeout poll-interval-ms)])]
         (if (= port stop-chan)
-          (log! {:level :info
-                 :msg "received stop signal, exiting poller loop"})
+          (do (log! {:level :info
+                     :msg "received stop signal, exiting poller loop"})
+              (a/close! work-chan))
           (do
-
-            ;; poll for results and mapv futures of compilation result handlers
-            
+            (try
+              (let [messages (q/read-pgmq-results-batch batch-size visibilty-timeout-sec)]
+                (doseq [msg messages]
+                  (a/>! work-chan msg))) ;async put that parks when work-chan full (backpressure)
+              (catch Exception e
+                (log! {:level :error
+                       :id ::poller-loop-error
+                       :data {:error e}})))
             (recur)))))
     stop-chan))
 
