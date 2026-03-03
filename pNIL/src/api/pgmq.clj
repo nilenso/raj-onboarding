@@ -67,22 +67,22 @@
    (read-from-pgmq queue 1 0))
   ([queue qty vt]
    (try
-     (let [result (execute-one! (get-pool) ["SELECT * FROM pgmq.read(?, ?::integer, ?::integer, ?::jsonb)" queue vt qty (->pgobject {})])]
+     (let [results (execute! (get-pool) ["SELECT * FROM pgmq.read(?, ?::integer, ?::integer, ?::jsonb)" queue vt qty (->pgobject {})])]
        (log! {:level :debug
-                    :msg "Read from pgmq"
+              :msg "Read from pgmq"
               :data {:queue queue
-                     :result result}})
-       (when result
-         (assoc
-          (keywordize-keys (<-pgobject (:message result)))
-                :msg-id (:msg_id result))))
+                     :results results}})
+       (mapv #(assoc
+               (keywordize-keys (<-pgobject (:message %)))
+               :msg-id (:msg_id %))
+             results))
      (catch Exception e
        (throw-error! ::pgmq-read-failed e {:queue queue})))))
 
 (defn read-pgmq-result
   "read and validate compilation result from pgmq"
   []
-  (let [comp-result (read-from-pgmq "compilation_results")]
+  (let [comp-result (first (read-from-pgmq "compilation_results"))]
     (if (or (nil? comp-result)          ;; allow nil result for empty queue case
             (subset? #{:id :language :source :status :wasm_binary} (set (keys comp-result))))
       comp-result
