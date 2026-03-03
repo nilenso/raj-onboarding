@@ -10,7 +10,6 @@
 
   (u/process-cli-args args)
 
-  
   ;; init nrepl if configured
   (u/env-predicated-nrepl-init @u/configs :api-server)
 
