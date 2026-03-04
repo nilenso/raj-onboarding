@@ -25,6 +25,8 @@
 
 (comment
 
+  ;; -main server runs on 9080
+  ;; using this for quick iterations
   (def stop-fn (run-server 9079))
 
   (stop-fn)
