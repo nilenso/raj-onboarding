@@ -88,7 +88,7 @@
                  :id ::pgmq-publish-successful
                  :data {:fn-id fn-id
                         :fn-name (:functions/name db-ack)}})
-          ;; TODO : retry mechanism?
+          ;; TODO : retry mechanism with exp backoff?
           (catch Exception e
             (log! {:level :error
                    :id ::pgmq-publish-failed
@@ -119,7 +119,7 @@
   [req]
   (let [fn-id (some-> req :path-params :id)
         function (sanitize-function-data (db/get-function-by-id (u/uuidfy fn-id)))]
-    (if function
+    (if (not (empty? function))
       (do
         (log! {:level :debug
                :id ::get-function-by-id-handler-successful
@@ -132,6 +132,25 @@
                :id ::get-function-by-id-handler-not-found
                :data {:fn-id fn-id}})
         (respond-erroneous-request (ex-info "Function not found" {:fn-id fn-id}))))))
+
+(defn delete-function-handler
+  "handler for DELETE /functions/:id endpoint, which deletes a function by id from the database"
+  [req]
+  (let [fn-id (some-> req :path-params :id)]
+    (try
+      (db/delete-function (u/uuidfy fn-id))
+      (log! {:level :debug
+             :id ::delete-function-handler-successful
+             :data {:fn-id fn-id}})
+      (r/response (str "Function with id " fn-id " deleted successfully"))
+      (catch Exception e
+        (log! {:level :error
+               :id ::delete-function-handler-failed
+               :data {:fn-id fn-id
+                      :error (ex-message e)}})
+        (r/bad-request {:error "Failed to delete function"})))))
+
+
 (comment
 
   (sanitize-function-data {:functions/id #uuid "123e4567-e89b-12d3-a456-426614174000"
