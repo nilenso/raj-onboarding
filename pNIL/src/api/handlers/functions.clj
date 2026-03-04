@@ -83,14 +83,16 @@
     (catch Exception e
       (respond-erroneous-request e))))
 
-(defn get-functions-handler [req]
-  (let [functions  (map #(update-keys (dissoc % ;;unqualify keys
-                                              :wasm_binary)
-                                      (comp keyword name))
-                        (db/get-functions))]
+(defn get-functions-handler
+  "handler for GET /functions endpoint, which retrieves all functions from the database and returns them to the client, after sanitizing the data to mask certain keys"
+  [req]
+  (let [functions  (mapv #(update-keys (dissoc % ;;unqualify keys
+                                               :wasm_binary)
+                                       (comp keyword name))
+                         (db/get-functions))]
     (log! {:level :debug
            :id ::get-functions-handler-called
            :data {:num-functions (count functions)}})
-    {:status 200
-     :body functions
-     :headers {"Content-Type" "application/json"}}))
+    (r/content-type
+     (r/response (write-str functions) )
+     "application/json")))
