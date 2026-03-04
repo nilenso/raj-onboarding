@@ -3,7 +3,10 @@
 # health check
 GET :api-url/status
 
-# post a function
+#get all functions
+GET :api-url/functions
+
+# post a function (happy path)
 POST :api-url/functions
 Content-Type: application/json
 
@@ -14,9 +17,25 @@ Content-Type: application/json
     "source": "export function handle(input: string): string { return input; }"
 }
 
-# store fn id
-#// Location: /functions/9df5cb6e-b64c-4327-9bed-0b5f990954f6
-:fn-id=9df5cb6e-b64c-4327-9bed-0b5f990954f6
+# post a function (invalid language)
+POST :api-url/functions
+Content-Type: application/json
+
+{
+    "name": "echo",
+    "description": "Returns input unchanged",
+    "language": "not-assemblyscript",
+    "source": "export function handle(input: string): string { return input; }"
+}
+
+# post a function (insufficient fn-map keys)
+POST :api-url/functions
+Content-Type: application/json
+
+{
+    "name": "echo",
+    "source": "export function handle(input: string): string { return input; }"
+}
 
 # get compilation status
 GET :api-url/functions/:fn-id
