@@ -93,14 +93,20 @@
   "insert a new function into the FUNCTIONS table"
   [fn-map]
   (try
-    (let [result (insert! (get-pool) :functions (if (get fn-map :status)
-                                                  (assoc fn-map :status
-                                                         (enwrap-pg-status-enum (:status fn-map)))
-                                                  fn-map))]
-      (log! {:level :debug :id ::function-addition-successful :data fn-map})
+    (let [result (insert! (get-pool)
+                          :functions
+                          (if (get fn-map :status)
+                            (assoc fn-map :status
+                                   (enwrap-pg-status-enum (:status fn-map)))
+                            fn-map))]
+      (log! {:level :debug
+             :id ::function-addition-successful
+             :data fn-map})
       result)
     (catch Exception e
-      (throw-error!  ::function-addition-failed e {:function-name (:name fn-map)}))))
+      (throw-error!  ::function-addition-failed
+                     e
+                     {:function-name (:name fn-map)}))))
 
 (defn delete-function
   "delete a function from the FUNCTIONS table by id"
