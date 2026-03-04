@@ -114,7 +114,8 @@
 
 (comment
 
-  (read-configs)
+  (reset! configs
+          (read-configs))
 
   (assert (= "Test"
              (String. (base64->bytes (bytes->base64 (.getBytes "Test"))))))
