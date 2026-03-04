@@ -15,7 +15,8 @@ Content-Type: application/json
 }
 
 # store fn id
-:fn-id=a3cf4ef6-52f0-48be-995b-8b4d6b292ecb
+#// Location: /functions/9df5cb6e-b64c-4327-9bed-0b5f990954f6
+:fn-id=9df5cb6e-b64c-4327-9bed-0b5f990954f6
 
 # get compilation status
 GET :api-url/functions/:fn-id
