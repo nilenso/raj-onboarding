@@ -63,15 +63,25 @@
   [err]
   (r/bad-request {:error (ex-message err)
                   :data (ex-data err)}))
+(defn post-function-handler
+  "handler for POST /functions endpoint, which registers a new function and sends it to the compiler via pgmq"
+  ;; TODO : yet to push to pgmq : dispatch a (go ..)
+  [req]
+  (try
+    (let [fn-data (build-fn-map (:body req))
+          db-ack (db/add-function (-> fn-data
+                                      coerce-function-map
+                                      valid-function-language?))
           fn-id (:functions/id db-ack)]
       (log! {:level :debug
              :id ::post-function-handler-successful
              :data {:req-fn-body fn-data
                     :fn-id (:functions/id db-ack)
                     :fn-name (:functions/name db-ack)}})
-      (r/created (str "/functions/" fn-id) (write-str (sanitize-function-data db-ack))))
+      (r/created (str "/functions/" fn-id)
+                 (write-str (sanitize-function-data db-ack))))
     (catch Exception e
-      (throw-error! ::post-function-handler-failed e))))
+      (respond-erroneous-request e))))
 
 (defn get-functions-handler [req]
   (let [functions  (map #(update-keys (dissoc % ;;unqualify keys
