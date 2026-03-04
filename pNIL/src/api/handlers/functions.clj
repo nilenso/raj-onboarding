@@ -1,7 +1,9 @@
 (ns api.handlers.functions
   (:require
    [api.db :as db]
+   [api.pgmq :as q]
    [clojure.data.json :refer [read-str write-str]]
+   [clojure.core.async :refer [thread]]
    [clojure.set :as s]
    [api.utils :as u :refer [throw-error!]]
    [ring.util.response :as r]
@@ -66,7 +68,6 @@
                   :data (ex-data err)}))
 (defn post-function-handler
   "handler for POST /functions endpoint, which registers a new function and sends it to the compiler via pgmq"
-  ;; TODO : yet to push to pgmq : dispatch a (go ..)
   [req]
   (try
     (let [fn-data (build-fn-map (:body req))
@@ -79,6 +80,21 @@
              :data {:req-fn-body fn-data
                     :fn-id (:functions/id db-ack)
                     :fn-name (:functions/name db-ack)}})
+      (thread
+        (try
+          (db/update-function fn-id {:status "compiling"})
+          (q/publish-pgmq-job db-ack)
+          (log! {:level :debug
+                 :id ::pgmq-publish-successful
+                 :data {:fn-id fn-id
+                        :fn-name (:functions/name db-ack)}})
+          ;; TODO : retry mechanism?
+          (catch Exception e
+            (log! {:level :error
+                   :id ::pgmq-publish-failed
+                   :data {:fn-id fn-id
+                          :fn-name (:functions/name db-ack)
+                          :error (ex-message e)}}))))
       (r/created (str "/functions/" fn-id)
                  (write-str (sanitize-function-data db-ack))))
     (catch Exception e
