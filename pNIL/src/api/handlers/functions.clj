@@ -114,6 +114,24 @@
      (r/response (write-str functions) )
      "application/json")))
 
+(defn get-function-by-id-handler
+  "handler for GET /functions/:id endpoint, which retrieves a function by id from the database and returns it to the client, after sanitizing the data to mask certain keys"
+  [req]
+  (let [fn-id (some-> req :path-params :id)
+        function (sanitize-function-data (db/get-function-by-id (u/uuidfy fn-id)))]
+    (if function
+      (do
+        (log! {:level :debug
+               :id ::get-function-by-id-handler-successful
+               :data {:fn-id fn-id}})
+        (r/content-type
+         (r/response (write-str function))
+         "application/json"))
+      (do
+        (log! {:level :debug
+               :id ::get-function-by-id-handler-not-found
+               :data {:fn-id fn-id}})
+        (respond-erroneous-request (ex-info "Function not found" {:fn-id fn-id}))))))
 (comment
 
   (sanitize-function-data {:functions/id #uuid "123e4567-e89b-12d3-a456-426614174000"

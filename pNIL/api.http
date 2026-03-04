@@ -38,6 +38,8 @@ Content-Type: application/json
 }
 
 # get compilation status
+# fetch anyone id
+:fn-id=c7ddc0b5-3b00-4d76-946b-17a9e2b4a083
 GET :api-url/functions/:fn-id
 
 # poll until status ready

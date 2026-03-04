@@ -10,7 +10,9 @@
   (r/ring-handler
    (r/router [["/status" {:get ahc/status-handler}]
               ["/functions" {:get f/get-functions-handler
-                             :post f/post-function-handler}]])))
+                             :post f/post-function-handler}]
+              ["/functions/:id" {:get f/get-function-by-id-handler
+                                 :delete f/delete-function-handler}]])))
 
 (defn run-server
   "Starts the API server on the specified HTTP port."
