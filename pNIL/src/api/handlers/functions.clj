@@ -2,6 +2,7 @@
   (:require
    [api.db :as db]
    [clojure.data.json :refer [read-str write-str]]
+   [clojure.set :as s]
    [api.utils :as u :refer [throw-error!]]
    [ring.util.response :as r]
    [taoensso.telemere :as t :refer [log!]]))
@@ -96,3 +97,33 @@
     (r/content-type
      (r/response (write-str functions) )
      "application/json")))
+
+(comment
+
+  (sanitize-function-data {:functions/id #uuid "123e4567-e89b-12d3-a456-426614174000"
+                           :functions/name "test-fn"
+                           :functions/language "clojure"
+                           :functions/source "(println \"Hello, World!\")"
+                           :functions/description "a test function"
+                           :functions/status "pending"
+                           :functions/wasm_binary (byte-array [0 1 2 3])
+                           :functions/compile_error nil})
+
+  (coerce-function-map {:name "test-fn"
+                        :language "clojure"
+                        :source "(println \"Hello, World!\")"
+                        :description "a test function"})
+
+  (coerce-function-map {:name "test-fn"
+                        :language "clojure"
+                        :source "(println \"Hello, World!\""})
+
+  (coerce-function-map {:name "test-fn"
+                        :language "clojure"
+                        :source "(println \"Hello, World!\")"
+                        :description "a test function"
+                        :extra-key "should be ignored"})
+
+  (valid-function-language? {:language "clojure"})
+
+  (valid-function-language? {:language "assemblyscript"}))
