@@ -20,9 +20,6 @@
                                         :name
                                         :description})
 
-;; valid languages for function registration; this is derived from the implemented languages in the configs, but we can also hardcode it here if we want to be more strict about it
-(def ^:private valid-languages (:implemented-languages @u/configs))
-
 (defn- sanitize-function-data
   "mask certain keys from the function data before responding to client, to avoid sending large binary data or potentially sensitive compile error messages"
   [function-data]
@@ -44,15 +41,16 @@
 (defn- valid-function-language?
   "takes the fn-map and returns the fn-map if the language is valid, otherwise throws an error"
   [fn-map]
-  (if (valid-languages (keyword (:language fn-map)))
-    fn-map
-    (throw-error! ::invalid-function-language
-                  (ex-info "Invalid function language"
-                           {:language (:language fn-map)
-                            :valid-languages valid-languages})
-                  {:reason "invalid function language"
-                   :valid-languages valid-languages
-                   :provided-language (:language fn-map)})))
+  (let [valid-languages (:implemented-languages @u/configs)]
+    (if (valid-languages (keyword (:language fn-map)))
+      fn-map
+      (throw-error! ::invalid-function-language
+                    (ex-info "Invalid function language"
+                             {:language (:language fn-map)
+                              :valid-languages valid-languages})
+                    {:reason "invalid function language"
+                     :valid-languages valid-languages
+                     :provided-language (:language fn-map)}))))
 
 (defn- build-fn-map
   "build a function map from an input stream"
