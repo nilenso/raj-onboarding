@@ -1,4 +1,4 @@
-:api-url=http://localhost:9079
+:api-url=http://localhost:9080
 
 # health check
 GET :api-url/status
@@ -39,7 +39,7 @@ Content-Type: application/json
 
 # get compilation status
 # fetch anyone id
-:fn-id=c7ddc0b5-3b00-4d76-946b-17a9e2b4a083
+:fn-id=6f7c095d-a36c-47dc-bacc-76adc96d6d87
 GET :api-url/functions/:fn-id
 
 
@@ -61,7 +61,7 @@ GET :api-url/executions
 # see all executions so far for a func
 GET :api-url/functions/:fn-id/executions
 
-:exec-id=33dde644-73e4-4709-add8-78ab2c51edaf
+:exec-id=918c78f0-f50b-4c77-841f-da57e83844bb
 
 #get info on specific exec
 GET :api-url/executions/:exec-id

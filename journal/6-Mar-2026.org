@@ -1,0 +1,6 @@
+#+title: 6 Mar 2026
+
+ - clojure e2e write done 
+ - been a long time : cider, emacs , clojure , repl : fun
+ - muscle memory good now : don't have to think : rapid repl driven iterations
+ - test suite delegated to opencode while I sleep
