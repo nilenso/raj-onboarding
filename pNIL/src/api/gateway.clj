@@ -14,6 +14,7 @@
                              :post f/post-function-handler}]
               ["/functions/:id" {:get f/get-function-by-id-handler
                                  :delete f/delete-function-handler}]
+              ["/functions/:id/executions" {:get e/get-function-executions-handler}]
               ["/executions" {:get e/get-executions-handler}]])))
 
 (defn run-server

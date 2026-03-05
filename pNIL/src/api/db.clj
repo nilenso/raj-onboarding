@@ -179,6 +179,18 @@
     (catch Exception e
       (throw-error! ::execution-retrieval-failed e))))
 
+(defn get-function-executions [fn-id]
+  "retrieve all executions for a given function id"
+  (try
+    (let [executions (execute! (get-pool) ["SELECT * FROM EXECUTIONS WHERE function_id = ?;" (u/uuidfy fn-id)])]
+      (log! {:level :debug
+             :id ::function-executions-retrieved-successfully
+             :data {:fn-id fn-id
+                    :num-executions (count executions)}})
+      (mapv sanitize-execution executions))
+    (catch Exception e
+      (throw-error! ::function-execution-retrieval-failed e {:fn-id fn-id}))))
+
 (comment
   (start-pool!)
 

@@ -14,7 +14,7 @@
   [request]
   (try
     (let [executions (db/get-executions)]
-      (log! {:level :info
+      (log! {:level :debug
              :msg "Fetched all executions"
              :data {:execution-count (count executions)}})
       (r/content-type
@@ -22,3 +22,19 @@
        "application/json"))
     (catch Exception e
       (throw-error! ::get-executions-failed e))))
+
+(defn get-function-executions-handler
+  "handler for GET /functions/:id/executions, which retrieves all executions for a given function id"
+  [req]
+  (try
+    (let [fn-id (some-> req :path-params :id)
+          executions (db/get-function-executions (u/uuidfy fn-id))]
+      (log! {:level :debug
+             :msg "Fetched executions for function"
+             :data {:fn-id fn-id
+                    :execution-count (count executions)}})
+      (r/content-type
+       (r/response (write-str executions))
+       "application/json"))
+    (catch Exception e
+      (throw-error! ::get-function-executions-failed e))))
