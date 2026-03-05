@@ -52,6 +52,13 @@
     (catch Exception e
       (throw-error! ::pgmq-publish-failed e))))
 
+(defn- build-compilation-job
+  "extracts a compiler compliant function map from a db function record, to be sent as a compilation job to pgmq"
+  [fn-map]
+  ({:functionId (:functions/id fn-map)
+    :language (:functions/language fn-map)
+    :source (:functions/source fn-map)}))
+
 (defn publish-pgmq-job
   "publish a job to pgmq, given a function map"
   [fn-map]
@@ -59,7 +66,7 @@
                (:functions/language fn-map)
                (:functions/source fn-map))
           "fn-map contains id, language and source keys")
-  (publish-pgmq-message "compilation_jobs" fn-map))
+  (publish-pgmq-message "compilation_jobs" (build-compilation-job fn-map)))
 
 (defn read-from-pgmq
   "read qty messages from queue with visibility timeout of vt, default being reading one without marking it as invisible"
