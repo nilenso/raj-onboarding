@@ -4,6 +4,7 @@
    [taoensso.telemere :as t :refer [log!]]
    [org.httpkit.server :as hks]
    [api.handlers.functions :as f]
+   [api.handlers.executions :as e]
    [api.handlers.core :as ahc]))
 
 (def app
@@ -12,7 +13,8 @@
               ["/functions" {:get f/get-functions-handler
                              :post f/post-function-handler}]
               ["/functions/:id" {:get f/get-function-by-id-handler
-                                 :delete f/delete-function-handler}]])))
+                                 :delete f/delete-function-handler}]
+              ["/executions" {:get e/get-executions-handler}]])))
 
 (defn run-server
   "Starts the API server on the specified HTTP port."

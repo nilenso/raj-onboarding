@@ -55,6 +55,9 @@ Content-Type: application/json
 
 {"input": {"message": "Hello, World!"}}
 
+#see all executions
+GET :api-url/executions
+
 # see all executions so far for a func
 GET :api-url/functions/:fn-id/executions
 

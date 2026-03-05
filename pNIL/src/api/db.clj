@@ -77,7 +77,7 @@
       (select-keys [:id
                     :status
                     :name
-                    :desc])))
+                    :description])))
 
 (defn get-functions
   "retrieve all functions from the FUNCTIONS table"

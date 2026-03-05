@@ -103,10 +103,7 @@
 (defn get-functions-handler
   "handler for GET /functions endpoint, which retrieves all functions from the database and returns them to the client, after sanitizing the data to mask certain keys"
   [req]
-  (let [functions  (mapv #(update-keys (dissoc % ;;unqualify keys
-                                               :wasm_binary)
-                                       (comp keyword name))
-                         (db/get-functions))]
+  (let [functions (db/get-functions)]
     (log! {:level :debug
            :id ::get-functions-handler-called
            :data {:num-functions (count functions)}})
