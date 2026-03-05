@@ -80,6 +80,10 @@ public record CompilationResult(
 ) {}
 ```
 
+### Chicory Wasm
+ - this was going to be a bijection from java to clojure (transliteration into s-exps) : instead using this as an opportunity to understand the build mechanisms of shipping java source in clojure project 
+ - just copying the java wasm source in here and exposing a wrapper
+
 # ToDos
 
  - [ ] schema source of truths for multilanguage projects
