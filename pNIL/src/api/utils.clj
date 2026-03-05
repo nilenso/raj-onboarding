@@ -81,9 +81,10 @@
   ([id cause]
    (annotated-error! id cause {}))
   ([id cause data]
-   (let [ex-data (assoc data :id id)]
-     (error! {:id id :data data}
-             (ex-info (str id) ex-data cause)))))
+   (let [ex-data (assoc data :id id)
+         ex (ex-info (str id) ex-data cause)]
+     (error! {:id id :data data} ex)
+     ex)))
 
 (defn throw-error!
   "log and throw an error with a consistent structure"
