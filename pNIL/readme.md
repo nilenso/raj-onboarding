@@ -51,6 +51,8 @@
     - setting a viz timeout for messages to 0 also works when I pick up work cause there's just one poller and am removing the messages from the queue in case of succesful application 
     - but would not like these to be re-read on the next polling cycle in case the transactions from the past state still haven't been completed 
     - need to be empirical with this number : will iterate and updates
+    
+ - use native :read-count of pgmq messages for a retry upper bound : in the compilation results handler
 
 ### Schema management 
 
