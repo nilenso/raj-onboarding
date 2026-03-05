@@ -52,3 +52,40 @@
     - but would not like these to be re-read on the next polling cycle in case the transactions from the past state still haven't been completed 
     - need to be empirical with this number : will iterate and updates
 
+### Schema management 
+
+ - need to figure out where the common source of truth needs to be placed : as of now is just tribal knowledge : in the java codebase was a separate
+
+ - compilations-jobs
+```
+package com.projectnil.common.domain.queue;
+import java.util.UUID;
+public record CompilationJob(
+    UUID functionId,
+    String language,
+    String source
+) {}
+```
+ - compilation-results
+```
+package com.projectnil.common.domain.queue;
+import java.util.UUID;
+public record CompilationResult(
+    UUID functionId,
+    boolean success,
+    byte[] wasmBinary,
+    String error
+) {}
+```
+
+# ToDos
+
+ - [ ] schema source of truths for multilanguage projects
+  - protobufs?
+
+ - [ ] retry mechanism with a pipeline for the functions post handler
+  - current core.async thread for post function handler should be sync : timeout if unable to push to pipeline queue : more accurate info regarding state of submitted func : similar pattern to what the poller is doing (communicating sequential processes)
+
+ - [ ] comments -> test suite
+ 
+ - [ ] semantically smarter names
