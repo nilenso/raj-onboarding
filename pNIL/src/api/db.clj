@@ -67,13 +67,24 @@
   [status]
   (as-other (upper-case status)))
 
+(defn- sanitize-function
+  "helper function to convert raw database function maps to a more user-friendly format"
+  [fn-map]
+  (-> fn-map
+      (update-keys (comp keyword name))
+      (select-keys [:id
+                    :status
+                    :name
+                    :desc])))
+
 (defn get-functions
   "retrieve all functions from the FUNCTIONS table"
   []
   (try
-    (let [result (execute! (get-pool) ["SELECT * FROM FUNCTIONS;"])]
+    (let [functions (execute! (get-pool) ["SELECT * FROM FUNCTIONS;"])]
       (log! :debug ::functions-retrieved-successfully)
-      result)
+      (mapv sanitize-function
+            functions))
     (catch Exception e
       (throw-error! ::function-retrieval-failed e))))
 
