@@ -6,7 +6,7 @@
    [clojure.string :as s :refer [upper-case]]
    [taoensso.telemere :as t :refer [log!]]
    [hikari-cp.core :as hcp]
-   [api.utils :as u :refer [throw-error!]]))
+   [api.utils :as u :refer [throw-error! <-pgobject ->pgobject]]))
 
 (defn- pool-options
   "generate HikariCP options"
@@ -157,9 +157,27 @@
 ;; :functions/name
 ;; :functions/source
 ;; :functions/id (primary) : dissoc before update
-;; => :functions/language)
+;; :functions/language)
 
 ;; executions API
+
+(defn- sanitize-execution
+  "helper function to convert raw database execution maps to a more user-friendly format"
+  [execution-map]
+  (-> execution-map
+      (update-keys (comp keyword name))
+      (update :input <-pgobject)
+      (update :output <-pgobject)))
+
+(defn get-executions
+  "retrieve all executions from the EXECUTIONS table"
+  []
+  (try
+    (let [executions (execute! (get-pool) ["SELECT * FROM EXECUTIONS;"])]
+      (log! :debug ::executions-retrieved-successfully)
+      (mapv sanitize-execution executions))
+    (catch Exception e
+      (throw-error! ::execution-retrieval-failed e))))
 
 (comment
   (start-pool!)
