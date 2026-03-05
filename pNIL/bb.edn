@@ -1,10 +1,15 @@
 {:min-bb-version "0.4.0"
  :tasks
  {run-api-dev {:doc "run the api server[DEV]"
+               :depends #{compile-java}
                :task (shell "clj -M -m api.main --configs-file config.edn --secrets-file secrets.edn --log-level debug")}
 
   run-api-prod {:doc "run the api server[PROD]"
+                :depends #{compile-java}
                 :task (shell "clj -M -m api.main --configs-file config.edn --secrets-file secrets.edn --log-level info")}
+
+  compile-java {:doc "compile java sources"
+                :task (shell "clj -T:build compile-java")}
 
   test {:doc "Run tests using the JVM clj tool"
         :task (shell "clj -X:test")}
