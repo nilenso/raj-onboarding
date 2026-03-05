@@ -254,4 +254,9 @@
 
   (delete-function test-fn-id)
 
-  (get-function-by-id test-fn-id))
+  (get-function-by-id test-fn-id)
+
+  (add-execution {:function_id test-fn-id
+                  :input {:foo "bar"}
+                  :status "pending"})
+
