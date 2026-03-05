@@ -164,10 +164,10 @@
 (defn- sanitize-execution
   "helper function to convert raw database execution maps to a more user-friendly format"
   [execution-map]
-  (-> execution-map
-      (update-keys (comp keyword name))
-      (update :input <-pgobject)
-      (update :output <-pgobject)))
+  (let [m (update-keys execution-map (comp keyword name))]
+    (cond-> m
+      (:input m)  (update :input <-pgobject)
+      (:output m) (update :output <-pgobject))))
 
 (defn get-executions
   "retrieve all executions from the EXECUTIONS table"
