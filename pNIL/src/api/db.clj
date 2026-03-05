@@ -203,6 +203,23 @@
     (catch Exception e
       (throw-error! ::get-execution-by-id-failed e {:ex-id ex-id}))))
 
+(defn add-execution
+  "insert a new execution into the EXECUTIONS table"
+  [execution-map]
+  (try
+    (let [result (insert! (get-pool)
+                          :executions
+                          (cond-> execution-map
+                            (:status execution-map)
+                            (update :status enwrap-pg-status-enum)
+                            (:input execution-map)
+                            (update :input ->pgobject)))]
+      (log! {:level :debug
+             :id ::execution-addition-successful
+             :data {:execution-id (:executions/id result)}})
+      result)
+    (catch Exception e
+      (throw-error! ::execution-addition-failed e {:execution-map execution-map}))))
 (comment
   (start-pool!)
 
