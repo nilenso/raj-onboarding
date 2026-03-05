@@ -61,7 +61,7 @@ GET :api-url/executions
 # see all executions so far for a func
 GET :api-url/functions/:fn-id/executions
 
-:exec-id=06eb8217-c26d-4847-ad3f-561a99e02186
+:exec-id=33dde644-73e4-4709-add8-78ab2c51edaf
 
 #get info on specific exec
 GET :api-url/executions/:exec-id

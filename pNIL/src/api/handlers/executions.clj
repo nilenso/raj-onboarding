@@ -5,7 +5,7 @@
    [clojure.data.json :refer [read-str write-str]]
    [clojure.core.async :refer [thread]]
    [clojure.set :as s]
-   [api.utils :as u :refer [throw-error!]]
+   [api.utils :as u :refer [throw-error! respond-erroneous-request]]
    [ring.util.response :as r]
    [taoensso.telemere :as t :refer [log!]]))
 
@@ -23,6 +23,12 @@
     (catch Exception e
       (throw-error! ::get-executions-failed e))))
 
+(defn execute-function-handler
+  "handler for POST /functions/:id/execute, which initiates an execution for a given function id"
+  [req]
+  ;; TODO
+  )
+
 (defn get-function-executions-handler
   "handler for GET /functions/:id/executions, which retrieves all executions for a given function id"
   [req]
@@ -38,3 +44,23 @@
        "application/json"))
     (catch Exception e
       (throw-error! ::get-function-executions-failed e))))
+
+(defn get-execution-by-id-handler
+  "handler for GET /executions/:id, which retrieves an execution by id"
+  [req]
+  (try
+    (let [execution-id (some-> req :path-params :id)
+          execution (db/get-execution-by-id (u/uuidfy execution-id))]
+      (if execution
+        (do
+          (log! {:level :debug
+                 :msg "Fetched execution by id"
+                 :data {:execution-id execution-id}})
+          (r/content-type
+           (r/response (write-str execution))
+           "application/json"))
+        (do
+          (log! {:level :debug
+                 :msg "Execution not found"
+                 :data {:execution-id execution-id}})
+          (respond-erroneous-request (ex-info "Execution not found" {:execution-id execution-id})))))))

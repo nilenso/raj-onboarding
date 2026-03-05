@@ -2,6 +2,7 @@
   (:require
    [aero.core :refer [read-config]]
    [clojure.java.io :as io]
+   [ring.util.response :as r]
    [clojure.tools.cli :refer [parse-opts]]
    [clojure.data.json :as json :refer [write-str read-str]]
    [nrepl.server :as nrepl]
@@ -134,6 +135,12 @@
       (some-> value read-str (with-meta {:pgtype type}))
       value)))
 
+(defn respond-erroneous-request
+  "build a bad request response from an exception, including the message and data from the exception if present"
+  [err]
+  (r/bad-request {:error (ex-message err)
+                  :data (ex-data err)}))
+
 (comment
 
   (reset! configs
@@ -143,3 +150,4 @@
              (String. (base64->bytes (bytes->base64 (.getBytes "Test"))))))
 
   )
+

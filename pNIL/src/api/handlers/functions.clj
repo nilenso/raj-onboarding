@@ -5,7 +5,7 @@
    [clojure.data.json :refer [read-str write-str]]
    [clojure.core.async :refer [thread]]
    [clojure.set :as s]
-   [api.utils :as u :refer [throw-error!]]
+   [api.utils :as u :refer [throw-error! respond-erroneous-request]]
    [ring.util.response :as r]
    [taoensso.telemere :as t :refer [log!]]))
 
@@ -61,11 +61,7 @@
    (read-str (slurp istream))
    keyword))
 
-(defn- respond-erroneous-request
-  "build a bad request response from an exception, including the message and data from the exception if present"
-  [err]
-  (r/bad-request {:error (ex-message err)
-                  :data (ex-data err)}))
+
 (defn post-function-handler
   "handler for POST /functions endpoint, which registers a new function and sends it to the compiler via pgmq"
   [req]

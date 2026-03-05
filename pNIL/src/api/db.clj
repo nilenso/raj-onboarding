@@ -191,6 +191,18 @@
     (catch Exception e
       (throw-error! ::function-execution-retrieval-failed e {:fn-id fn-id}))))
 
+(defn get-execution-by-id
+  "retrieve an execution by id"
+  [ex-id]
+  (try
+    (let [execution (execute-one! (get-pool) ["SELECT * FROM EXECUTIONS WHERE id = ?;" (u/uuidfy ex-id)])]
+      (log! {:level :debug
+             :id ::get-execution-by-id-successful
+             :data {:ex-id ex-id}})
+      (sanitize-execution execution))
+    (catch Exception e
+      (throw-error! ::get-execution-by-id-failed e {:ex-id ex-id}))))
+
 (comment
   (start-pool!)
 
