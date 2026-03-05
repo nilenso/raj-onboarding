@@ -1,33 +1,11 @@
 (ns api.pgmq
   (:require
    [next.jdbc :as jdbc :refer [execute! execute-one!]]
-   [clojure.data.json :as json :refer [write-str read-str]]
    [clojure.set :as set :refer [subset?]]
    [taoensso.telemere :as t :refer [log!]]
    [api.db :as db :refer [get-pool]]
    [clojure.walk :refer [keywordize-keys]]
-   [api.utils :as u :refer [throw-error!]])
-  (:import
-   [org.postgresql.util PGobject]))
-
-(defn- ->pgobject
-  "Transforms Clojure data to a PGobject that contains the data as
-  JSON. PGObject type defaults to `jsonb` but can be changed via
-  metadata key `:pgtype`"
-  [x]
-  (let [pgtype (or (:pgtype (meta x)) "jsonb")]
-    (doto (PGobject.)
-      (.setType pgtype)
-      (.setValue (write-str x)))))
-
-(defn- <-pgobject
-  "Transform PGobject containing `json` or `jsonb` value to Clojure data."
-  [^PGobject v]
-  (let [type  (.getType v)
-        value (.getValue v)]
-    (if (#{"jsonb" "json"} type)
-      (some-> value read-str (with-meta {:pgtype type}))
-      value)))
+   [api.utils :as u :refer [throw-error! <-pgobject ->pgobject]]))
 
 (defn purge-pgmq-queues []
   (try
