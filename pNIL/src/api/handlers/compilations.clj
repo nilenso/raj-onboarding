@@ -10,10 +10,18 @@
 ;; which are then stored in the database and used to update the status of the compilation job
 ;; these aren't http handlers, but are called by the pgmq polling loop
 
+(defn- sanitize-compilation-result
+  "sanitize the compilation result map received from pgmq, to ensure it has the expected keys and formats, and log any discrepancies"
+  [compilation-result]
+  {:id (u/uuidfy (:functionId compilation-result))
+   :compile_error (:error compilation-result)
+   :status (if (:success compilation-result) "READY" "FAILED")
+   :wasm_binary (u/base64->bytes (:wasmBinary compilation-result))})
+
 (defn process-compilation-result
   "update a function status (ready, failed) from compiling (idempotent : ignore if already applied)"
   [compilation-result]
-  (let [fn-id (u/uuidfy (:id compilation-result))
+  (let [fn-id (u/uuidfy (:functionId compilation-result))
         current (db/get-function-by-id fn-id)
         applied? (get #{"READY" "FAILED"} (:functions/status current))]
     ;; when already in a terminal state, ignore the update and log a warning
@@ -25,9 +33,7 @@
                     :current-status (:functions/status current)
                     :incoming-result compilation-result}})
       (try
-        (let [update-map (-> compilation-result
-                             (dissoc :id :language :source :msg-id)
-                             (update :wasm_binary u/base64->bytes))]
+        (let [update-map (sanitize-compilation-result compilation-result)]
           (db/update-function fn-id  update-map))
         (log! {:level :debug
                :id ::compilation-update-applied
@@ -57,7 +63,7 @@
   ;; default pending but sent to compiling right away
 
   ;; add-fn
-  
+
   (def test-fn
     (db/add-function {:name "test-fn"
                       :language "clojure"
@@ -80,7 +86,7 @@
                               :functions/wasm_binary (u/bytes->base64 (.getBytes "00"))})
 
   ;; the poller will read like this
-  
+
   (def test-comp-result
     (pgmq/read-pgmq-result))
 
@@ -95,6 +101,4 @@
 
   ;; checking if the pgmq message was deleted after processing
 
-  (pgmq/read-pgmq-result)
-
-  )
+  (pgmq/read-pgmq-result))
