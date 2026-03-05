@@ -1,6 +1,7 @@
 {:nrepl? true
  :api-server {:http-port 9080
               :nrepl-port 9081
+              :wasm {:timeout-ms 10000}
               :poller {:poll-interval-ms 5000
                        :batch-size 5
                        :visibilty-timeout-sec 5
