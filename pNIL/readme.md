@@ -87,7 +87,7 @@ public record CompilationResult(
 ### MultiLanguage project (Intra and Inter Service)
  - quite a bit of reading : https://clojure.org/guides/tools_build
  - https://github.com/clojure/tools.build
- - flat file struct works for java source : compilation yields the hierarchy declared in the nomenclature
+ - flat file struct works for java source : compilation yields the hierarchy (for class files) declared in the nomenclature
 
 
 # ToDos
