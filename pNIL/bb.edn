@@ -3,6 +3,9 @@
  {run-api-dev {:doc "run the api server[DEV]"
                :task (shell "clj -M -m api.main --configs-file config.edn --secrets-file secrets.edn --log-level debug")}
 
+  run-api-prod {:doc "run the api server[PROD]"
+                :task (shell "clj -M -m api.main --configs-file config.edn --secrets-file secrets.edn --log-level info")}
+
   test {:doc "Run tests using the JVM clj tool"
         :task (shell "clj -X:test")}
 
