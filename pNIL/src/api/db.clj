@@ -279,3 +279,10 @@
                   :input {:foo "bar"}
                   :status "pending"})
 
+  (update-execution (:executions/id (add-execution {:function_id test-fn-id
+                                                    :input {:foo "bar"}
+                                                    :status "pending"}))
+                    {:status "completed"
+                     :output {:result "ok"}})
+
+  )
