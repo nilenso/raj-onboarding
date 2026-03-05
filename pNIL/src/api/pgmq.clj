@@ -55,17 +55,13 @@
 (defn- build-compilation-job
   "extracts a compiler compliant function map from a db function record, to be sent as a compilation job to pgmq"
   [fn-map]
-  ({:functionId (:functions/id fn-map)
-    :language (:functions/language fn-map)
-    :source (:functions/source fn-map)}))
+  {:functionId (:functions/id fn-map)
+   :language (:functions/language fn-map)
+   :source (:functions/source fn-map)})
 
 (defn publish-pgmq-job
   "publish a job to pgmq, given a function map"
   [fn-map]
-  (assert (and (:functions/id fn-map)
-               (:functions/language fn-map)
-               (:functions/source fn-map))
-          "fn-map contains id, language and source keys")
   (publish-pgmq-message "compilation_jobs" (build-compilation-job fn-map)))
 
 (defn read-from-pgmq
@@ -86,18 +82,26 @@
      (catch Exception e
        (throw-error! ::pgmq-read-failed e {:queue queue})))))
 
+(defn- valid-compilation-result?
+  "validate that the compilation result contains the required keys"
+  [compilation-result]
+  (subset? #{:functionId :success :wasmBinary :error} (set (keys compilation-result))))
+
 (defn read-pgmq-result
   "read and validate compilation result from pgmq"
   []
   (let [comp-result (first (read-from-pgmq "compilation_results"))]
-    (if (or (nil? comp-result)          ;; allow nil result for empty queue case
-            (subset? #{:id :language :source :status :wasm_binary} (set (keys comp-result))))
+    (if (or (nil? comp-result) ;; allow nil result for empty queue case
+            (valid-compilation-result? comp-result))
       comp-result
       (throw-error! ::pgmq-result-missing-keys nil {:comp-result comp-result}))))
 
 (defn read-pgmq-results-batch
   [batch-size vt]
-  (read-from-pgmq "compilation_results" batch-size vt))
+  (let [results (read-from-pgmq "compilation_results" batch-size vt)]
+    (if (every? valid-compilation-result? results)
+      results
+      (throw-error! ::pgmq-result-missing-keys nil {:comp-results results}))))
 
 (defn delete-pgmq-msg
   "delete a message from pgmq given the queue and message id"
@@ -158,6 +162,4 @@
                            :functions/wasm_binary "00"}))
 
   ;; eval that repeatedly within a sec and msg-id's should be invisible for a while (or observe an increment of 5), then show up again after
-  (read-pgmq-results-batch 5 2)
-
-  )
+  (read-pgmq-results-batch 5 2))
