@@ -3,7 +3,7 @@
    [api.db :as db]
    [api.wasm :as w]
    [clojure.data.json :refer [read-str write-str]]
-   [api.utils :as u :refer [throw-error!]]
+   [api.utils :as u :refer [throw-error! respond-erroneous-request]]
    [ring.util.response :as r]
    [taoensso.telemere :as t :refer [log!]]))
 
@@ -50,9 +50,10 @@
                                        :started_at  (java.time.LocalDateTime/now)})
           ex-id (:executions/id execution)]
       (try
-        (let [output (w/execute runtime wasm-binary input-json)
+        (let [output-json (w/execute runtime wasm-binary input-json)
+              output-map (read-str output-json)
               updated (db/update-execution ex-id {:status "completed"
-                                                  :output output
+                                                  :output output-map
                                                   :completed_at (java.time.LocalDateTime/now)})]
           (log! {:level :info
                  :id ::execution-completed
