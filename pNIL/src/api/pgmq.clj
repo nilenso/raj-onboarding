@@ -162,4 +162,11 @@
                            :functions/wasm_binary "00"}))
 
   ;; eval that repeatedly within a sec and msg-id's should be invisible for a while (or observe an increment of 5), then show up again after
-  (read-pgmq-results-batch 5 2))
+  (read-pgmq-results-batch 5 2)
+
+  (build-compilation-job {:functions/id (random-uuid)
+                          :functions/language "clojure"
+                          :functions/source "(println \"Hello, World!\")"
+                          :functions/status "pending"})
+
+  )
