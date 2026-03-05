@@ -220,6 +220,25 @@
       result)
     (catch Exception e
       (throw-error! ::execution-addition-failed e {:execution-map execution-map}))))
+
+(defn update-execution
+  "update an execution in the EXECUTIONS table"
+  [ex-id update-map]
+  (try
+    (update! (get-pool) :executions
+             (cond-> (dissoc update-map :id)
+               (:status update-map)
+               (update :status enwrap-pg-status-enum)
+               (:output update-map)
+               (update :output ->pgobject))
+             {:id (u/uuidfy ex-id)})
+    (log! {:level :debug
+           :id ::execution-update-successful
+           :data {:ex-id ex-id}})
+    (get-execution-by-id ex-id)
+    (catch Exception e
+      (throw-error! ::execution-update-failed e {:ex-id ex-id}))))
+
 (comment
   (start-pool!)
 
