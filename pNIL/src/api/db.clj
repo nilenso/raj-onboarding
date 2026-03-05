@@ -67,6 +67,8 @@
   [status]
   (as-other (upper-case status)))
 
+;; functions API
+ 
 (defn- sanitize-function
   "helper function to convert raw database function maps to a more user-friendly format"
   [fn-map]
@@ -156,6 +158,8 @@
 ;; :functions/source
 ;; :functions/id (primary) : dissoc before update
 ;; => :functions/language)
+
+;; executions API
 
 (comment
   (start-pool!)
