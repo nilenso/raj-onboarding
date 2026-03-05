@@ -84,6 +84,10 @@ public record CompilationResult(
  - this was going to be a bijection from java to clojure (transliteration into s-exps) : instead using this as an opportunity to understand the build mechanisms of shipping java source in clojure project 
  - just copying the java wasm source in here and exposing a wrapper
 
+### MultiLanguage project (Intra and Inter Service)
+ - quite a bit of reading : https://clojure.org/guides/tools_build
+ - https://github.com/clojure/tools.build
+
 # ToDos
 
  - [ ] schema source of truths for multilanguage projects
