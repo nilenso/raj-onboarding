@@ -1,31 +1,28 @@
 # Raj's Onboarding
 
-collation of what raj was upto when getting started at nilenso
+index/overview of progress/work done during Raj's Onboarding
 
 ## Overview
 
-### onboarding logs
- - raj journals a little
  
-### projectNIL
- - raj's first blood @ nilenso
- - a primal FaaS:
-   - orchestration in Java 25
-   - transpilation target being wasm
-   - persistence : postgres-18 and pgmq-1.8
+### [java-faas](./java-faas)
+ - refer internal [readme](./java-faas/readme.md) for setup and tutorial
+ - refer architecture [presentation](./scratch/presentations/pres0/pres.org) for design overview
+ - a basic FaaS
+   - two microservices in Java 25 (orchestrator and compiler): (archictecture)
+   - transpilation target being wasm (via [chicory](https://github.com/dylibso/chicory))
+   - persistence layer: postgres-18 and [pgmq-1.8](https://pgmq.github.io/pgmq/latest/)
+   - migrations via [liquibase](https://www.liquibase.com/)
    
-### pNIL
- - raj's rewrites projectNIL in clojure
- - still a primal FaaS
- 
+### clj-faas
+ - refer internal [readme](./clj-faas/readme.md) for setup and tutorial
+ - learning clojure : rewriting the orchestrator from the java-faas while retaining the java compiler
+
 ### Books
 
  - [x] Effective Java
  - [x] User stories applied
  - [ ] The joy of clojure
 
-## Calls to Action
-
- - read [journal entries](./journal)
- - explore the onboarding project (java): [projectNIL](./projectNIL)
- - explore [pNIL(clojure)](./pNIL)
+### onboarding logs
+ - [journals](./journal)

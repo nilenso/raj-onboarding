@@ -1,9 +1,4 @@
-# ProjectNIL (but in clojure)
-
-## Overview
- - writing the overall orchestrator in clojure, while keeping the older java compiler service
-
-# Design Mulls
+# Design mulls
 
 ### Meta
 
@@ -90,7 +85,7 @@ public record CompilationResult(
 
 
 
-# ToDos
+# Defers
 
  - [ ] schema source of truths for multilanguage projects
   - protobufs?
@@ -101,4 +96,5 @@ public record CompilationResult(
  - [ ] comments -> test suite (in the oc-tests branch : passing (opencode + opus generated))
    - not merged in yet
  
- - [ ] semantically smarter names
+ - [x] semantically smarter names
+
