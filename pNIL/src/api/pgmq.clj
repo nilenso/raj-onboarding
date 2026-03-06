@@ -7,7 +7,7 @@
    [clojure.walk :refer [keywordize-keys]]
    [api.utils :as u :refer [throw-error! <-pgobject ->pgobject]]))
 
-(defn purge-pgmq-queues []
+(defn purge-queues []
   (try
     (let [results (mapv #(execute! (get-pool) ["SELECT pgmq.purge_queue(?)" %]) ["compilation_jobs" "compilation_results"])]
       (log! {:level :debug
@@ -16,7 +16,7 @@
     (catch Exception e
       (throw-error! ::pgmq-queue-purges-failed e))))
 
-(defn publish-pgmq-message
+(defn publish-message
   "publish a message to pgmq, given the queue and function map"
   [queue fn-map]
   (try
@@ -37,15 +37,15 @@
    :language (:functions/language fn-map)
    :source (:functions/source fn-map)})
 
-(defn publish-pgmq-job
+(defn publish-compilation-job
   "publish a job to pgmq, given a function map"
   [fn-map]
-  (publish-pgmq-message "compilation_jobs" (build-compilation-job fn-map)))
+  (publish-message "compilation_jobs" (build-compilation-job fn-map)))
 
-(defn read-from-pgmq
+(defn peek-queue
   "read qty messages from queue with visibility timeout of vt, default being reading one without marking it as invisible"
   ([queue]
-   (read-from-pgmq queue 1 0))
+   (peek-queue queue 1 0))
   ([queue qty vt]
    (try
      (let [results (execute! (get-pool) ["SELECT * FROM pgmq.read(?, ?::integer, ?::integer, ?::jsonb)" queue vt qty (->pgobject {})])]
@@ -65,23 +65,23 @@
   [compilation-result]
   (subset? #{:functionId :success :wasmBinary :error} (set (keys compilation-result))))
 
-(defn read-pgmq-result
+(defn peek-result
   "read and validate compilation result from pgmq"
   []
-  (let [comp-result (first (read-from-pgmq "compilation_results"))]
+  (let [comp-result (first (peek-queue "compilation_results"))]
     (if (or (nil? comp-result) ;; allow nil result for empty queue case
             (valid-compilation-result? comp-result))
       comp-result
       (throw-error! ::pgmq-result-missing-keys nil {:comp-result comp-result}))))
 
-(defn read-pgmq-results-batch
+(defn peek-results-batch
   [batch-size vt]
-  (let [results (read-from-pgmq "compilation_results" batch-size vt)]
+  (let [results (peek-queue "compilation_results" batch-size vt)]
     (if (every? valid-compilation-result? results)
       results
       (throw-error! ::pgmq-result-missing-keys nil {:comp-results results}))))
 
-(defn delete-pgmq-msg
+(defn delete-message
   "delete a message from pgmq given the queue and message id"
   [queue msg-id]
   (try
@@ -95,52 +95,52 @@
     (catch Exception e
       (throw-error! ::pgmq-delete-failed e {:queue queue :msg-id msg-id}))))
 
-(defn delete-pgmq-result
+(defn delete-result
   "delete a compilation result from pgmq given the message id"
   [msg-id]
-  (delete-pgmq-msg "compilation_results" msg-id))
+  (delete-message "compilation_results" msg-id))
 
 (comment
   (db/start-pool!)
 
-  (purge-pgmq-queues)
+  (purge-queues)
 
-  (publish-pgmq-job {:functions/id (random-uuid)
-                     :functions/language "clojure"
-                     :functions/source "(println \"Hello, World!\""})
+  (publish-compilation-job {:functions/id (random-uuid)
+                            :functions/language "clojure"
+                            :functions/source "(println \"Hello, World!\""})
 
   (clojure.walk/keywordize-keys
    (<-pgobject
     (:message
-     (read-from-pgmq "compilation_jobs"))))
+     (peek-queue "compilation_jobs"))))
 
-  (read-from-pgmq "compilation_jobs")
+  (peek-queue "compilation_jobs")
 
-  (publish-pgmq-message "compilation_results"
-                        {:functions/id (random-uuid)
-                         :functions/language "clojure"
-                         :functions/source "(println \"Hello, World!\""
-                         :functions/status "success"
-                         :functions/wasm_binary "00"})
+  (publish-message "compilation_results"
+                   {:functions/id (random-uuid)
+                    :functions/language "clojure"
+                    :functions/source "(println \"Hello, World!\""
+                    :functions/status "success"
+                    :functions/wasm_binary "00"})
 
-  (read-from-pgmq "compilation_results")
+  (peek-queue "compilation_results")
 
-  (read-pgmq-result)
+  (peek-result)
 
-  (delete-pgmq-result (get (read-from-pgmq "compilation_results") :msg-id))
+  (delete-result (get (peek-queue "compilation_results") :msg-id))
 
-  (read-pgmq-result)
+  (peek-result)
 
   (for [i (range 10)]
-    (publish-pgmq-message "compilation_results"
-                          {:functions/id (random-uuid)
-                           :functions/language "clojure"
-                           :functions/source "(println \"Hello, World!\")"
-                           :functions/status "success"
-                           :functions/wasm_binary "00"}))
+    (publish-message "compilation_results"
+                     {:functions/id (random-uuid)
+                      :functions/language "clojure"
+                      :functions/source "(println \"Hello, World!\")"
+                      :functions/status "success"
+                      :functions/wasm_binary "00"}))
 
   ;; eval that repeatedly within a sec and msg-id's should be invisible for a while (or observe an increment of 5), then show up again after
-  (read-pgmq-results-batch 5 2)
+  (peek-results-batch 5 2)
 
   (build-compilation-job {:functions/id (random-uuid)
                           :functions/language "clojure"

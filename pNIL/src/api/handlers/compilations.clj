@@ -46,7 +46,7 @@
     ;; delete the pgmq message after processing, to prevent re-processing on the next poll
     ;; not using a transaction here, cause of the way the db api is structured, but if the delete fails, the worst that happens is we try to re-apply the same update on the next poll, which is idempotent
     (try
-      (pgmq/delete-pgmq-result (:msg-id compilation-result))
+      (pgmq/delete-result (:msg-id compilation-result))
       (log! {:level :debug
              :id ::compilation-result-pgmq-message-deleted
              :data {:fn-id fn-id
@@ -57,7 +57,7 @@
 (comment
   (db/start-pool!)
 
-  (pgmq/purge-pgmq-queues)
+  (pgmq/purge-queues)
 
   ;; simuating a registration
   ;; default pending but sent to compiling right away
@@ -77,18 +77,18 @@
   ;; goes to compilation_jobs, picked up by compiler, and then compiler publishes to compilation_results, which is read by the pgmq polling loop and processed by the handler above
 
   ;; simulating a compilation result push from compiler services
-  (pgmq/publish-pgmq-message "compilation_results"
-                             {:functions/id test-fn-id
-                              :functions/language "clojure"
-                              :functions/source "(println \"Hello, World!\""
-                              :functions/status "ready"
-                              :functions/compile_error ""
-                              :functions/wasm_binary (u/bytes->base64 (.getBytes "00"))})
+  (pgmq/publish-message "compilation_results"
+                        {:functions/id test-fn-id
+                         :functions/language "clojure"
+                         :functions/source "(println \"Hello, World!\""
+                         :functions/status "ready"
+                         :functions/compile_error ""
+                         :functions/wasm_binary (u/bytes->base64 (.getBytes "00"))})
 
   ;; the poller will read like this
 
   (def test-comp-result
-    (pgmq/read-pgmq-result))
+    (pgmq/peek-result))
 
   test-comp-result
 
@@ -101,4 +101,4 @@
 
   ;; checking if the pgmq message was deleted after processing
 
-  (pgmq/read-pgmq-result))
+  (pgmq/peek-result))
