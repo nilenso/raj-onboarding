@@ -14,7 +14,7 @@ index/overview of progress/work done during Raj's Onboarding
    - persistence layer: postgres-18 and [pgmq-1.8](https://pgmq.github.io/pgmq/latest/)
    - migrations via [liquibase](https://www.liquibase.com/)
    
-### clj-faas
+### [clj-faas](./clj-faas)
  - refer internal [readme](./clj-faas/readme.md) for setup and tutorial
  - learning clojure : rewriting the orchestrator from the java-faas while retaining the java compiler
 

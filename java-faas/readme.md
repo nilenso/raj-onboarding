@@ -1,7 +1,7 @@
-# ProjectNIL
+# java-faas
 [![integrations](https://github.com/nilenso/raj-onboarding/actions/workflows/integrations.yml/badge.svg?branch=dev)](https://github.com/nilenso/raj-onboarding/actions/workflows/integrations.yml)
 [![deployment](https://github.com/nilenso/raj-onboarding/actions/workflows/deployment.yml/badge.svg?branch=main)](https://github.com/nilenso/raj-onboarding/actions/workflows/deployment.yml)
-**several nomenclature iterations : project(ONE -> ZERO -> NIL)**  
+**several nomenclature iterations : project(ONE -> ZERO -> NIL) -> java-faas
 
 a primal Function-as-a-Service (FaaS) that allows devs to register functions and execute them.
 

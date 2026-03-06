@@ -77,7 +77,7 @@
       (thread
         (try
           (db/update-function fn-id {:status "compiling"})
-          (q/publish-pgmq-job db-ack)
+          (q/publish-compilation-job db-ack)
           (log! {:level :debug
                  :id ::pgmq-publish-successful
                  :data {:fn-id fn-id
