@@ -1,4 +1,4 @@
-(ns api.gateway
+(ns api.httpserver
   (:require
    [reitit.ring :as r]
    [taoensso.telemere :as t :refer [log!]]

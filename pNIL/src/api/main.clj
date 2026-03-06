@@ -3,7 +3,7 @@
    [api.db :as db]
    [api.poller :as p]
    [taoensso.telemere :as t :refer [log!]]
-   [api.gateway :as g]
+   [api.httpserver :as h]
    [api.utils :as u :refer [throw-error!]]))
 
 (defn -main [& args]
@@ -31,7 +31,7 @@
                       (:api-server)
                       (:http-port))]
     (try
-      (let [stop-server-fn (g/run-server http-port)]
+      (let [stop-server-fn (h/run-server http-port)]
         (.addShutdownHook
          (Runtime/getRuntime)
          (Thread. #(do (log! {:level  :info
