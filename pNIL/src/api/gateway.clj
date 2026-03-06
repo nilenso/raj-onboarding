@@ -22,20 +22,8 @@
 (defn run-server
   "Starts the API server on the specified HTTP port."
   [http-port]
-  (let [stop-fn (hks/run-server app {:port http-port})]
+  (let [stop-fn (hks/run-server #'app {:port http-port})]
     (log! {:level :info
            :msg "API server started successfully"
            :data {:http-port http-port}})
     stop-fn))
-
-
-
-(comment
-
-  ;; -main server runs on 9080
-  ;; using this for quick iterations
-  (def stop-fn (run-server 9079))
-
-  (stop-fn)
-
-  )

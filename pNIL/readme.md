@@ -3,7 +3,6 @@
 ## Overview
  - writing the overall orchestrator in clojure, while keeping the older java compiler service
 
-
 # Design Mulls
 
 ### Meta
@@ -83,11 +82,12 @@ public record CompilationResult(
 ### Chicory Wasm
  - this was going to be a bijection from java to clojure (transliteration into s-exps) : instead using this as an opportunity to understand the build mechanisms of shipping java source in clojure project 
  - just copying the java wasm source in here and exposing a wrapper
-
-### MultiLanguage project (Intra and Inter Service)
+ - MultiLanguage project (Intra and Inter Service)
  - quite a bit of reading : https://clojure.org/guides/tools_build
  - https://github.com/clojure/tools.build
  - flat file struct works for java source : compilation yields the hierarchy (for class files) declared in the nomenclature
+ - import the abstractions in wasm.clj and expose internals neatly without leaking out the Java'ish nature of things 
+
 
 
 # ToDos
@@ -98,6 +98,7 @@ public record CompilationResult(
  - [ ] retry mechanism with a pipeline for the functions post handler
   - current core.async thread for post function handler should be sync : timeout if unable to push to pipeline queue : more accurate info regarding state of submitted func : similar pattern to what the poller is doing (communicating sequential processes)
 
- - [ ] comments -> test suite
+ - [ ] comments -> test suite (in the oc-tests branch : passing (opencode + opus generated))
+   - not merged in yet
  
  - [ ] semantically smarter names
