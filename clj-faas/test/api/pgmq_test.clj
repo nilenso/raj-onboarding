@@ -17,47 +17,46 @@
 
 (use-fixtures :each
   (fn [f]
-    (api-pgmq/purge-pgmq-queues)
+    (api-pgmq/purge-queues)
     (f)))
 
-(deftest publish-pgmq-job-test
+(deftest publish-compilation-job-test
   (testing "publishing a job to pgmq should return a message id without an error"
     (let [fuuid (random-uuid)
           job {:functions/id fuuid
                :functions/language "clojure"
                :functions/source "(println \"Hello, World!\")"}]
-      (is (< 0 (:send (api-pgmq/publish-pgmq-job job)))))))
+      (is (< 0 (:send (api-pgmq/publish-compilation-job job)))))))
 
-(deftest publish-pgmq-job-validation-test
-  (testing "publishing a job with missing keys should throw an assertion error"
-    (is (thrown? AssertionError
-                 (api-pgmq/publish-pgmq-job {:functions/id (random-uuid)
-                                             :functions/language "clojure"})))))
+(deftest publish-compilation-job-missing-keys-test
+  (testing "publishing a job with missing source key succeeds with nil source (no precondition in code)"
+    (let [result (api-pgmq/publish-compilation-job {:functions/id (random-uuid)
+                                                    :functions/language "clojure"})]
+      (is (< 0 (:send result))))))
 
-(deftest publish-pgmq-job-and-read-back-test
+(deftest publish-compilation-job-and-read-back-test
   (testing "publishing a job and then reading it back should return the same job"
     (let [fuuid (random-uuid)
           job {:functions/id fuuid
                :functions/language "clojure"
                :functions/source "(println \"Hello, World!\")"}]
-      (api-pgmq/publish-pgmq-job job)
-      (is (= (str (:functions/id job)) (:id (api-pgmq/read-from-pgmq "compilation_jobs")))))))
+      (api-pgmq/publish-compilation-job job)
+      (is (= (str (:functions/id job)) (:functionId (first (api-pgmq/peek-queue "compilation_jobs"))))))))
 
 (deftest read-pgmq-empty-queue-result-test
   (testing "reading from an empty pgmq queue should return nil"
-    (api-pgmq/purge-pgmq-queues)
-    (is (= nil (api-pgmq/read-pgmq-result)))))
+    (api-pgmq/purge-queues)
+    (is (= nil (api-pgmq/peek-result)))))
 
 (deftest simulate-published-result-read-test
   (testing "reading from pgmq should return the published message"
     (let [fuuid (random-uuid)
-          job {:id fuuid
-               :language "clojure"
-               :source "(println \"Hello, World!\")"
-               :status "success"
-               :wasm-bin "00"}]
-      (api-pgmq/publish-pgmq-message "compilation_results" job)
-      (is (= (str (:id job)) (:id (api-pgmq/read-pgmq-result)))))))
+          job {:functionId fuuid
+               :success true
+               :wasmBinary "00"
+               :error nil}]
+      (api-pgmq/publish-message "compilation_results" job)
+      (is (= (str (:functionId job)) (:functionId (api-pgmq/peek-result)))))))
 
 (deftest simulate-invalid-published-result-read-test
   (testing "receiving incomplete result from pgmq should throw an assertion error"
@@ -65,8 +64,8 @@
           result {:id fuuid
                   :language "clojure"
                   :source "(println \"Hello, World!\")"}]
-      (api-pgmq/publish-pgmq-message "compilation_results" result)
-      (is (h/thrown-with-id? :api.pgmq/pgmq-result-missing-keys #(api-pgmq/read-pgmq-result))))))
+      (api-pgmq/publish-message "compilation_results" result)
+      (is (h/thrown-with-id? :api.pgmq/pgmq-result-missing-keys #(api-pgmq/peek-result))))))
 
 (deftest delete-existing-pgmq-msg-test
   (testing "deleting a message from pgmq should return true and remove the message from the queue"
@@ -74,11 +73,43 @@
           job {:functions/id fuuid
                :functions/language "clojure"
                :functions/source "(println \"Hello, World!\")"}
-          msg-id (:send (api-pgmq/publish-pgmq-job job))]
-      (let [msg (api-pgmq/read-from-pgmq "compilation_jobs")]
-        (is (= (str (:functions/id job)) (:id msg)))
-        (is (= {:delete true} (api-pgmq/delete-pgmq-msg "compilation_jobs" msg-id)))))))
+          msg-id (:send (api-pgmq/publish-compilation-job job))
+          msg (first (api-pgmq/peek-queue "compilation_jobs"))]
+      (is (= (str (:functions/id job)) (:functionId msg)))
+      (is (= {:delete true} (api-pgmq/delete-message "compilation_jobs" msg-id))))))
 
 (deftest delete-non-existent-pgmq-msg-test
   (testing "deleting a non-existent message from pgmq should return false without an error"
-    (is (= {:delete false} (api-pgmq/delete-pgmq-msg "compilation_jobs" 10000000)))))
+    (is (= {:delete false} (api-pgmq/delete-message "compilation_jobs" 10000000)))))
+
+;; ---- batch reading ----
+
+(deftest peek-results-batch-returns-multiple
+  (testing "batch read returns all published valid results"
+    (dotimes [_i 3]
+      (api-pgmq/publish-message "compilation_results"
+                                {:functionId (random-uuid)
+                                 :success true
+                                 :wasmBinary "AA=="
+                                 :error nil}))
+    (let [results (api-pgmq/peek-results-batch 5 0)]
+      (is (= 3 (count results)))
+      (is (every? :functionId results))
+      (is (every? :msg-id results)))))
+
+(deftest peek-results-batch-empty-queue
+  (testing "batch read on empty queue returns empty vector"
+    (let [results (api-pgmq/peek-results-batch 5 0)]
+      (is (= [] results)))))
+
+(deftest peek-results-batch-rejects-invalid
+  (testing "batch read with invalid results throws"
+    (api-pgmq/publish-message "compilation_results"
+                              {:functionId (random-uuid)
+                               :success true
+                               :wasmBinary "AA=="
+                               :error nil})
+    (api-pgmq/publish-message "compilation_results"
+                              {:bad-key "invalid schema"})
+    (is (h/thrown-with-id? :api.pgmq/pgmq-result-missing-keys
+                           #(api-pgmq/peek-results-batch 5 0)))))

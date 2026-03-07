@@ -50,6 +50,7 @@
 (defn get-pool
   "retrieve the connection pool, throwing an error if it's not initialized"
   []
+
   (or @pool (throw-error! ::pool-not-initialized)))
 
 (defn truncate-all-tables
@@ -179,8 +180,9 @@
     (catch Exception e
       (throw-error! ::execution-retrieval-failed e))))
 
-(defn get-function-executions [fn-id]
+(defn get-function-executions 
   "retrieve all executions for a given function id"
+  [fn-id]
   (try
     (let [executions (execute! (get-pool) ["SELECT * FROM EXECUTIONS WHERE function_id = ?;" (u/uuidfy fn-id)])]
       (log! {:level :debug

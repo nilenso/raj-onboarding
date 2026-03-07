@@ -45,7 +45,7 @@
                           :status "PENDING"})
     (let [functions (api-db/get-functions)]
       (is (= 2 (count functions)))
-      (is (= #{"func1" "func2"} (set (map :functions/name functions)))))))
+      (is (= #{"func1" "func2"} (set (map :name functions)))))))
 
 (deftest delete-function-test
   (testing "deleting a function from the database"
