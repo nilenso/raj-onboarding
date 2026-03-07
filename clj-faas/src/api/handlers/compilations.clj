@@ -2,7 +2,7 @@
   (:require
    [api.db :as db]
    [next.jdbc :as jdbc]
-   [api.pgmq :as pgmq]
+   [api.pgmq :as q]
    [api.utils :as u :refer [throw-error!]]
    [taoensso.telemere :as t :refer [log!]]))
 
@@ -10,7 +10,7 @@
 ;; which are then stored in the database and used to update the status of the compilation job
 ;; these aren't http handlers, but are called by the pgmq polling loop
 
-(defn- sanitize-compilation-result
+(defn- sanitize
   "sanitize the compilation result map received from pgmq, to ensure it has the expected keys and formats, and log any discrepancies"
   [compilation-result]
   {:id (u/uuidfy (:functionId compilation-result))
@@ -18,7 +18,7 @@
    :status (if (:success compilation-result) "READY" "FAILED")
    :wasm_binary (u/base64->bytes (:wasmBinary compilation-result))})
 
-(defn process-compilation-result
+(defn process
   "update a function status (ready, failed) from compiling (idempotent : ignore if already applied)"
   [compilation-result]
   (let [fn-id (u/uuidfy (:functionId compilation-result))
@@ -33,8 +33,7 @@
                     :current-status (:functions/status current)
                     :incoming-result compilation-result}})
       (try
-        (let [update-map (sanitize-compilation-result compilation-result)]
-          (db/update-function fn-id  update-map))
+        (db/update-function fn-id  (sanitize compilation-result))
         (log! {:level :debug
                :id ::compilation-update-applied
                :data {:fn-id fn-id
@@ -46,7 +45,7 @@
     ;; delete the pgmq message after processing, to prevent re-processing on the next poll
     ;; not using a transaction here, cause of the way the db api is structured, but if the delete fails, the worst that happens is we try to re-apply the same update on the next poll, which is idempotent
     (try
-      (pgmq/delete-result (:msg-id compilation-result))
+      (q/delete-result (:msg-id compilation-result))
       (log! {:level :debug
              :id ::compilation-result-pgmq-message-deleted
              :data {:fn-id fn-id
@@ -57,7 +56,7 @@
 (comment
   (db/start-pool!)
 
-  (pgmq/purge-queues)
+  (q/purge-queues)
 
   ;; simuating a registration
   ;; default pending but sent to compiling right away
@@ -77,23 +76,23 @@
   ;; goes to compilation_jobs, picked up by compiler, and then compiler publishes to compilation_results, which is read by the pgmq polling loop and processed by the handler above
 
   ;; simulating a compilation result push from compiler services
-  (pgmq/publish-message "compilation_results"
-                        {:functions/id test-fn-id
-                         :functions/language "clojure"
-                         :functions/source "(println \"Hello, World!\""
-                         :functions/status "ready"
-                         :functions/compile_error ""
-                         :functions/wasm_binary (u/bytes->base64 (.getBytes "00"))})
+  (q/publish-message "compilation_results"
+                     {:functions/id test-fn-id
+                      :functions/language "clojure"
+                      :functions/source "(println \"Hello, World!\""
+                      :functions/status "ready"
+                      :functions/compile_error ""
+                      :functions/wasm_binary (u/bytes->base64 (.getBytes "00"))})
 
   ;; the poller will read like this
 
   (def test-comp-result
-    (pgmq/peek-result))
+    (q/peek-result))
 
   test-comp-result
 
   ;; and then process like this
-  (process-compilation-result test-comp-result)
+  (process test-comp-result)
 
   ;; check if the db record was updated
 
@@ -101,4 +100,4 @@
 
   ;; checking if the pgmq message was deleted after processing
 
-  (pgmq/peek-result))
+  (q/peek-result))

@@ -2,7 +2,7 @@
   (:require
    [taoensso.telemere :as t :refer [log!]]
    [clojure.core.async :as a :refer [go-loop timeout chan alts! pipeline]]
-   [api.handlers.compilations :refer [process-compilation-result]]
+   [api.handlers.compilations :as c]
    [api.pgmq :as q]))
 
 (defn start-poller
@@ -23,7 +23,7 @@
     ;; start worker pipeline to process compilation results
     (pipeline worker-count
               out-chan                  
-              (comp (map process-compilation-result) ;transducer application order : map runs first
+              (comp (map c/process) ;transducer application order : map runs first
                     (filter (constantly false))) ;don't need the results, not populating out-chan
               work-chan) 
     
