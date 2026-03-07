@@ -131,7 +131,7 @@
 
   (peek-result)
 
-  (for [i (range 10)]
+  (for [_i (range 10)]
     (publish-message "compilation_results"
                      {:functions/id (random-uuid)
                       :functions/language "clojure"

@@ -3,8 +3,7 @@
    [taoensso.telemere :as t :refer [log!]]
    [clojure.core.async :as a :refer [go-loop timeout chan alts! pipeline]]
    [api.handlers.compilations :refer [process-compilation-result]]
-   [api.pgmq :as q]
-   [api.utils :as u :refer [throw-error!]]))
+   [api.pgmq :as q]))
 
 (defn start-poller
   [{:keys [poll-interval-ms
@@ -31,14 +30,14 @@
     (go-loop []
       (comment (log! {:level :debug
                       :msg "Polling for compilation results"}))
-      (let [[val port] (alts! [stop-chan (timeout poll-interval-ms)])]
+      (let [[_val port] (alts! [stop-chan (timeout poll-interval-ms)])]
         (if (= port stop-chan)
           (do (log! {:level :info
                      :msg "received stop signal, exiting poller loop"})
               (a/close! work-chan))
           (do
             (try
-              (let [messages (q/read-pgmq-results-batch batch-size visibilty-timeout-sec)]
+              (let [messages (q/peek-results-batch batch-size visibilty-timeout-sec)]
                 (doseq [msg messages]
                   (a/>! work-chan msg))) ;async put that parks when work-chan full (backpressure)
               (catch Exception e
