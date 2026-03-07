@@ -1,4 +1,4 @@
-# ProjectNIL (but in clojure)
+# clj-faas
 
 ## Overview
  - writing the overall orchestrator in clojure, while keeping the older java compiler service
@@ -34,6 +34,7 @@ lint              clj-kondo linting
 ## Running the project
 
  - checkout [architecture](../scratch/presentations/pres0/arch.png) for broader context
+ 
  
  - setup dependencies (postgres + pgmq):
     - `bb dev-deps-up`
