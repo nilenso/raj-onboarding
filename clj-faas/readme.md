@@ -48,4 +48,5 @@ lint              clj-kondo linting
     - `bb run-api-prod` (for logging level :info)
     - `bb run-api-dev` (for logging level :debug)
     - this starts an embedded nrepl server, an http server, and a poller for picking up compilation results from the queue
-
+    
+ - follow along [api.http](./api.http) for an overview of the possible routes ([emacs restclient](https://github.com/pashky/restclient.el) native in case you have it handy)
