@@ -30,3 +30,10 @@
   (zero? 1) (println "won't print")
   :truthy (println "truthy"))
 
+
+(defmacro unless [condition & clauses]
+  `(when (not ~condition)
+     ~@clauses))
+
+(unless (even? 3)
+        "3 isn't even")
