@@ -92,9 +92,3 @@ public record CompilationResult(
 
  - [ ] retry mechanism with a pipeline for the functions post handler
   - current core.async thread for post function handler should be sync : timeout if unable to push to pipeline queue : more accurate info regarding state of submitted func : similar pattern to what the poller is doing (communicating sequential processes)
-
- - [ ] comments -> test suite (in the oc-tests branch : passing (opencode + opus generated))
-   - not merged in yet
- 
- - [x] semantically smarter names
-
