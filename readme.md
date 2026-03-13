@@ -4,8 +4,8 @@ index/overview of progress/work done during Raj's Onboarding
 
 ## Overview
 
- 
-### [java-faas](./java-faas)
+
+### phase 1: [java-faas](./java-faas)
  - refer internal [readme](./java-faas/readme.md) for setup and tutorial
  - refer architecture [presentation](./scratch/presentations/pres0/pres.org) for design overview
  - a basic FaaS
@@ -14,15 +14,17 @@ index/overview of progress/work done during Raj's Onboarding
    - persistence layer: postgres-18 and [pgmq-1.8](https://pgmq.github.io/pgmq/latest/)
    - schema migrations via [liquibase](https://www.liquibase.com/)
    
-### [clj-faas](./clj-faas)
+### phase 2: [clj-faas](./clj-faas)
  - refer internal [readme](./clj-faas/readme.md) for setup and tutorial
  - learning clojure : rewriting the orchestrator from the java-faas while retaining the java compiler
+ 
+### phase 3: [goose-resch](./goose-resch)
 
-### Books
+## Primary Literature
 
- - [x] Effective Java
- - [x] User stories applied
- - [ ] The joy of clojure : follow along exploratory source code [here](./scratch/prac/theJoyOfClojure/src)
+ - [x] Effective Java (phase 1)
+ - [x] User Stories Applied (phase 2)
+ - [ ] The Joy of Clojure : follow along exploratory source code [here](./scratch/prac/theJoyOfClojure/src) (phase 2,3)
 
-### onboarding logs
+## Onboarding Logs (sporadic/in-exhaustive)
  - [journals](./journal)
