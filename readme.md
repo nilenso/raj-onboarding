@@ -22,7 +22,7 @@ index/overview of progress/work done during Raj's Onboarding
 
  - [x] Effective Java
  - [x] User stories applied
- - [ ] The joy of clojure
+ - [ ] The joy of clojure : follow along exploratory source code [here](./scratch/prac/theJoyOfClojure/src)
 
 ### onboarding logs
  - [journals](./journal)
