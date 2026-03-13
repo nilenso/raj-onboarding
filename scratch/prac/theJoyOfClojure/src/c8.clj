@@ -36,4 +36,38 @@
      ~@clauses))
 
 (unless (even? 3)
-        "3 isn't even")
+  "3 isn't even")
+
+(filter #(apply > (map % [0 1]))
+        (for [x (range 2)
+              y (range 2)]
+          [x y]))
+
+(comment
+  (awhen eval-bindee
+    do-one
+    do-two)) 
+
+(defmacro qualified-it-bad-awhen [expr & body]
+  `(let [it ~expr]
+     (when it
+       ~@body)))
+(comment
+  (let [user/it 10]
+    it)
+  ;; this is what that expands to
+  ;; try and eval that
+  )
+
+(defmacro awhen [expr & body]
+  `(let [~'it ~expr]
+     (when ~'it
+       ~@body)))
+
+(awhen (+ 1 2)
+  it)
+
+;; macroexpansion time varying nested binds
+(awhen 1
+  (awhen (+ it 2)
+    [it]))
