@@ -18,7 +18,7 @@ index/overview of progress/work done during Raj's Onboarding
  - refer internal [readme](./clj-faas/readme.md) for setup and tutorial
  - learning clojure : rewriting the orchestrator from the java-faas while retaining the java compiler
  
-### phase 3: [goose-resch](./goose-resch)
+### phase 3: [goose-research](./goose-notes)
 
 ## Primary Literature
 

@@ -19,4 +19,6 @@
     (c/perform-async client-opts `my-fn "foo" :bar)
     (c/perform-in-sec client-opts 10 `my-fn "foo" :bar)))
 
+(sentinel)
+
 (rb/close producer)

@@ -1,6 +1,6 @@
 # Goose Research
 
-*Project management for work done towards [Goose](https://github.com/nilenso/goose)*
+*Notes for work done towards [Goose](https://github.com/nilenso/goose)*
 
  - setting up a sentinel project (consumer of goose, not dev setup) here for experiments
 
