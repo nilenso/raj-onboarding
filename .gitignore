@@ -85,3 +85,6 @@ scratchpad/
 .lsp/
 .nrepl-port
 .cpcache/
+
+#notes
+goose-notes/gtd.org
