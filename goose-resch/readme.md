@@ -25,3 +25,6 @@
 ### DDD in clojure
  - https://martinfowler.com/bliki/DomainDrivenDesign.html
  - https://github.com/didibus/clj-ddd-example
+
+### Spec Driven Dev
+ - https://marmelab.com/blog/2025/11/12/spec-driven-development-waterfall-strikes-back.html

@@ -1,0 +1,2 @@
+{:deps
+ {com.nilenso/goose {:mvn/version "0.6.0"}}}
