@@ -19,12 +19,15 @@ index/overview of progress/work done during Raj's Onboarding
  - learning clojure : rewriting the orchestrator from the java-faas while retaining the java compiler
  
 ### phase 3: [goose-research](./goose-notes)
+ - short lived : had to move on to picking up clojurescript and frontend concepts
+
+### phase 4: [cljs-scratch](./cljs-scratch)
 
 ## Primary Literature
 
  - [x] Effective Java (phase 1)
  - [x] User Stories Applied (phase 2)
- - [ ] The Joy of Clojure : follow along exploratory source code [here](./scratch/prac/theJoyOfClojure/src) (phase 2,3)
+ - [ ] The Joy of Clojure : follow along exploratory source code [here](./scratch/prac/theJoyOfClojure/src) (phase 2,3,4)
 
 ## Onboarding Logs (sporadic/in-exhaustive)
  - [journals](./journal)
