@@ -19,9 +19,10 @@ index/overview of progress/work done during Raj's Onboarding
  - learning clojure : rewriting the orchestrator from the java-faas while retaining the java compiler
  
 ### phase 3: [goose-research](./goose-notes)
- - short lived : had to move on to picking up clojurescript and frontend concepts
+ - short lived : had to move on to picking up clojurescript and javascript ecosystem and concepts towards onboarding on CH
 
 ### phase 4: [cljs-scratch](./cljs-scratch)
+ - quick ramp up : ending the onboarding soon
 
 ## Primary Literature
 
