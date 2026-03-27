@@ -44,10 +44,17 @@
                                    :arrival [1 0]}]}])
 
 
+(defn search [from to date]
+  "returns the schedules that facilitate a from->to journey on date : cl-style simulated"
+  (filter (fn [{:keys [start-date stops]}]
+            (and (= date start-date)
+                 (some #(= to (:station %))
+                       (rest (drop-while #(not= from (:station %)) stops)))))
+          schedule))
 
 
 (comment 
-  "not idiomatic clojure so don't bother looking"
+  "not idiomatic clojure so don't bother looking : throw away scratch code"
   (defn cl-member (predicate sequence)
     (cond [(empty? sequence) nil]
           [(predicate (first sequence)) (rest vector)]
