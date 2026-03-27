@@ -1,7 +1,8 @@
 (ns transit.services.trains)
 
-(def ^:private stations {2389 "Somewhere"
-                         2383 "Somewhere Else"})
+(def ^:private stations {2389 {:name "Somewhere"}
+                         2383 {:name "Somewhere Else"}})
+
 
 (def ^:private trains [{:id #uuid "a3f1b2c4-5d6e-7f80-9a1b-2c3d4e5f6a7b"
                         :name "Something Express"
@@ -22,7 +23,7 @@
                                              :station 2383
                                              :arrival [1 0]}]}]}])
 
-(def ^:private schedule [{:train-id #uuid "a3f1b2c4-5d6e-7f80-9a1b-2c3d4e5f6a7b"
+(def ^:private schedules [{:train-id #uuid "a3f1b2c4-5d6e-7f80-9a1b-2c3d4e5f6a7b"
                           :schedule-id #uuid "c5f3d4e6-7f80-9102-bc3d-4e5f6a7b8c9d"
                           :start-date "2026-05-27"
                           :stops [{:day 0
@@ -43,14 +44,22 @@
                                    :station 2383
                                    :arrival [1 0]}]}])
 
+(defn find-train [id]
+  (first
+   (filter #(= id (:id %)) trains)))
 
 (defn search [from to date]
   "returns the schedules that facilitate a from->to journey on date : cl-style simulated"
-  (filter (fn [{:keys [start-date stops]}]
-            (and (= date start-date)
-                 (some #(= to (:station %))
-                       (rest (drop-while #(not= from (:station %)) stops)))))
-          schedule))
+  (let [from (parse-long from)
+        to (parse-long to)]
+    (js/console.log #js{:from from :to to :date date})
+    (->> schedules
+         (filter (fn [{:keys [start-date stops]}]
+                   (and (= date start-date)
+                        (some #(= to (:station %))
+                              (rest (drop-while #(not= from (:station %)) stops))))))
+         (map (fn [schedule]
+                (assoc schedule :train (find-train (:train-id schedule))))))))
 
 
 (comment 
@@ -66,4 +75,4 @@
               (and (= date start-date)
                    (cl-member #(= to (:station %))
                               (cl-member #(= from (:station %)) stops))))
-            schedule)))
+            schedules)))

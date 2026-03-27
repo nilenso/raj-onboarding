@@ -8,7 +8,9 @@
   [:form {:on-submit (fn [e]
                        (.preventDefault e)
                        (re-frame/dispatch [::events/search]))}
-   [:input {:type "text" :on-change #(re-frame/dispatch [::events/search-phrase-updated (.. % -target -value)])}]
+   [:input {:name "from" :type "text" :on-change #(re-frame/dispatch [::events/search-request-update :from (.. % -target -value)])}]
+   [:input {:name "destination" :type "text" :on-change #(re-frame/dispatch [::events/search-request-update :destination (.. % -target -value)])}]
+   [:input {:name "departuredate" :type "date" :on-change #(re-frame/dispatch [::events/search-request-update :date (.. % -target -value)])}]
    [:input {:type "submit" :value "Search"}]])
 
 (defn- home-page []
@@ -20,12 +22,16 @@
   [:div
    [:h1 "About"]])
 
+(defn- search-result [{:keys [train]}]
+  [:span (:name train)])
+
 (defn- search-page []
   (let [search-results @(re-frame/subscribe [:search-results])]
     [:div
      [:h1 "Search Results"]
      (for [result search-results]
-       [:li result])]))
+     [:li
+       [search-result result]])]))
 
 (defn- main-page []
   (let [active-page @(re-frame/subscribe [:active-page])]

@@ -9,4 +9,4 @@
 (re-frame/reg-sub
  :search-results
  (fn [db _]
-   (:search-results db)))
+   (get-in db [:search :results])))
