@@ -42,3 +42,21 @@
                                   {:day 1
                                    :station 2383
                                    :arrival [1 0]}]}])
+
+
+
+
+(comment 
+  "not idiomatic clojure so don't bother looking"
+  (defn cl-member (predicate sequence)
+    (cond [(empty? sequence) nil]
+          [(predicate (first sequence)) (rest vector)]
+          [true (cl-member predicate (rest sequence))]))
+
+  "common lisp style"
+  (defn search [from to date]
+    (filter (fn [{:keys [start-date stops]}] 
+              (and (= date start-date)
+                   (cl-member #(= to (:station %))
+                              (cl-member #(= from (:station %)) stops))))
+            schedule)))
