@@ -141,3 +141,5 @@
   "Elapsed time: 0.013084 msecs")
 
 (meta fib-granular)
+
+(keys @(:cache (meta fib-granular)))
