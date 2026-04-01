@@ -131,7 +131,7 @@
    (fn [a b n]
      (if (zero? n)
        a
-       (fib-granular b (+ a b) (dec n)))))) ;; Now it calls the memoized wrapper!
+       (fib-granular b (+ a b) (dec n)))))) 
 
 (mapv #(time (fib-granular 0 1 %)) [20 20 20])
 
