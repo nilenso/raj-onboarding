@@ -18,3 +18,17 @@
 
 
 (dothreads! #(println "Hi ") :threads 2 :times 8)
+
+(comment
+  io!)
+
+(comment
+  java.lang.IllegalStateException
+  RuntimeException)
+
+(comment
+  dosync
+  commute
+  ensure
+  ref-set
+  alter)
