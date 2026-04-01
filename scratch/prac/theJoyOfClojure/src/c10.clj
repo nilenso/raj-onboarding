@@ -143,3 +143,9 @@
 (meta fib-granular)
 
 (keys @(:cache (meta fib-granular)))
+
+(comment
+  locking)
+
+(comment
+  var)
