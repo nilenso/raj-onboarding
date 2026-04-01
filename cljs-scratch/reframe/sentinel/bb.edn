@@ -1,0 +1,6 @@
+{:tasks
+ {dev {:doc "Start shadow-cljs dev server (port 8080) + nREPL (port 9000)"
+       :task (do
+               (babashka.fs/delete-if-exists ".nrepl-port")
+               (babashka.fs/create-sym-link ".nrepl-port" ".shadow-cljs/nrepl.port")
+               (shell "npx shadow-cljs watch dev"))}}}
