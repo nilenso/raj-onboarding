@@ -148,4 +148,6 @@
   locking)
 
 (comment
-  var)
+  var
+  binding
+  with-local-vars)
