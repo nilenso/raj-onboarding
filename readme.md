@@ -23,12 +23,16 @@ index/overview of progress/work done during Raj's Onboarding
 
 ### phase 4: [cljs-scratch](./cljs-scratch)
  - quick ramp up : ending the onboarding soon
+ - short-lived , back to goose
+ 
+### phase 5: [Integration Test DSL for Goose]
+ - integration test harness for goose : https://github.com/nilenso/goose/pull/214
 
 ## Primary Literature
 
  - [x] Effective Java (phase 1)
  - [x] User Stories Applied (phase 2)
- - [ ] The Joy of Clojure : follow along exploratory source code [here](./scratch/prac/theJoyOfClojure/src) (phase 2,3,4)
+ - [x] The Joy of Clojure : follow along exploratory source code [here](./scratch/prac/theJoyOfClojure/src) (phase 2,3,4,5)
 
 ## Onboarding Logs (sporadic/in-exhaustive)
  - [journals](./journal)
